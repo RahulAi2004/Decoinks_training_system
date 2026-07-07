@@ -1,0 +1,14 @@
+.git
+.env
+.claude
+.agents
+node_modules
+dist
+dev.log
+npm-debug.log*
+data/*.db
+data/*.db-shm
+data/*.db-wal
+data/*.db-journal
+data/tmp-art-test
+data/real-chat-artwork

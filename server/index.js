@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
+import fs from 'fs';
 import { login, authRequired, adminOnly } from './auth.js';
 import practiceRoutes from './routes/practice.js';
 import scenarioRoutes from './routes/scenarios.js';
@@ -35,6 +36,15 @@ app.use('/api/quizzes', authRequired, quizRoutes);
 app.use('/api/metrics', authRequired, metricsRoutes);
 app.use('/api/study', authRequired, studyRoutes);
 app.use('/api/admin', authRequired, adminOnly, adminRoutes);
+
+const DIST_DIR = path.join(process.cwd(), 'dist');
+if (fs.existsSync(DIST_DIR)) {
+  app.use(express.static(DIST_DIR));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api/') || req.path.startsWith('/real-chat-artwork/')) return next();
+    res.sendFile(path.join(DIST_DIR, 'index.html'));
+  });
+}
 
 // never crash on a bad file or a failed LLM call
 app.use((err, req, res, next) => {
