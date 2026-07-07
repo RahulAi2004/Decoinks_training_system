@@ -6,7 +6,7 @@ services:
     env_file:
       - .env
     ports:
-      - "80:4000"
+      - "4000:4000"
     volumes:
       - ./data:/app/data
       - ./content/company-products:/app/content/company-products
