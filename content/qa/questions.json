@@ -1,0 +1,2240 @@
+{
+  "totalCustomerMessages": 13456,
+  "distinctQuestions": 1741,
+  "intents": [
+    {
+      "intent": "Order/Quantity",
+      "total": 1114,
+      "questions": [
+        {
+          "q": "What is the minimum order quantity?",
+          "n": 724,
+          "intent": "Order/Quantity",
+          "replies": [
+            "Our minimum order is $25, which is approximately 60 inches of DTF transfers. If you're unsure about sizing, send us your artwork and we'll help you calculate the required inches.",
+            "Hi Sonya! 😊\nYes, we do offer custom design services and can help you create exactly what you need.\n\nFor custom t-shirts, our minimum order is 5 pieces.\nFor DTF transfers, there’s no strict minimum — we usually print gang sheets to keep it more cost-efficient for you.",
+            "Kat Tameeka Kizzy replied to an ad.",
+            "Our minimum order is $25, which is approximately 60 inches of DTF transfers. If you're unsure about sizing, send us your artwork and we'll help you calculate the required inches.",
+            "Our minimum order is $25, which is approximately 60 inches of DTF transfers. If you're unsure about sizing, send us your artwork and we'll help you calculate the required inches.",
+            "Do you have your design ready?"
+          ],
+          "best": "Hey there! 😊 Our minimum order is $25, which usually gives you about 60 inches of DTF transfers. If you need help figuring out the sizing, just send over your artwork and I’ll assist you!"
+        },
+        {
+          "q": "Can I order in bulk?",
+          "n": 162,
+          "intent": "Order/Quantity",
+          "replies": [
+            "Yes, bulk orders = better pricing 💰\nPerfect for businesses, events & brands\nMessage now for special bulk discount!",
+            "Yes, bulk orders = better pricing 💰\nPerfect for businesses, events & brands\nMessage now for special bulk discount!",
+            "Yes, bulk orders = better pricing 💰\nPerfect for businesses, events & brands\nMessage now for special bulk discount!",
+            "Yes, bulk orders = better pricing 💰\nPerfect for businesses, events & brands\nMessage now for special bulk discount!",
+            "Yes 🎉\nOur Buy 1000 inches & Get 100 inches FREE offer is currently available ✅\nPlus free design assistance for bulk orders 🔥",
+            "Yes, bulk orders = better pricing 💰\nPerfect for businesses, events & brands\nMessage now for special bulk discount!"
+          ],
+          "best": "Absolutely! 🎉 Bulk orders come with better pricing, and we even have a special offer where you can buy 1000 inches and get 100 inches FREE! Plus, I can help with the design if you need it. Just let me know!"
+        },
+        {
+          "q": "How can I order a custom t-shirt?",
+          "n": 83,
+          "intent": "Order/Quantity",
+          "replies": [
+            "Super easy 👇\nSend us your design (or idea), size & quantity\nWe’ll create your mockup + best price instantly 🔥",
+            "Super easy 👇\nSend us your design (or idea), size & quantity\nWe’ll create your mockup + best price instantly 🔥",
+            "Super easy 👇\nSend us your design (or idea), size & quantity\nWe’ll create your mockup + best price instantly 🔥",
+            "Super easy 👇\nSend us your design (or idea), size & quantity\nWe’ll create your mockup + best price instantly 🔥",
+            "Super easy 👇\nSend us your design (or idea), size & quantity\nWe’ll create your mockup + best price instantly 🔥",
+            "Super easy 👇\nSend us your design (or idea), size & quantity\nWe’ll create your mockup + best price instantly 🔥"
+          ],
+          "best": "Super easy! 👇 Just send us your design (or idea), size, and quantity, and we’ll whip up a mockup and the best price for you in no time! 🔥"
+        },
+        {
+          "q": "How can I place my order?",
+          "n": 28,
+          "intent": "Order/Quantity",
+          "replies": [
+            "Just send us your design, size details, quantity, and shipping address — we’ll handle the rest",
+            "Just send us your design, size details, quantity, and shipping address — we’ll handle the rest",
+            "Just send us your design, size details, quantity, and shipping address — we’ll handle the rest",
+            "Just send us your design, size details, quantity, and shipping address — we’ll handle the rest",
+            "Just send us your design, size details, quantity, and shipping address — we’ll handle the rest",
+            "Just send us your design, size details, quantity, and shipping address — we’ll handle the rest"
+          ],
+          "best": "Just send over your design, size details, quantity, and shipping address, and we’ll take care of everything from there!"
+        },
+        {
+          "q": "How much is 1000 inches?",
+          "n": 7,
+          "intent": "Order/Quantity",
+          "replies": [
+            "1000 inches means 84 feet of 22\" width.\nWe have even better deals for regular customers\nShare your designs and we'll assist you further that how many free transfers you can get as per your size of order",
+            "1000 inches means 84 feet of 22\" width.\nWe have even better deals for regular customers\nShare your designs and we'll assist you further that how many free transfers you can get as per your size of order",
+            "You don't need order 84 feet or more , our discount starts at 25 and 50 feet also",
+            "1000 inches means 84 feet of 22\" width.\nWe have even better deals for regular customers\nShare your designs and we'll assist you further that how many free transfers you can get as per your size of order",
+            "1000 inches means 84 feet of 22\" width.\nWe have even better deals for regular customers\nShare your designs and we'll assist you further that how many free transfers you can get as per your size of order",
+            "You don't need order 84 feet or more , our discount starts at 25 and 50 feet also"
+          ],
+          "best": "1000 inches is about 84 feet of 22\" width. We offer great deals for regular customers, so feel free to share your designs, and I can help you figure out how many free transfers you can get with your order!"
+        },
+        {
+          "q": "How much 1000 inches",
+          "n": 7,
+          "intent": "Order/Quantity",
+          "replies": [
+            "$420 , but you can 100 inchees more free of cost , or you can opt for 10% discount",
+            "If you share your desgins , i will be able to assist you better deals as per requirements",
+            "1000 inches makes 84 feet gang sheet of 22\" width , which will cost $42",
+            "On 1000 inches we offer 10 percent discount",
+            "On 1000 inches we offer 10 percent discount",
+            "On 1000 inches we offer 10 percent discount"
+          ],
+          "best": "For 1000 inches, it would be $420, but you can get an extra 100 inches for free or a 10% discount if that works better for you! Let me know if you have any designs in mind, and I can help you out further."
+        },
+        {
+          "q": "Do you have a site for me to pay with my credit card",
+          "n": 7,
+          "intent": "Order/Quantity",
+          "replies": [
+            "Yes we received your payment."
+          ],
+          "best": "Absolutely! You can pay with your credit card directly on our website. Let me know if you need any help with the process!"
+        },
+        {
+          "q": "Do you offer rush orders?",
+          "n": 7,
+          "intent": "Order/Quantity",
+          "replies": [
+            "Yes 👍 We offer rush and overnight shipping options for urgent orders.",
+            "Yes 👍 We offer rush and overnight shipping options for urgent orders.",
+            "Yes 👍 We offer rush and overnight shipping options for urgent orders.",
+            "Yes 👍 We offer rush and overnight shipping options for urgent orders.",
+            "Nay Davis replied to an ad.",
+            "Hi Nay! Please let us know how we can help you."
+          ],
+          "best": "Yes, we do offer rush and overnight shipping options for those urgent orders! Just let me know what you need, and I’ll help you get it sorted. 😊"
+        },
+        {
+          "q": "Oh I forgot it’s 2-xl/mens \nr u able to give me a quote?",
+          "n": 6,
+          "intent": "Order/Quantity",
+          "replies": [
+            "Sure",
+            "Previously we sent you some designs of birthday and you told us that your daughter will pick which design she like",
+            "Sure",
+            "Sure"
+          ],
+          "best": "Absolutely! Just let me know what design you're interested in, and I can get you a quote for the 2XL men's size."
+        },
+        {
+          "q": "Are the transfers hot or cold peel",
+          "n": 6,
+          "intent": "Order/Quantity",
+          "replies": [
+            "Its hot peel.",
+            "Its hot peel.",
+            "Its hot peel.",
+            "Its hot peel.",
+            "Its hot peel."
+          ],
+          "best": "It's hot peel! Let me know if you have any other questions!"
+        },
+        {
+          "q": "For how many prints?",
+          "n": 6,
+          "intent": "Order/Quantity",
+          "replies": [
+            "Corona California",
+            "Any update ?",
+            "Sorry there was a mistake the total quote is $40 for 10 designs with shipping"
+          ],
+          "best": "Hey there! Could you let me know how many prints you're looking for? I’d love to help you out!"
+        },
+        {
+          "q": "Do I it the same way I did the last time",
+          "n": 5,
+          "intent": "Order/Quantity",
+          "replies": [
+            "Yes sure , you can do the same way . Thanks"
+          ],
+          "best": "Absolutely, you can go ahead and do it the same way as before! Let me know if you need any help. 😊"
+        },
+        {
+          "q": "How do I order",
+          "n": 4,
+          "intent": "Order/Quantity",
+          "replies": [
+            "Send us your design (or idea), size & quantity.",
+            "Hi Bobby! Please let us know how we can help you.",
+            "Once your desgins and sizes are finalized , we'll calculate the total length of the ganghseet and will quote you",
+            "You can tell me what are you thinking to order I can help you that"
+          ],
+          "best": "Hey there! Just send us your design or idea, along with the size and quantity you need, and we’ll take it from there! 😊"
+        },
+        {
+          "q": "Can I start my order now?",
+          "n": 4,
+          "intent": "Order/Quantity",
+          "replies": [
+            "Absolutely 👍\nJust send:\n• Your design\n• Size\n• Quantity\nI’ll confirm everything and we’ll start right away",
+            "Absolutely 👍\nJust send:\n• Your design\n• Size\n• Quantity\nI’ll confirm everything and we’ll start right away",
+            "Hi Dayna! Please let us know how we can help you.",
+            "Absolutely 👍\nJust send:\n• Your design\n• Size\n• Quantity\nI’ll confirm everything and we’ll start right away"
+          ],
+          "best": "Absolutely! Just send over your design, size, and quantity, and I’ll get everything confirmed so we can start right away. 😊"
+        },
+        {
+          "q": "Can u just mix the sizes up cause I just want 20",
+          "n": 3,
+          "intent": "Order/Quantity",
+          "replies": [
+            "* S – 6 pcs\n* M – 6 pcs\n* L – 4 pcs\n* XL – 4 pcs\n\nTotal: 20 pcs",
+            "* S – 6 pcs\n* M – 6 pcs\n* L – 4 pcs\n* XL – 4 pcs\n\nTotal: 20 pcs",
+            "Can you please send me your artwork."
+          ],
+          "best": "Absolutely, I can help with that! Just let me know how you'd like to mix the sizes, and I'll get it all set up for you."
+        },
+        {
+          "q": "Can u make it little bigger",
+          "n": 3,
+          "intent": "Order/Quantity",
+          "replies": [
+            "ok let me do it for you",
+            "W14/H15.3",
+            "W14/H15.3"
+          ],
+          "best": "Sure thing! Just let me know the new size you have in mind, and I’ll get that sorted for you."
+        },
+        {
+          "q": "How many can you get on the sheet",
+          "n": 3,
+          "intent": "Order/Quantity",
+          "replies": [
+            "To give you an accurate number, could you please share the size you need?",
+            "we sell $5 per feet",
+            "we sell $5 per feet"
+          ],
+          "best": "Could you let me know the size of the designs you're looking to print? That way, I can give you a better idea of how many will fit on the sheet!"
+        },
+        {
+          "q": "How's it",
+          "n": 3,
+          "intent": "Order/Quantity",
+          "replies": [
+            "Hey there jaysin your order is on printing and we will deliver it asap",
+            "You will get your order on Wednesday."
+          ],
+          "best": "Hey! Everything’s going great here, thanks for asking! How about you?"
+        },
+        {
+          "q": "how can I order",
+          "n": 3,
+          "intent": "Order/Quantity",
+          "replies": [
+            "Hey! \nOur minimum order is 5 pieces.\nWe also offer bulk discounts on higher quantities",
+            "Send us your design (or idea), size & quantity.",
+            "is your design ready"
+          ],
+          "best": "Hey there! Just send us your design or idea, along with the size and quantity you need, and we’ll get you set up! 😊"
+        },
+        {
+          "q": "How many transfer i get for $25",
+          "n": 3,
+          "intent": "Order/Quantity",
+          "replies": [
+            "Depends on the size if your design size is 10.75 x 11 you can get 10 transfers",
+            "Your AI agent will respond.",
+            "As you said above you dont have design so do you have any idea about the design that kind of design do you want to make"
+          ],
+          "best": "It really depends on the size of your design! For example, if it's around 10.75 x 11 inches, you can get about 10 transfers for $25. Let me know what you're thinking, and I can help you figure it out!"
+        },
+        {
+          "q": "Are you there?",
+          "n": 2,
+          "intent": "Order/Quantity",
+          "replies": [
+            "Yes I am"
+          ],
+          "best": "Absolutely, I'm here! How can I help you today?"
+        },
+        {
+          "q": "How do I but DTF",
+          "n": 2,
+          "intent": "Order/Quantity",
+          "replies": [
+            "Hi Corey! We wanted to follow up. Do you have any questions?",
+            "If you are looking for DTF transfers , pls send your designs and we”ll assist you further"
+          ],
+          "best": "Hey there! If you're looking to buy DTF transfers, just send over your designs and I’ll help you from there! 😊"
+        },
+        {
+          "q": "Where is the back to that shirt",
+          "n": 2,
+          "intent": "Order/Quantity",
+          "replies": [
+            "This is for the back of the t shirt",
+            "Design size: 6.85\" x 6\" and t shirt size is large"
+          ],
+          "best": "This design is for the back of the shirt! If you need any other details or have more questions, just let me know!"
+        },
+        {
+          "q": "Did you ever get me a price",
+          "n": 2,
+          "intent": "Order/Quantity",
+          "replies": [
+            "Let me work on the quote and send it to you",
+            "We created youu design. In the artwork the girl was cut we made the full design and removed the background"
+          ],
+          "best": "I’m on it! Let me get that quote together for you and I’ll send it your way shortly."
+        },
+        {
+          "q": "Can we still can I just see the work that's not something I rather not continue this",
+          "n": 2,
+          "intent": "Order/Quantity",
+          "replies": [
+            "Our design and graphic servess are free with the orders",
+            "Our design and graphic servess are free with the orders"
+          ],
+          "best": "I totally get wanting to see the work before moving forward! We offer free design and graphic services with your order, so we can create something you love. Let me know what you have in mind!"
+        },
+        {
+          "q": "What's your web address",
+          "n": 2,
+          "intent": "Order/Quantity",
+          "replies": [
+            "-Pls share your designs and we'll guide you futher how many transfers you will get in the minimum size of sheet for your artwork sizes. Our custom desinging is free of cost",
+            "Pls don’t hesitate if you have why question"
+          ],
+          "best": "You can check us out at decoinks.com! If you have any questions or need help with your designs, just let me know!"
+        },
+        {
+          "q": "Cuánto me costarían",
+          "n": 2,
+          "intent": "Order/Quantity",
+          "en": "How much would they cost me?",
+          "replies": [
+            "Depende del tamaño de sus diseños. Por favor, compártalos y con gusto le ayudaré a calcular el costo y le brindaré más información."
+          ],
+          "best": "Claro, el costo depende del tamaño y la cantidad de diseños que necesites. Si me compartes más detalles, estaré encantado de ayudarte a calcularlo.",
+          "best_en": "Of course, the cost depends on the size and the number of designs you need. If you share more details with me, I would be happy to help you calculate it."
+        },
+        {
+          "q": "how much is the 1000 inch bulk",
+          "n": 2,
+          "intent": "Order/Quantity",
+          "replies": [
+            "84 feet x 22” width",
+            "And offer discounts of 5-20% based on quantity"
+          ],
+          "best": "For 1000 inches, it would be 84 feet by 22” width! We also offer discounts ranging from 5-20% based on the quantity you order. Let me know if you need more details!"
+        },
+        {
+          "q": "How much does it cost",
+          "n": 2,
+          "intent": "Order/Quantity",
+          "replies": [
+            "Deuce Duncan replied to an ad.",
+            "But we offer bulk discount starting with 50 feet also"
+          ],
+          "best": "Hey there! Our pricing can vary based on what you're looking for, but we do offer bulk discounts starting with 50 feet. Let me know what you need, and I can give you a more specific quote!"
+        },
+        {
+          "q": "are they any good",
+          "n": 2,
+          "intent": "Order/Quantity",
+          "replies": [
+            "we can make 3-4 different size of artworks from regular, to full size"
+          ],
+          "best": "Absolutely! Our DTF transfers are top-notch and designed to last. You’ll love the quality and vibrancy they bring to your custom apparel!"
+        },
+        {
+          "q": "If you can put it there?",
+          "n": 2,
+          "intent": "Order/Quantity",
+          "replies": [
+            "Remove the UMK placement?",
+            "Please check it"
+          ],
+          "best": "Could you clarify where you're thinking of placing it? I'd love to help!"
+        },
+        {
+          "q": "How soon can you complete this, I had to take down this designs for sale on my site because I’ve been waiting for it and am getting inquiries I can’t fulfill",
+          "n": 2,
+          "intent": "Order/Quantity",
+          "replies": [],
+          "best": "I totally understand how frustrating that can be! We usually complete orders in about 3-5 business days, so I can get your designs back up and running in no time. Let me know if you need anything else!"
+        },
+        {
+          "q": "Do you have  like a shop page.  Not sure yet.  Just like your concept for making extra income.",
+          "n": 2,
+          "intent": "Order/Quantity",
+          "replies": [
+            "Thank you! Yes, we do have a website: www.decoinks.com. Many of our customers start with just an idea and then sell custom apparel, DTF transfers, or branded products. If you ever decide to get started, we’d be happy to help guide you through the process."
+          ],
+          "best": "Absolutely! You can check out our website at www.decoinks.com. We love helping people turn their ideas into extra income, so if you have any questions or need guidance, just let me know!"
+        },
+        {
+          "q": "OK, how do I order?",
+          "n": 2,
+          "intent": "Order/Quantity",
+          "replies": [
+            "Pls send your designs so we can working on it and send you mockups",
+            "Buy 1000 inches, get 100 inches FREE, plus enjoy an extra 10% OFF your order!"
+          ],
+          "best": "Just send over your designs, and we’ll get started on some mockups for you! If you’re ordering 1000 inches, you’ll also get 100 inches FREE and an extra 10% OFF!"
+        },
+        {
+          "q": "Are you located in the us?",
+          "n": 2,
+          "intent": "Order/Quantity",
+          "replies": [
+            "Our Custom design services which is free of cost for our customers . The scope of services including creating designs as per your directives , modification in your existing , T-shirt mock-ups with your artworks and getting ready the final artwork for DTF printing."
+          ],
+          "best": "Yes, we’re located in the US! If you have any questions about our services or need help with your order, feel free to ask!"
+        },
+        {
+          "q": "I need some DTF printing for today, are you able?",
+          "n": 2,
+          "intent": "Order/Quantity",
+          "replies": [
+            "Horacio Manning replied to an ad.",
+            "Do you mean today to be delivered  or you want to order it today"
+          ],
+          "best": "Hey there! Just to clarify, do you need it delivered today or are you looking to place an order today? Let me know so I can help you out!"
+        },
+        {
+          "q": "Will you be able to give me a quote? The last quote was $180 but I’ve added additional transfers for 5 more shirts",
+          "n": 2,
+          "intent": "Order/Quantity",
+          "replies": [
+            "Just give me a few minutes and I am getting back with a quote",
+            "So for 90 transfers , cost will be $225- 10% dsicount = $ 200 + shipping"
+          ],
+          "best": "Sure! Let me calculate that for you. Just a moment!"
+        },
+        {
+          "q": "Can I get a mock up of the shirt with all 3 designs on it?",
+          "n": 2,
+          "intent": "Order/Quantity",
+          "replies": [],
+          "best": "Absolutely! I’d be happy to create a mock-up for you with all three designs on the shirt. Just give me a moment, and I’ll send it over!"
+        },
+        {
+          "q": "Tht size is ideal?",
+          "n": 2,
+          "intent": "Order/Quantity",
+          "replies": [],
+          "best": "Absolutely! If you give me a bit more info about what you're printing, I can help you figure out the perfect size for your design. 😊"
+        },
+        {
+          "q": "cómo mirar un catálogo y costos",
+          "n": 2,
+          "intent": "Order/Quantity",
+          "en": "How to view a catalog and prices?",
+          "replies": [
+            "Hi Zol! We wanted to follow up. Do you have any questions?"
+          ],
+          "best": "¡Hola! Claro, puedo ayudarte con eso. Puedes ver nuestro catálogo y precios en nuestro sitio web, o si prefieres, puedo enviarte algunas muestras directamente. ¿Te gustaría eso?",
+          "best_en": "Hello! Of course, I can help you with that. You can check our catalog and prices on our website, or if you prefer, I can send you some samples directly. Would you like that?"
+        }
+      ]
+    },
+    {
+      "intent": "Shipping/Delivery",
+      "total": 491,
+      "questions": [
+        {
+          "q": "How long does shipping take?",
+          "n": 352,
+          "intent": "Shipping/Delivery",
+          "replies": [
+            "Marlene Dillard replied to an ad.",
+            "Production takes 1–2 business days, with standard shipping taking 2–5 business days within the USA. Rush production and expedited shipping are also available for urgent orders.",
+            "Pls share your designs and we'll guide you futher . Our custom desinging is free of cost",
+            "Hi Veronica! We wanted to follow up. Do you have any questions?",
+            "Production takes 1–2 business days, with standard shipping taking 2–5 business days within the USA. Rush production and expedited shipping are also available for urgent orders.",
+            "Veronica Wiggins replied to an ad."
+          ],
+          "best": "Hey there! Production usually takes about 1-2 business days, and then standard shipping is 2-5 business days within the USA. If you need it sooner, we do offer rush options too!"
+        },
+        {
+          "q": "how long does delivery take",
+          "n": 115,
+          "intent": "Shipping/Delivery",
+          "replies": [
+            "Fast shipping 🚚\nDTF transfers are usually shipped within 1–2 business days after confirmation",
+            "👉 Answer:\nFast & reliable 🚚\n📦 Delivery: 4–6 business days\nWe start production right after confirmation!",
+            "👉 Answer:\nFast & reliable 🚚\n📦 Delivery: 4–6 business days\nWe start production right after confirmation!",
+            "Hi Anthony! Please let us know how we can help you.",
+            "👉 Answer:\nFast & reliable 🚚\n📦 Delivery: 4–6 business days\nWe start production right after confirmation!",
+            "Super easy 👇\nSend us your design (or idea), size & quantity\nWe’ll create your mockup + best price instantly 🔥"
+          ],
+          "best": "Fast & reliable 🚚  \n📦 Delivery usually takes 4–6 business days after we confirm your order! We start production right away!"
+        },
+        {
+          "q": "Cuánto costaría el envío hasta orlando florida ? Y que tiempo duraría para llegar aquí aproximadamente",
+          "n": 4,
+          "intent": "Shipping/Delivery",
+          "en": "How much would the shipping cost to Orlando, Florida? And how long would it take to arrive here approximately?",
+          "replies": [
+            "No, las 12 transferencias tienen un costo total de $35 USD más envío.\nSí, estas son transferencias DTF para camisetas.\nEl tamaño de cada transferencia sería aproximadamente 10.75\" x 12\" y puede elegir hasta 3 diseños diferentes dentro de las 12 unidades.\nSi desea una cantidad diferente o tamaños más pequeños, también podemos revisar otras opciones para ajustarnos a su presupuesto.",
+            "No, las 12 transferencias tienen un costo total de $35 USD más envío.\nSí, estas son transferencias DTF para camisetas.\nEl tamaño de cada transferencia sería aproximadamente 10.75\" x 12\" y puede elegir hasta 3 diseños diferentes dentro de las 12 unidades.\nSi desea una cantidad diferente o tamaños más pequeños, también podemos revisar otras opciones para ajustarnos a su presupuesto.",
+            "Cars"
+          ],
+          "best": "El costo del envío a Orlando, Florida, depende del método que elijas, pero generalmente ronda entre $10 y $15. El tiempo de entrega suele ser de 3 a 5 días hábiles. Si necesitas algo más específico, ¡dímelo!",
+          "best_en": "The shipping cost to Orlando, Florida, depends on the method you choose, but it generally ranges from $10 to $15. The delivery time is usually 3 to 5 business days. If you need something more specific, just let me know!"
+        },
+        {
+          "q": "How much shipping",
+          "n": 3,
+          "intent": "Shipping/Delivery",
+          "replies": [
+            "Can you please send us your shipping address so that we can give you price with shipping",
+            "So the designs you sent can you please tell us how much do you need each piece from teh quantity of 10?"
+          ],
+          "best": "Could you share your shipping address with me? That way, I can give you an accurate shipping cost!"
+        },
+        {
+          "q": "About how long a week 2weeks?",
+          "n": 3,
+          "intent": "Shipping/Delivery",
+          "replies": [
+            "We are planning to ship your order on Tuesday. The shipping method is standard shipping, which typically takes 4–5 business days for delivery after it has been shipped.",
+            "We are planning to ship your order on Tuesday. The shipping method is standard shipping, which typically takes 4–5 business days for delivery after it has been shipped.",
+            "And kindly please share your shipping address as well."
+          ],
+          "best": "It usually takes about 1-2 weeks for your order to be ready, plus shipping time. If you share your shipping address, I can give you a more accurate estimate!"
+        },
+        {
+          "q": "When will I get my order",
+          "n": 3,
+          "intent": "Shipping/Delivery",
+          "replies": [
+            "Our production time is 1–2 business days. Once production is complete, shipping takes approximately 4–5 business days",
+            "Our production time is 1–2 business days. Once production is complete, shipping takes approximately 4–5 business days",
+            "Our production time is 1–2 business days. Once production is complete, shipping takes approximately 4–5 business days"
+          ],
+          "best": "Our production time is 1–2 business days, and after that, shipping usually takes about 4–5 business days. So you should have your order pretty soon!"
+        },
+        {
+          "q": "Can't wait to receive them",
+          "n": 3,
+          "intent": "Shipping/Delivery",
+          "replies": [
+            "Absolutely! We take print quality very seriously. We’ll make sure your transfers are printed with vibrant colors, sharp details, and the best possible quality before they ship. We’ll inspect everything carefully during production. Thank you again for your order—we’ll keep you updated throughout the process!",
+            "You're welcome! Feel free to reach out if you have any other questions. 😊",
+            "You're welcome! Feel free to reach out if you have any other questions. 😊"
+          ],
+          "best": "We’re just as excited as you are! We’ll make sure everything looks perfect before it ships out. Thanks for choosing us! 😊"
+        },
+        {
+          "q": "Will I be alerted once it ships",
+          "n": 2,
+          "intent": "Shipping/Delivery",
+          "replies": [
+            "Yes once it is shipped we will send you the tracking no",
+            "can you pls share me your shipping address + zip code"
+          ],
+          "best": "Absolutely! Once your order ships, we’ll send you the tracking number so you can keep an eye on it. 😊"
+        },
+        {
+          "q": "How fast is delivery",
+          "n": 2,
+          "intent": "Shipping/Delivery",
+          "replies": [
+            "We also offer same-day shipping \n\nIf you place your order before 12 PM, we can have it printed and shipped out the same day \n\nThis helps you get your orders faster and keep things moving smoothl",
+            "Processing time is 1-2 , delivery option depend from standard 4-5 days to rush 1-2 days"
+          ],
+          "best": "We usually process orders in 1-2 days, and shipping can take anywhere from 4-5 days for standard delivery to just 1-2 days if you choose rush shipping. Let me know if you need it faster!"
+        },
+        {
+          "q": "How is it",
+          "n": 2,
+          "intent": "Shipping/Delivery",
+          "replies": [
+            "1000 inches is about 84 feet x 22\" width sheet"
+          ],
+          "best": "Hey there! It’s going great, thanks for asking! How about you? Need help with something specific?"
+        },
+        {
+          "q": "Yes....I am not clear on what you guys do; just provide the transfers?",
+          "n": 2,
+          "intent": "Shipping/Delivery",
+          "replies": [
+            "Yes, that’s correct! We specialize in high-quality DTF transfers. You simply send us your artwork, and we print the transfers and ship them to you. Once you receive them, you can heat press them onto your shirts or other garments yourself."
+          ],
+          "best": "Yes, you got it! We create high-quality DTF transfers for you. Just send us your artwork, and we’ll print and ship the transfers, so you can easily heat press them onto your garments."
+        }
+      ]
+    },
+    {
+      "intent": "Pricing",
+      "total": 217,
+      "questions": [
+        {
+          "q": "How much",
+          "n": 50,
+          "intent": "Pricing",
+          "replies": [
+            "How many pcs do you need",
+            "We offer per feet $5",
+            "$30 plus shipping",
+            "Need your address",
+            "10 transfers of size 15 x 10.6 , the price will be $ 35 for 10 transfers plus shipping $15 the total will be $50",
+            "Yes but just iron will work"
+          ],
+          "best": "Hey there! Could you let me know how many pieces you need? That way, I can give you the best price!"
+        },
+        {
+          "q": "Is your 1000 inches + 100 inches FREE offer available?",
+          "n": 29,
+          "intent": "Pricing",
+          "replies": [
+            "Charlene Hardy replied to an ad.",
+            "Yes 🎉\nOur Buy 1000 inches & Get 100 inches FREE offer is currently available ✅\nPlus free design assistance for bulk orders 🔥",
+            "Yes 🎉\nOur Buy 1000 inches & Get 100 inches FREE offer is currently available ✅\nPlus free design assistance for bulk orders 🔥",
+            "Hi Jerry! Please let us know how we can help you.",
+            "Yes",
+            "Yes 🎉\nOur Buy 1000 inches & Get 100 inches FREE offer is currently available ✅\nPlus free design assistance for bulk orders 🔥"
+          ],
+          "best": "Yes! 🎉 Our Buy 1000 inches & Get 100 inches FREE offer is available right now. Plus, we offer free design assistance for bulk orders! Let me know if you have any questions!"
+        },
+        {
+          "q": "How much does it cost for a design",
+          "n": 14,
+          "intent": "Pricing",
+          "replies": [
+            "Delia McRae replied to an ad.",
+            "Delia McRae replied to an ad.",
+            "Delia McRae replied to an ad."
+          ],
+          "best": "Hey there! The cost for a custom design starts at $25, but it can vary based on complexity. Let me know what you have in mind, and I can give you a more accurate quote!"
+        },
+        {
+          "q": "What’s the prices for a bulk of 50 prints",
+          "n": 9,
+          "intent": "Pricing",
+          "replies": [
+            "Can you pls share the design / artwork and it's size , so i can calculate the best quote for you",
+            "Can you pls share the design / artwork and it's size , so i can calculate the best quote for you",
+            "Christy Charming Smith replied to an ad.",
+            "Christy Charming Smith replied to an ad.",
+            "Christy Charming Smith replied to an ad.",
+            "Christy Charming Smith replied to an ad."
+          ],
+          "best": "Could you share the design or artwork and its size? That way, I can give you the best quote for your bulk order of 50 prints!"
+        },
+        {
+          "q": "Ok Monday -Friday ? Is there different times dor the weekend \nWhat are your business hours and days",
+          "n": 8,
+          "intent": "Pricing",
+          "replies": [
+            "Our printshop is open saturdays also , however sunday is off",
+            "Our printshop is open saturdays also , however sunday is off",
+            "Appreciate to know if you are interested in DTF transfers /gangsheets",
+            "Our printship timing are -9-6 pm",
+            "Our printshop is open saturdays also , however sunday is off",
+            "Our printship timing are -9-6 pm"
+          ],
+          "best": "Our printshop is open Monday to Friday from 9 AM to 6 PM, and we’re also open on Saturdays, but we take Sundays off. Let me know if you have any other questions!"
+        },
+        {
+          "q": "How much is it",
+          "n": 8,
+          "intent": "Pricing",
+          "replies": [
+            "Hi Matthew! Please let us know how we can help you.",
+            "Hi Matthew! Please let us know how we can help you.",
+            "Its $25 + shipping",
+            "It depends on qty of transfer of its sizes",
+            "So you need printed t-shirt not DTF transfers"
+          ],
+          "best": "Hey there! The price depends on the quantity and sizes you need, but our DTF transfers start at $25 plus shipping. Let me know what you're looking for, and I can help you out!"
+        },
+        {
+          "q": "Why would I pay General",
+          "n": 8,
+          "intent": "Pricing",
+          "replies": [
+            "Pls share your zip code",
+            "Pls share your zip code",
+            "Pls share your zip code",
+            "It’s $8 for ups ground",
+            "Yes that’s fine",
+            "It’s $8 for ups ground"
+          ],
+          "best": "Could you share your zip code? That way, I can help you with shipping options and costs!"
+        },
+        {
+          "q": "Any word?",
+          "n": 7,
+          "intent": "Pricing",
+          "replies": [
+            "Hey Fred,\n\nWe have started working on your order, and it is currently in our production queue. We will keep you updated throughout each stage of the process and notify you as soon as there are any updates.",
+            "Hi Fred,\n\nYour order has been shipped via UPS.\n\nTracking ID: 1Z2B14J80323473761\n\nYou can use this tracking number to monitor your shipment’s progress. Please let us know if you have any questions.\n\nThank you!",
+            "Hey Fred,\n\nWe have started working on your order, and it is currently in our production queue. We will keep you updated throughout each stage of the process and notify you as soon as there are any updates.",
+            "Hi Fred,\n\nYour order has been shipped via UPS.\n\nTracking ID: 1Z2B14J80323473761\n\nYou can use this tracking number to monitor your shipment’s progress. Please let us know if you have any questions.\n\nThank you!",
+            "That’s what it is supposed to be . We will do the follow up tomorrow early morning and will let you know",
+            "Hi Fred,\n\nYour order has been shipped via UPS.\n\nTracking ID: 1Z2B14J80323473761\n\nYou can use this tracking number to monitor your shipment’s progress. Please let us know if you have any questions.\n\nThank you!"
+          ],
+          "best": "Hey there! Just wanted to let you know that we’ve started working on your order and it’s in our production queue. I’ll keep you posted with any updates as we go along!"
+        },
+        {
+          "q": "Which one bigger?",
+          "n": 6,
+          "intent": "Pricing",
+          "replies": [
+            "Design size is W14\" x H14.8\" and t shirt size is Large",
+            "If amazon is offering transfers for next day guaranted , and economical also. it's better option i think",
+            "What size do you finalize?"
+          ],
+          "best": "Could you clarify what you're comparing? If it's about our designs or shirt sizes, I can help with that!"
+        },
+        {
+          "q": "What’s would be the total cost of the quote",
+          "n": 6,
+          "intent": "Pricing",
+          "replies": [
+            "I will work out on all the sizes for how to fit them in a gangsheet and  to give you the best quote",
+            "I will work out on all the sizes for how to fit them in a gangsheet and  to give you the best quote",
+            "I will work out on all the sizes for how to fit them in a gangsheet and  to give you the best quote",
+            "No problem! Take your time with the final draft. We’ll be here when you’re ready. Have a great weekend.",
+            "This is our website"
+          ],
+          "best": "Sure thing! I’ll need a bit more info about the sizes and quantities to give you the best quote. Just let me know, and I’ll get right on it!"
+        },
+        {
+          "q": "How much is shipping",
+          "n": 6,
+          "intent": "Pricing",
+          "replies": [
+            "can you pls your address so we can calculate your shipping charges",
+            "ok sounds great.",
+            "Hey! 😊\n\n\n\nMinimum order: For DTF transfers, there’s no minimum — you can order even a single transfer 👍\n\nShipping time: It usually takes 4 to 5 business days, depending on your location\n\nShipping cost: Shipping also depends on your location",
+            "let me check"
+          ],
+          "best": "Hey there! 😊 Shipping costs depend on your location, so if you share your address, I can help you calculate it!"
+        },
+        {
+          "q": "What's my total cost?",
+          "n": 5,
+          "intent": "Pricing",
+          "replies": [
+            "Cortney Blair replied to an ad.",
+            "Pls share your designs and we will guide you further how many transfers you will get in our minimum size of sheet.",
+            "We charge $5 per feet of thr gangsheet (22” width)",
+            "We charge $5 per feet of thr gangsheet (22” width)"
+          ],
+          "best": "Hey there! To give you an accurate total cost, I’ll need to see your designs and how many transfers you’re looking for. Our gangsheet is $5 per foot at a width of 22”. Just send over what you have, and I’ll help you figure it out!"
+        },
+        {
+          "q": "What's the price per inch?",
+          "n": 4,
+          "intent": "Pricing",
+          "replies": [
+            "Our gangsheet price is $5 per feet which means 12”x 22” of sheet size",
+            "We have price per ft"
+          ],
+          "best": "Our gangsheet price is $5 per foot, which gives you a sheet size of 12”x 22”. If you have any specific designs or sizes in mind, just let me know!"
+        },
+        {
+          "q": "How much is it if you didn’t do it?",
+          "n": 4,
+          "intent": "Pricing",
+          "replies": [
+            "You mean DTF transfers  only ?",
+            "and then go for the rest",
+            "and then go for the rest",
+            "I will discuss with the management about giving further discount of $0.50 per pcs ,and let you know"
+          ],
+          "best": "Are you asking about just the DTF transfers without the apparel? If so, I can help with that!"
+        },
+        {
+          "q": "what are the prices",
+          "n": 3,
+          "intent": "Pricing",
+          "replies": [
+            "How many transfers do you and what are the sizes"
+          ],
+          "best": "Hey there! Our DTF transfers start at $1.50 each, but it depends on the size and quantity you need. Just let me know what you're thinking, and I can give you a more specific quote!"
+        },
+        {
+          "q": "Yes, that's great! How much are we looking at with 3 of the 3x regular and 3 of these?",
+          "n": 3,
+          "intent": "Pricing",
+          "replies": [
+            "It will cost $15 x 6 =$90.00 + $15 for shipping \nTotal amount = $105 including shipping",
+            "Design size is W9.8/H14 and tanktop size is Large"
+          ],
+          "best": "For 3 of the 3x regular and 3 of the other items, it’ll be $15 each, so that’s $90 total. Plus, shipping is $15, bringing your total to $105. Let me know if you need anything else!"
+        },
+        {
+          "q": "much is the sheet?If I get ten",
+          "n": 3,
+          "intent": "Pricing",
+          "replies": [
+            "For a sheet of 10 designs total will be $25 + shipping",
+            "Michelle missed your call."
+          ],
+          "best": "A sheet with 10 designs will be $25 plus shipping. Let me know if you have any other questions!"
+        },
+        {
+          "q": "NOT sure yet, how much are they?",
+          "n": 3,
+          "intent": "Pricing",
+          "replies": [
+            "let me send you first a couple of mock-ups so you should select the size and then I'll give you the quote",
+            "let me send you first a couple of mock-ups so you should select the size and then I'll give you the quote",
+            "let me send you first a couple of mock-ups so you should select the size and then I'll give you the quote"
+          ],
+          "best": "No problem at all! Let me whip up a couple of mock-ups for you so you can pick the size, and then I’ll get you a quote."
+        },
+        {
+          "q": "Tienen algún número de telefono y como seria para el pago y enviar algunas de las imagenes que me gustaria empezar",
+          "n": 3,
+          "intent": "Pricing",
+          "en": "Do you have a phone number and how would the payment work? I would like to send some images that I would like to start with.",
+          "replies": [],
+          "best": "¡Hola! Claro, puedes llamarnos al [número de teléfono] para cualquier consulta. Para el pago, aceptamos varias opciones y puedes enviarnos tus imágenes por correo o mensaje directo. ¡Estamos aquí para ayudarte a empezar!",
+          "best_en": "Hello! Of course, you can call us at [phone number] for any inquiries. For payment, we accept various options, and you can send us your images via email or direct message. We're here to help you get started!"
+        },
+        {
+          "q": "How much for a print",
+          "n": 3,
+          "intent": "Pricing",
+          "replies": [
+            "per ft $5 in which two designs can be fit",
+            "Hi Taletha! Please let us know how we can help you."
+          ],
+          "best": "Hey there! Our DTF prints are $5 per foot, and you can fit two designs in that space. Let me know if you need help with anything else!"
+        },
+        {
+          "q": "how much for medium and large!?",
+          "n": 3,
+          "intent": "Pricing",
+          "replies": [
+            "it depends on the artwork size,  for a reference 10.75 x 11.50 inches will cost $2.50 per transfer",
+            "Our  custom design services are free with the orders",
+            "Our  custom design services are free with the orders"
+          ],
+          "best": "It depends on the artwork size, but for a reference of 10.75 x 11.50 inches, it’s $2.50 per transfer. Let me know if you have a specific design in mind!"
+        },
+        {
+          "q": "How much is the difference in pricing?",
+          "n": 3,
+          "intent": "Pricing",
+          "replies": [
+            "It will cost $55   (instead of $50) for 16 transfers + shpping",
+            "We offer Zelle, Paypal, Venmo, stripe, bank transfer and cashapp. Which payment method would you like to choose"
+          ],
+          "best": "Could you clarify what you're comparing? I’d be happy to help you with the pricing details!"
+        },
+        {
+          "q": "So how's my design?",
+          "n": 3,
+          "intent": "Pricing",
+          "replies": [],
+          "best": "Hey! Your design is looking great! I can’t wait to see it come to life on the apparel. Let me know if you need any tweaks or have questions!"
+        },
+        {
+          "q": "How much you charge for the whole t shirts with the transfer",
+          "n": 3,
+          "intent": "Pricing",
+          "replies": [
+            "Well yes transfer would be more cheaper and cost efficient"
+          ],
+          "best": "Hey there! The price for a t-shirt with a DTF transfer starts at around $15, but it can vary based on the design and quantity. Let me know what you have in mind, and I can give you a more accurate quote!"
+        },
+        {
+          "q": "Total amount?",
+          "n": 3,
+          "intent": "Pricing",
+          "replies": [
+            "https://share.google/images/ACzSPDzSG5TjW4shD\n\nfor this link",
+            "Could you please share this again because when we are opening this link the url is not valid",
+            "Could you please share this again because when we are opening this link the url is not valid"
+          ],
+          "best": "Hey there! It looks like the link isn’t working for you. Could you let me know what you’re looking for, and I’ll get you the total amount right away? 😊"
+        },
+        {
+          "q": "What's the total price?",
+          "n": 3,
+          "intent": "Pricing",
+          "replies": [
+            "Every design do you need on LARGE SIZE?"
+          ],
+          "best": "Could you let me know what you’re looking to order and the sizes? That way, I can give you the total price!"
+        },
+        {
+          "q": "And if so how much will it be?",
+          "n": 3,
+          "intent": "Pricing",
+          "replies": [
+            "Will check tomorrow",
+            "How many pcs of hat do you need at a time",
+            "Ok"
+          ],
+          "best": "Could you let me know how many pieces you’re looking to order? That way, I can give you the best price!"
+        },
+        {
+          "q": "How hard would it be to add the TM trademark symbol? My goal is to trademark and sell my designs.",
+          "n": 2,
+          "intent": "Pricing",
+          "replies": [
+            "Yes, absolutely! If you'd like to add the ™ symbol to your design, we can do that for you. Just let us know where you'd like it placed, and we'll update the artwork accordingly.",
+            "Yes, absolutely! If you'd like to add the ™ symbol to your design, we can do that for you. Just let us know where you'd like it placed, and we'll update the artwork accordingly."
+          ],
+          "best": "Of course! We can definitely add the ™ symbol to your design. Just let us know where you want it, and we'll take care of the rest!"
+        },
+        {
+          "q": "Excuse me? Is that the time or you're saying the cost?",
+          "n": 2,
+          "intent": "Pricing",
+          "replies": [
+            "Time",
+            "Time"
+          ],
+          "best": "That's the time! Let me know if you need any more info about our prices. 😊"
+        },
+        {
+          "q": "How much are they",
+          "n": 2,
+          "intent": "Pricing",
+          "replies": [
+            "Depends on the order size price varies",
+            "Are you asking about the price?"
+          ],
+          "best": "It depends on what you're looking to order! If you have a specific item or quantity in mind, I can give you a better idea of the price. 😊"
+        },
+        {
+          "q": "Cost?",
+          "n": 2,
+          "intent": "Pricing",
+          "replies": [
+            "Valuable customer can you please provide me your shipping address so that I can give you full quote",
+            "Shipment Charges $15 , you can transfer when it's convenient",
+            "Valuable customer do you have any design to print?",
+            "Our minimum order is $25, which is approximately 60 inches of DTF transfers. If you're unsure about sizing, send us your artwork and we'll help you calculate the required inches."
+          ],
+          "best": "Hey there! Our minimum order is $25, which usually gets you around 60 inches of DTF transfers. If you have a design in mind, feel free to share it, and I can help you figure out the details!"
+        },
+        {
+          "q": "What's your website",
+          "n": 2,
+          "intent": "Pricing",
+          "replies": [
+            "Our website is decoinks.com"
+          ],
+          "best": "You can check us out at decoinks.com! Let me know if you have any questions while you’re there."
+        },
+        {
+          "q": "Machine wash safe?",
+          "n": 2,
+          "intent": "Pricing",
+          "replies": [
+            "DTF printing is durable for more than 20 washes",
+            "Our DTF transfers are machine-wash safe. They offer excellent durability and can withstand repeated washing without cracking or peeling."
+          ],
+          "best": "Yes, our DTF transfers are definitely machine wash safe! They’re super durable and can handle more than 20 washes without cracking or peeling."
+        },
+        {
+          "q": "How much does shipping normally cost.",
+          "n": 2,
+          "intent": "Pricing",
+          "replies": [
+            "$15 around",
+            "$15 around"
+          ],
+          "best": "Shipping usually runs around $15. Let me know if you have any other questions!"
+        }
+      ]
+    },
+    {
+      "intent": "Product Info",
+      "total": 211,
+      "questions": [
+        {
+          "q": "What do I get with the 1000-inch bulk offer?",
+          "n": 156,
+          "intent": "Product Info",
+          "replies": [
+            "Production takes 1–2 business days, with standard shipping taking 2–5 business days within the USA. Rush production and expedited shipping are also available for urgent orders.",
+            "Hi Mary! We wanted to follow up. Do you have any questions?",
+            "Buy 1000 inches, get 100 inches FREE, plus enjoy an extra 10% OFF your order!",
+            "Buy 1000 inches, get 100 inches FREE, plus enjoy an extra 10% OFF your order!",
+            "How many transfers and designs you want to print ?",
+            "Hi Tonisa! Please let us know how we can help you."
+          ],
+          "best": "Hey there! With the 1000-inch bulk offer, you get 100 inches FREE and an extra 10% OFF your order. It's a great way to stock up! Let me know if you have any other questions!"
+        },
+        {
+          "q": "Will the black ground be  clear?",
+          "n": 9,
+          "intent": "Product Info",
+          "replies": [
+            "Can you do Paypal, zelle or bank transfer?",
+            "Sorry there was a mistake the total quote is $40 for 10 designs with shipping",
+            "Last time we gave you the quote.",
+            "Can you do Paypal, zelle or bank transfer?"
+          ],
+          "best": "The black ground will not be clear; it will be a solid black. If you have any other questions, feel free to ask!"
+        },
+        {
+          "q": "Que precio tienen las láminas",
+          "n": 7,
+          "intent": "Product Info",
+          "en": "What is the price of the sheets?",
+          "replies": [
+            "Ninive Garcia replied to an ad."
+          ],
+          "best": "¡Hola! Las láminas DTF están a $5 cada una. Si necesitas más información o tienes alguna pregunta, ¡aquí estoy para ayudarte!",
+          "best_en": "Hello! The DTF sheets are $5 each. If you need more information or have any questions, I'm here to help!"
+        },
+        {
+          "q": "What time Thursday let me know if you could find out",
+          "n": 6,
+          "intent": "Product Info",
+          "replies": [
+            "There is no further update by the UPS about the  status .",
+            "There is no further update by the UPS about the  status .",
+            "We expedited your production and had shipped earlier than scheduled",
+            "You can also call and check with UPS with the tracking number",
+            "You can also call and check with UPS with the tracking number"
+          ],
+          "best": "I’ll check on that for you and let you know as soon as I can!"
+        },
+        {
+          "q": "Okay,  thank you. And what about PJ pants?",
+          "n": 6,
+          "intent": "Product Info",
+          "replies": [
+            "I have to check the rates",
+            "What is the quantity do you want for PJ  Pants",
+            "I will first show you the mock-up on the L black hoodies wifh multiple logo sizes",
+            "Design size is 10.7 x 10.6 and t shirt size is large"
+          ],
+          "best": "What quantity are you thinking for the PJ pants? I’d love to help you get that sorted!"
+        },
+        {
+          "q": "Hay eso es muy bueno, sii claro que si con gusto aceptaría. Muy agradecida",
+          "n": 5,
+          "intent": "Product Info",
+          "en": "Hey, that's really good! Yes, of course, I would gladly accept. I'm very grateful.",
+          "replies": [
+            "Valoramos mucho su apoyo y sus recomendaciones. Por favor, comparta también nuestro sitio web y correo electrónico con cualquier persona que pueda estar interesada:\n\nSitio web: [www.decoinks.com](http://www.decoinks.com)\n\nCorreo electrónico: [info@decoinks.com](mailto:info@decoinks.com)",
+            "If you’re happy with it, we’d really appreciate it if you could leave us a review on our page ⭐\nThank you for choosing Decoinks!"
+          ],
+          "best": "¡Nos alegra mucho que estés contenta! Si puedes, comparte nuestra página y correo con tus amigos, eso nos ayudaría un montón. ¡Gracias por tu apoyo!",
+          "best_en": "We're really glad to hear you're happy! If you can, please share our page and email with your friends; that would help us a lot. Thank you for your support!"
+        },
+        {
+          "q": "Do you recommend hot or cool peel?",
+          "n": 3,
+          "intent": "Product Info",
+          "replies": [
+            "Depends",
+            "Not DTF transfers ?"
+          ],
+          "best": "It really depends on the fabric and the look you’re going for! For most DTF transfers, a cool peel is usually recommended for the best finish. Let me know if you have more questions!"
+        },
+        {
+          "q": "Estan en Colorado?",
+          "n": 3,
+          "intent": "Product Info",
+          "en": "Are you in Colorado?",
+          "replies": [
+            "Estamos en **Corona, California**. Hacemos envíos a todo el país.",
+            "Estamos en **Corona, California**. Hacemos envíos a todo el país."
+          ],
+          "best": "Estamos en **Corona, California**, pero hacemos envíos a todo el país. ¡Aquí para ayudarte!",
+          "best_en": "We are located in **Corona, California**, but we ship nationwide. Here to help you!"
+        },
+        {
+          "q": "What's that?",
+          "n": 2,
+          "intent": "Product Info",
+          "replies": [
+            "We gave you 24 flags design extra",
+            "Design on t-shirts with suggested changes"
+          ],
+          "best": "Hey there! That’s our custom apparel and DTF transfer print service—basically, we help you create awesome designs on shirts and other items. Let me know if you have something specific in mind!"
+        },
+        {
+          "q": "What do you have for aunties and uncles and maybe grandma",
+          "n": 2,
+          "intent": "Product Info",
+          "replies": [
+            "I will send some designs tomorrow morning"
+          ],
+          "best": "I’d love to help with that! We have some cute designs for aunties, uncles, and grandmas. I can send you some options tomorrow morning!"
+        },
+        {
+          "q": "Do you do hats also?",
+          "n": 2,
+          "intent": "Product Info",
+          "replies": [
+            "We can",
+            "What kind of hats are you referring to?"
+          ],
+          "best": "Absolutely, we can do hats! What type of hats are you looking to customize?"
+        },
+        {
+          "q": "Can you tell me the font of the last names?",
+          "n": 2,
+          "intent": "Product Info",
+          "replies": [
+            "I can completely understand valuable customer but the reason we are here is to provide the service I need you to rest while we manage your orders"
+          ],
+          "best": "Hey there! I’d be happy to help with that. Could you let me know which design or order you’re referring to?"
+        },
+        {
+          "q": "Can I see what they look like in a cap the small one",
+          "n": 2,
+          "intent": "Product Info",
+          "replies": [
+            "sure i wi'll ask the design team for that"
+          ],
+          "best": "Absolutely! I’ll get in touch with our design team and see if they can whip up a mockup for you. Hang tight!"
+        },
+        {
+          "q": "So explain to me how do I send you the image?",
+          "n": 2,
+          "intent": "Product Info",
+          "replies": [],
+          "best": "You can easily upload your image directly on our website when you place your order, or you can email it to us at info@decoinks.com. Just make sure it’s a high-quality file, and we’ll take care of the rest!"
+        },
+        {
+          "q": "How would I go by sending you a picture",
+          "n": 2,
+          "intent": "Product Info",
+          "replies": [
+            "pls send me pictures here"
+          ],
+          "best": "You can just send the picture right here in the chat! I’ll be able to help you from there. 😊"
+        },
+        {
+          "q": "Can u do business cards to",
+          "n": 2,
+          "intent": "Product Info",
+          "replies": [
+            "Yes I can"
+          ],
+          "best": "We don't do business cards, but we can definitely help you with custom apparel and DTF transfers! Let me know if you're interested in those!"
+        }
+      ]
+    },
+    {
+      "intent": "Artwork/Design",
+      "total": 194,
+      "questions": [
+        {
+          "q": "Do you offer custom design services?",
+          "n": 133,
+          "intent": "Artwork/Design",
+          "replies": [
+            "Hi Sonya! Please let us know how we can help you.",
+            "Yes we do",
+            "Yes we do please tell us what type of design you want me to make",
+            "Yes we do offer design services",
+            "Yes",
+            "Lucky AinGoin replied to an ad."
+          ],
+          "best": "Absolutely, we offer custom design services! Just let me know what you have in mind, and we can get started!"
+        },
+        {
+          "q": "How can I send you the image",
+          "n": 9,
+          "intent": "Artwork/Design",
+          "replies": [
+            "Production takes 1–2 business days, with standard shipping taking 2–5 business days within the USA. Rush production and expedited shipping are also available for urgent orders.",
+            "Our designers will get it ready for DTF printing to modify for DTF Printing , once you approve the size",
+            "Our custom design services are free with the order",
+            "Hey, hope you are doing well."
+          ],
+          "best": "Hey there! You can send your image directly through this chat or email it to us at info@decoinks.com. Just let me know if you need any help with the file!"
+        },
+        {
+          "q": "Where do u want me to send the design",
+          "n": 5,
+          "intent": "Artwork/Design",
+          "replies": [
+            "You can send them here"
+          ],
+          "best": "You can send the design right here! Looking forward to seeing it!"
+        },
+        {
+          "q": "Which do you prefer file like jpeg png etc??  I think four or three lost files old laptop broke and still have those pictures   Still show jpeg ??   Curious $?",
+          "n": 5,
+          "intent": "Artwork/Design",
+          "replies": [
+            "Hi November! Please let us know how we can help you.",
+            "If you have png files it’s better otherwise we will make it",
+            "Do you have lost file images whether not in png but in jpeg?"
+          ],
+          "best": "Hey there! If you have JPEG files, we can definitely work with those, but PNGs are preferred for the best quality. Feel free to send what you have, and we’ll make it work! 😊"
+        },
+        {
+          "q": "Podría enviarme diseños para así poder escoger?",
+          "n": 4,
+          "intent": "Artwork/Design",
+          "en": "Could you send me some designs so I can choose?",
+          "replies": [
+            "¿Usted vende estas camisetas a sus clientes?\nSi es así, ¿las vende ya estampadas o aplica las transferencias DTF cuando recibe los pedidos?",
+            "¿Usted vende estas camisetas a sus clientes?\nSi es así, ¿las vende ya estampadas o aplica las transferencias DTF cuando recibe los pedidos?",
+            "Le enviaré los diseños hoy.",
+            "¿Usted vende estas camisetas a sus clientes?\nSi es así, ¿las vende ya estampadas o aplica las transferencias DTF cuando recibe los pedidos?"
+          ],
+          "best": "Claro, puedo enviarte algunos diseños para que elijas. Te los mando en un momento.",
+          "best_en": "Sure, I can send you some designs for you to choose from. I'll send them to you shortly."
+        },
+        {
+          "q": "Can you send me the design on a white background?",
+          "n": 4,
+          "intent": "Artwork/Design",
+          "replies": [
+            "Valuable customer I have already given you a lot of mockups. Please tell me are you interested in ordering"
+          ],
+          "best": "I can definitely help with that! Just let me know if you’re ready to place your order, and I’ll get the design sent over on a white background for you."
+        },
+        {
+          "q": "What address is is being shipped too",
+          "n": 3,
+          "intent": "Artwork/Design",
+          "replies": [
+            "7121 Bramblewood dr\r\nPort Richey fl 34668\n\nOn this address",
+            "Yes"
+          ],
+          "best": "Your order is being shipped to 7121 Bramblewood Dr, Port Richey, FL 34668. Let me know if you need anything else!"
+        },
+        {
+          "q": "How much for the chest only",
+          "n": 3,
+          "intent": "Artwork/Design",
+          "replies": [
+            "Our minimum sheet size is 60\" x 22\"",
+            "68 pcs of front logo in $25",
+            "I'll ask the designer to calculate the length it would need for 50 each"
+          ],
+          "best": "For a chest print, our minimum sheet size is 60\" x 22\", and for 68 pieces of a front logo, it would be $25. Let me know how many you need, and I can help you with the details!"
+        },
+        {
+          "q": "Can I use my iron ?",
+          "n": 3,
+          "intent": "Artwork/Design",
+          "replies": [
+            "yes",
+            "Sending you multiple designs for kids in a while thank you",
+            "Sending you multiple designs for kids in a while thank you"
+          ],
+          "best": "Yes, you can definitely use your iron! Just make sure to follow the heat settings for the best results. 😊"
+        },
+        {
+          "q": "What kind of transfer are. I’m new in this. It’s for clothing",
+          "n": 3,
+          "intent": "Artwork/Design",
+          "replies": [
+            "yes , usually used for t-shirt , hoodies etc"
+          ],
+          "best": "Hey there! We offer DTF transfers, which are perfect for clothing like t-shirts and hoodies. They give you vibrant colors and great durability! Let me know if you have any other questions!"
+        },
+        {
+          "q": "how are you",
+          "n": 3,
+          "intent": "Artwork/Design",
+          "replies": [
+            "f9 n u?",
+            "I am fine"
+          ],
+          "best": "I’m doing great, thanks for asking! How about you?"
+        },
+        {
+          "q": "Can i download it to show group",
+          "n": 3,
+          "intent": "Artwork/Design",
+          "replies": [
+            "Wait"
+          ],
+          "best": "Absolutely! Once your design is ready, we can send you a downloadable file so you can easily share it with your group. Just let me know when you’re ready!"
+        },
+        {
+          "q": "Are you able to send me pictures of the shirts on models that I can use to build my website?",
+          "n": 3,
+          "intent": "Artwork/Design",
+          "replies": [
+            "Yeah will send you in morning.",
+            "Yeah will send you in morning."
+          ],
+          "best": "Absolutely, I can send those over to you! I'll get them to you by tomorrow morning."
+        },
+        {
+          "q": "Can I see again what the finished product looks like",
+          "n": 3,
+          "intent": "Artwork/Design",
+          "replies": [
+            "Will send you mockup in the morning.",
+            "Do you have any placement that where do you want to place this logo on t shirt"
+          ],
+          "best": "I can definitely send you a mockup of the finished product! Just let me know if you have any specific placement in mind for the design."
+        },
+        {
+          "q": "Can you send me the desigh on a white background",
+          "n": 2,
+          "intent": "Artwork/Design",
+          "replies": [],
+          "best": "Absolutely! I can send you the design on a white background. Just let me know if you need any adjustments or if there's anything else I can help with!"
+        },
+        {
+          "q": "How does this work",
+          "n": 2,
+          "intent": "Artwork/Design",
+          "replies": [
+            "How many transfers and designs you want to print ?",
+            "Buy 1000 inches, get 100 inches FREE, plus enjoy an extra 10% OFF your order!"
+          ],
+          "best": "Hey there! Just let me know how many transfers and designs you’re looking to print, and I can help you with the details. Also, don’t forget about our awesome deal: buy 1000 inches, get 100 inches FREE, plus an extra 10% OFF!"
+        },
+        {
+          "q": "What would it cost me to get additional 15  mediums done?",
+          "n": 2,
+          "intent": "Artwork/Design",
+          "replies": [
+            "For 15 transfers of medium the price will be $55 + $15 (Shipping)",
+            "https://www.ups.com/track?loc=en_US&requester=ST/\n\nYou can go to the website I have given. You can track yuor package there"
+          ],
+          "best": "For 15 medium transfers, it would be $55 plus $15 for shipping, so a total of $70. Let me know if you’d like to place the order!"
+        },
+        {
+          "q": "Did you receive it",
+          "n": 2,
+          "intent": "Artwork/Design",
+          "replies": [
+            "Yes we received your payment.",
+            "Yes once it is shipped we will send you the tracking no"
+          ],
+          "best": "Yes, we received it! If you have any other questions or need updates, just let me know."
+        },
+        {
+          "q": "How we looking",
+          "n": 2,
+          "intent": "Artwork/Design",
+          "replies": [
+            "just to confirm, would you like us to print this as DTF transfers?"
+          ],
+          "best": "Hey there! Just checking in—are you looking for DTF transfers for your design? Let me know how I can help!"
+        }
+      ]
+    },
+    {
+      "intent": "Greeting/Other",
+      "total": 101,
+      "questions": [
+        {
+          "q": "I don’t know?",
+          "n": 11,
+          "intent": "Greeting/Other",
+          "replies": [
+            "What do you put it on ?",
+            "Currently we we doing DTF only. However if need assistance in designing I can help it out free or cost",
+            "For stickers designing",
+            "For stickers designing",
+            "You mean uv DTF , right ?",
+            "Currently we we doing DTF only. However if need assistance in designing I can help it out free or cost"
+          ],
+          "best": "No worries! Just let me know what you're thinking about, and I can help you figure it out. Are you looking for something specific to print on?"
+        },
+        {
+          "q": "How fast is your turnaround time?",
+          "n": 7,
+          "intent": "Greeting/Other",
+          "replies": [
+            "We offer 24-hour production ⚡\nShipping usually takes 3–4 business days in the USA\nFast, reliable, and on time 💯",
+            "Valuable customer it depends on you how much fast you want we can do it for you",
+            "Pricing depends on your design size & quantity 👍\nRight now we have a special offer:\n🔥 Buy 1000 inches & get 100 inches FREE\nSend me your design + size + quantity and I’ll give you your exact quote right away",
+            "Hi Jazmine! Please let us know how we can help you.",
+            "We offer 24-hour production ⚡\nShipping usually takes 3–4 business days in the USA\nFast, reliable, and on time 💯",
+            "We offer 24-hour production ⚡\nShipping usually takes 3–4 business days in the USA\nFast, reliable, and on time 💯"
+          ],
+          "best": "We offer a super quick 24-hour production time! 🚀 Shipping usually takes about 3–4 business days in the USA. Let me know if you have any other questions!"
+        },
+        {
+          "q": "This one for sure w lighter colors like the second picture \nN do u receive cash app??????",
+          "n": 5,
+          "intent": "Greeting/Other",
+          "replies": [
+            "Yes the background will be clear",
+            "You are responding to a user comment to a post on your Page. View comment.(https://facebook.com/61578861362859/posts/pfbid0hDeA7F2UHpPSLtwSRiBNjQvtJRkDvsuRaPEy7tchT64JqwikYQ3AtHKp1R5A9PTpl/?comment_id=1539606051031582)",
+            "Ok we give you Cash App option"
+          ],
+          "best": "Yes, we can definitely do that with lighter colors! And yes, we do accept Cash App. 😊"
+        },
+        {
+          "q": "Pero seguramente eso tiene otro costo si tienes que hacer  2 diferentes no? Letras blancas y letras negras ?",
+          "n": 5,
+          "intent": "Greeting/Other",
+          "en": "But that surely has another cost if you have to do 2 different ones, right? White letters and black letters?",
+          "replies": [
+            "He enviado ambas versiones únicamente como ejemplos para que pueda ver diferentes estilos y opciones. Si tiene alguna idea específica o desea algún cambio, podemos personalizar el diseño según sus necesidades."
+          ],
+          "best": "Exacto, si necesitas dos versiones diferentes con letras blancas y negras, eso podría tener un costo adicional. Pero no te preocupes, estoy aquí para ayudarte a encontrar la mejor opción para tu diseño. ¡Cuéntame más sobre lo que tienes en mente!",
+          "best_en": "Exactly, if you need two different versions with white and black text, there might be an additional cost. But don’t worry, I'm here to help you find the best option for your design. Tell me more about what you have in mind!"
+        },
+        {
+          "q": "How do I make the payment",
+          "n": 5,
+          "intent": "Greeting/Other",
+          "replies": [
+            "you wanna do with card?",
+            "you wanna do with card?",
+            "Ok no issues",
+            "Your total is $90 including shipping",
+            "Ok great."
+          ],
+          "best": "You can pay with a card if that works for you! Just let me know, and I can help you get that set up."
+        },
+        {
+          "q": "What does it cost for 1000 inches",
+          "n": 5,
+          "intent": "Greeting/Other",
+          "replies": [
+            "1000 inches means 84 feet",
+            "We have even better deals for regular customers",
+            "Share your designs and we'll assist you further for the best deals and offers",
+            "1000 inches means 84 feet"
+          ],
+          "best": "1000 inches is about 84 feet! If you share your designs with me, I can help you find the best deal for your needs."
+        },
+        {
+          "q": "Y cuál es el precio?",
+          "n": 5,
+          "intent": "Greeting/Other",
+          "en": "And what is the price?",
+          "replies": [
+            "Entiendo que desea pedir 3 camisetas con diseños personalizados, ¿correcto? Por favor, confírmenos las tallas y los colores de las camisetas que necesita.",
+            "Perfecto. Podemos hacer dos camisetas de cada foto que nos envíe. Nuestro equipo de diseño aislará únicamente el gato y añadirá el nombre \"Sylvestre\" al diseño. Envíenos las fotografías y prepararemos las maquetas para su aprobación antes de la impresión.",
+            "Sí, por supuesto. Ya estamos trabajando en su proyecto. Hemos recibido la información y estamos revisando los diseños para preparar las maquetas y las opciones de precios. Mañana por la mañana le enviaremos una actualización con los diseños y las cotizaciones para que pueda revisarlas."
+          ],
+          "best": "Claro, el precio depende de la cantidad y el tipo de prenda que desees. ¿Cuántas camisetas necesitas y qué diseños tienes en mente?",
+          "best_en": "Sure, the price depends on the quantity and type of garment you want. How many t-shirts do you need and what designs do you have in mind?"
+        },
+        {
+          "q": "also can i iron those on myself with my house iron ?",
+          "n": 5,
+          "intent": "Greeting/Other",
+          "replies": [
+            "Yes you can do it",
+            "Yes you can do it",
+            "Yes you can do it",
+            "Yes you can do it",
+            "Yes"
+          ],
+          "best": "Yes, you can definitely iron those on yourself with your house iron! Just make sure to follow the instructions for the best results. 😊"
+        },
+        {
+          "q": "Anything? Car wall table book etc…just a free gift with every purchase",
+          "n": 5,
+          "intent": "Greeting/Other",
+          "replies": [
+            "That’s means UV DTF , we will start it in near future",
+            "I mean what do you put it on ? Material ?",
+            "That’s means UV DTF , we will start it in near future",
+            "That’s means UV DTF , we will start it in near future"
+          ],
+          "best": "Hey there! We don’t currently offer free gifts with every purchase, but we do have some awesome deals and discounts from time to time. Let me know if you have any other questions or need help with your order!"
+        },
+        {
+          "q": "What are your hours of business?",
+          "n": 5,
+          "intent": "Greeting/Other",
+          "replies": [
+            "Our printship timing are -9-6 pm",
+            "Our printship timing are -9-6 pm",
+            "However our marketing and customer support team for extended hours",
+            "Our printship timing are -9-6 pm",
+            "However our marketing and customer support team for extended hours"
+          ],
+          "best": "Our print shop hours are 9 AM to 6 PM, but our marketing and customer support team is available for extended hours if you need anything!"
+        },
+        {
+          "q": "Can we do around 6:30 ,I can't have my phone on me",
+          "n": 4,
+          "intent": "Greeting/Other",
+          "replies": [],
+          "best": "Absolutely, we can do 6:30! Just let me know if you need anything else in the meantime. Looking forward to chatting then!"
+        },
+        {
+          "q": "You there?",
+          "n": 4,
+          "intent": "Greeting/Other",
+          "replies": [
+            "https://www.decoinks.com/products/gildan-g640-softstyle%C2%AE-unisex-t-shirt?variant=51430295732503",
+            "https://www.decoinks.com/products/gildan-g640-softstyle%C2%AE-unisex-t-shirt?variant=51430295732503"
+          ],
+          "best": "Hey there! Yep, I’m here! How can I help you today?"
+        },
+        {
+          "q": "Can I call you?",
+          "n": 3,
+          "intent": "Greeting/Other",
+          "replies": [
+            "Yes you can",
+            "Can i call you tomorrow morning is this ok for you?",
+            "Yes you can"
+          ],
+          "best": "Absolutely, feel free to call me! What time works best for you?"
+        },
+        {
+          "q": "What the prices",
+          "n": 3,
+          "intent": "Greeting/Other",
+          "replies": [
+            "Our minimum order is $25, which is approximately 60 inches of DTF transfers.",
+            "Could you please let us know what you’re looking for—DTF transfers or custom T-shirts?",
+            "John Nevitt replied to an ad."
+          ],
+          "best": "Hey there! Our minimum order is $25, which gets you about 60 inches of DTF transfers. Are you looking for transfers or custom T-shirts? Let me know how I can help!"
+        },
+        {
+          "q": "Can I do it tonight after work?",
+          "n": 3,
+          "intent": "Greeting/Other",
+          "replies": [],
+          "best": "Absolutely! Just send over your design whenever you're ready, and we’ll get started on it. Looking forward to helping you out!"
+        },
+        {
+          "q": "Is tht ok?",
+          "n": 3,
+          "intent": "Greeting/Other",
+          "replies": [
+            "No worries! I’ll hold it for you until tomorrow. Just reach out when you’re ready. I appreciate it.",
+            "Yes, go on we here for you."
+          ],
+          "best": "Absolutely, that’s totally fine! Just let me know if you need anything else. 😊"
+        },
+        {
+          "q": "Email?",
+          "n": 3,
+          "intent": "Greeting/Other",
+          "replies": [
+            "info@decoinks.com",
+            "info@decoinks.com",
+            "Do you want to share your designs"
+          ],
+          "best": "Sure! You can reach us at info@decoinks.com. Let me know if you need help with anything specific!"
+        },
+        {
+          "q": "What sizes do y'all offer and  what size Would you recommend for a six month old",
+          "n": 2,
+          "intent": "Greeting/Other",
+          "replies": [
+            "Shay Johnson replied to an ad.",
+            "For adult sizes we suggest transfers by the size of t-shirt"
+          ],
+          "best": "We offer a range of sizes, but for a six-month-old, I'd recommend going with a 12M size for a comfy fit. Let me know if you have any other questions!"
+        },
+        {
+          "q": "Where",
+          "n": 2,
+          "intent": "Greeting/Other",
+          "replies": [
+            "We want to disctribute free of cost",
+            "to the graduation class"
+          ],
+          "best": "Hey there! Could you clarify what you're looking for? Are you asking about our location or where to place an order? I'm here to help!"
+        },
+        {
+          "q": "Not sure I understand what you just said 😂 however I trust you can manage it! How many washes should I expect from your transfers?",
+          "n": 2,
+          "intent": "Greeting/Other",
+          "replies": [
+            "Currently we we doing DTF only. However if need assistance in designing I can help it out free or cost"
+          ],
+          "best": "Our DTF transfers are super durable and can last around 50-100 washes if cared for properly! If you have any other questions, I'm here to help! 😊"
+        },
+        {
+          "q": "If I want to reorder any of the designs I sent how will I relay order to you? How do you file and categorize because I have 200 designs",
+          "n": 2,
+          "intent": "Greeting/Other",
+          "replies": [
+            "I have sent you a general video we send to our client for guidance . However I will check with our printshop today, for temperature and time , for cotton and polyester"
+          ],
+          "best": "You can simply reference the design names or numbers you used before, and we’ll pull them up for you! If you have a specific way you’d like to categorize them, just let us know, and we’ll make it work. 😊"
+        },
+        {
+          "q": "How about the other one",
+          "n": 2,
+          "intent": "Greeting/Other",
+          "replies": [
+            "Sending you the second one",
+            "There will be 40 pcs each for both designs. The total will be $25"
+          ],
+          "best": "Sending you the details for the other one now! Just to confirm, there will be 40 pcs for each design, and the total will be $25."
+        },
+        {
+          "q": "how much is a 1000 inches",
+          "n": 2,
+          "intent": "Greeting/Other",
+          "replies": [
+            "Buy 1000 inches, get 100 inches FREE, plus enjoy an extra 10% OFF your order!",
+            "Hi"
+          ],
+          "best": "Hey there! For 1000 inches, you’ll get 100 inches FREE, plus an extra 10% OFF your order. Let me know if you have any other questions!"
+        },
+        {
+          "q": "Where are you guys located",
+          "n": 2,
+          "intent": "Greeting/Other",
+          "replies": [
+            "We usually recommend this size chart for sizes",
+            "Corona CA , we ship over usa"
+          ],
+          "best": "We're based in Corona, CA, but we happily ship all over the USA! Let me know if you need anything else."
+        },
+        {
+          "q": "Yo estoy en las Vegas nevada, ese sería el costo del envío aquí?",
+          "n": 2,
+          "intent": "Greeting/Other",
+          "en": "I am in Las Vegas, Nevada; would that be the shipping cost here?",
+          "replies": [
+            "El costo del envío en ese caso sería de **$10**.\n5 camisetas × $11 = $55 USD\nEnvío estándar = $10 USD\n\nTotal: $65  USD",
+            "Por favor, revíselo."
+          ],
+          "best": "¡Hola! El costo de envío a Las Vegas sería de **$10**. Así que si pides 5 camisetas a $11 cada una, el total sería $65 USD. ¿Te gustaría hacer el pedido?",
+          "best_en": "Hello! The shipping cost to Las Vegas would be **$10**. So if you order 5 t-shirts at $11 each, the total would be $65 USD. Would you like to place the order?"
+        },
+        {
+          "q": "The front is good right?",
+          "n": 2,
+          "intent": "Greeting/Other",
+          "replies": [
+            "Yeah we put on standard size its not too big not too. Small"
+          ],
+          "best": "Yes, the front design is just right! It's a standard size, so it should look great on your apparel. Let me know if you have any other questions!"
+        },
+        {
+          "q": "Como hago el pedido",
+          "n": 2,
+          "intent": "Greeting/Other",
+          "en": "How do I place the order?",
+          "replies": [],
+          "best": "¡Hola! Para hacer tu pedido, solo tienes que enviarnos el diseño que quieres y la cantidad. Luego, te ayudamos con el resto. ¡Estamos aquí para ayudarte!",
+          "best_en": "Hello! To place your order, just send us the design you want and the quantity. We'll take care of the rest. We're here to help you!"
+        }
+      ]
+    },
+    {
+      "intent": "Location/Pickup",
+      "total": 48,
+      "questions": [
+        {
+          "q": "Where are you located",
+          "n": 23,
+          "intent": "Location/Pickup",
+          "replies": [
+            "Hi 😊\n\nWe are based in Corona, California (USA)",
+            "You are responding to a user comment to a post on your Page. View comment.(https://facebook.com/61578861362859/posts/pfbid027Dj3KF3cdjLGd74xkuKspD6zLbyxpdoXjbQgWT68QsttPq2kLnuGLXdQHKj1aSgel/?comment_id=999268669251088)",
+            "No need to say sorry it is our duty to make you satisfy from our service",
+            "We are located in Corona,CA",
+            "We are located at:\n\nSuite 111, 1218 Magnolia Avenue,\nCorona, CA 92881",
+            "Our prices are competitive and our custom design services  are freeincluding new creative designs as per your direction and modification of your existing designs"
+          ],
+          "best": "Hi there! 😊 We're located in Corona, California. If you have any other questions, feel free to ask!"
+        },
+        {
+          "q": "Where are you all located?",
+          "n": 10,
+          "intent": "Location/Pickup",
+          "replies": [
+            "Corona , CA . We ship nationwide",
+            "Corona , CA . We ship nationwide",
+            "Corona , CA . We ship nationwide",
+            "Corona , CA . We ship nationwide",
+            "expensive",
+            "it will be expenses ,  Amazon is offering tranfers ?"
+          ],
+          "best": "We're located in Corona, CA, but we ship nationwide! Let me know if you have any other questions!"
+        },
+        {
+          "q": "Where you located?",
+          "n": 4,
+          "intent": "Location/Pickup",
+          "replies": [
+            "We are located in Corona,CA",
+            "Hi Jose! Please let us know how we can help you.",
+            "Hi Jose! Please let us know how we can help you.",
+            "Corona,CA"
+          ],
+          "best": "We're located in Corona, CA! Let me know if you have any other questions."
+        },
+        {
+          "q": "Buen dia, disculpe, usted Podria imprimir unas fotos para un funeral?",
+          "n": 3,
+          "intent": "Location/Pickup",
+          "en": "Good morning, excuse me, could you print some photos for a funeral?",
+          "replies": [
+            "Claro que sí. Hacemos este tipo de trabajos con frecuencia para nuestros clientes. Por favor, comparta su diseño o las fotografías, y con gusto le ayudaremos con el resto del proceso."
+          ],
+          "best": "Claro, podemos ayudarte con eso. Envíame las fotos o el diseño que tienes en mente y te guiaré en el proceso.",
+          "best_en": "Sure, we can help you with that. Send me the photos or the design you have in mind, and I will guide you through the process."
+        },
+        {
+          "q": "How does it look",
+          "n": 2,
+          "intent": "Location/Pickup",
+          "replies": [
+            "Can you check now"
+          ],
+          "best": "Could you let me know what specific design or item you're curious about? I'd love to help you see how it looks!"
+        },
+        {
+          "q": "Where are u located",
+          "n": 2,
+          "intent": "Location/Pickup",
+          "replies": [
+            "Hi Lashonda! Please let us know how we can help you."
+          ],
+          "best": "Hey there! We're based in the heart of [Your City], but we ship our custom apparel and DTF transfers all over. How can I assist you today?"
+        },
+        {
+          "q": "Do you offer discounts for bulk orders?",
+          "n": 2,
+          "intent": "Location/Pickup",
+          "replies": [
+            "Yes! We offer better pricing on bulk orders 💰\nShare your quantity and we’ll give you the best possible deal today 👍",
+            "Yes! We offer better pricing on bulk orders 💰\nShare your quantity and we’ll give you the best possible deal today 👍"
+          ],
+          "best": "Absolutely! We do offer discounts for bulk orders 💰 Just let me know how many you’re looking to order, and I’ll get you the best deal possible! 👍"
+        },
+        {
+          "q": "Do you offer bulk discounts?",
+          "n": 2,
+          "intent": "Location/Pickup",
+          "replies": [
+            "We offer:\n✔ Custom T-Shirt Printing\n✔ DTF Transfers (No minimum)\n✔ Gang Sheets for bulk printing\n👉 Tell us what you need and we’ll guide you",
+            "Yes,\nWe offer special pricing on bulk orders\nThe more you order, the better the price\n👉 Send quantity details for best quote"
+          ],
+          "best": "Absolutely, we do offer bulk discounts! The more you order, the better the price. Just let me know how many you’re looking to get, and I’ll get you the best quote!"
+        }
+      ]
+    },
+    {
+      "intent": "Samples/Mockups",
+      "total": 47,
+      "questions": [
+        {
+          "q": "Can I get a sample before ordering?",
+          "n": 33,
+          "intent": "Samples/Mockups",
+          "replies": [
+            "Hi Triple R Rari! Please let us know how we can help you.",
+            "Hi! Just to confirm — are you looking for a sample of the design/artwork, or a physical printed sample?",
+            "Could you please clarify what kind of sample you’re looking for? We currently do not provide physical samples, but we can definitely create a digital mockup preview to show you exactly how your design will look before placing the order.",
+            "Hey! Our minimum order is 5 pieces. We also offer bulk discounts on higher quantities.",
+            "Valuable customer can you please send us your design",
+            "Could you please clarify what kind of sample you’re looking for? We currently do not provide physical samples, but we can definitely create a digital mockup preview to show you exactly how your design will look before placing the order."
+          ],
+          "best": "Hey there! Just to clarify, are you looking for a digital mockup of your design or a physical printed sample? We can create a mockup for you to see how it’ll look!"
+        },
+        {
+          "q": "Can you show me a layout",
+          "n": 3,
+          "intent": "Samples/Mockups",
+          "replies": [
+            "Yes I can",
+            "Let me show you a preview of our gangsheet maker"
+          ],
+          "best": "Absolutely! I can show you a preview of our gangsheet maker. Just give me a moment!"
+        },
+        {
+          "q": "Do U guys offer A free sample?!?",
+          "n": 3,
+          "intent": "Samples/Mockups",
+          "replies": [
+            "Hi Amanda! We wanted to follow up. Do you have any questions?",
+            "Amanda Irvin replied to an ad.",
+            "Hi Amanda! Please let us know how we can help you."
+          ],
+          "best": "Hey there! We don’t offer free samples, but we’d be happy to help you with any questions or details about our products. Let me know what you need!"
+        },
+        {
+          "q": "Can I have the phone number associated with account please",
+          "n": 2,
+          "intent": "Samples/Mockups",
+          "replies": [],
+          "best": "Hey there! I can’t share personal account details for privacy reasons, but if you need help with anything specific, just let me know and I’ll be happy to assist!"
+        },
+        {
+          "q": "Could you send me a pic of a few before you make them",
+          "n": 2,
+          "intent": "Samples/Mockups",
+          "replies": [
+            "You mean mock-ups",
+            "You mean mock-ups"
+          ],
+          "best": "Sure thing! I can send you some mock-ups before we get started. Just let me know what designs or ideas you have in mind!"
+        },
+        {
+          "q": "hello do you all do custom dtf???",
+          "n": 2,
+          "intent": "Samples/Mockups",
+          "replies": [
+            "Yes, sure"
+          ],
+          "best": "Absolutely, we do custom DTF! Just let me know what you have in mind, and we can get started!"
+        },
+        {
+          "q": "How does this cost",
+          "n": 2,
+          "intent": "Samples/Mockups",
+          "replies": [
+            "we charge $5 per feet , but you get 10% discount on 50 feet plus",
+            "Hi Sheron! We wanted to follow up. Do you have any questions?"
+          ],
+          "best": "Hey there! We charge $5 per foot, and if you order 50 feet or more, you’ll get a 10% discount. Let me know if you have any other questions!"
+        }
+      ]
+    },
+    {
+      "intent": "Turnaround/Deadline",
+      "total": 45,
+      "questions": [
+        {
+          "q": "How much does my order cost?",
+          "n": 9,
+          "intent": "Turnaround/Deadline",
+          "replies": [
+            "Pricing depends on your design size & quantity 👍\nRight now we have a special offer:\n🔥 Buy 1000 inches & get 100 inches FREE\nSend me your design + size + quantity and I’ll give you your exact quote right away",
+            "Pricing depends on your design size & quantity 👍\nRight now we have a special offer:\n🔥 Buy 1000 inches & get 100 inches FREE\nSend me your design + size + quantity and I’ll give you your exact quote right away",
+            "Pricing depends on your design size & quantity 👍\nRight now we have a special offer:\n🔥 Buy 1000 inches & get 100 inches FREE\nSend me your design + size + quantity and I’ll give you your exact quote right away",
+            "Absolutely 👍\nJust send:\n• Your design\n• Size\n• Quantity\nI’ll confirm everything and we’ll start right away",
+            "Hi Jose! Please let us know how we can help you.",
+            "Pricing depends on your design size & quantity 👍\nRight now we have a special offer:\n🔥 Buy 1000 inches & get 100 inches FREE\nSend me your design + size + quantity and I’ll give you your exact quote right away"
+          ],
+          "best": "Pricing depends on your design size and quantity! 😊 Right now, we have a special offer: buy 1000 inches and get 100 inches FREE. Just send me your design, size, and quantity, and I’ll get you an exact quote!"
+        },
+        {
+          "q": "Do you have a phone number",
+          "n": 7,
+          "intent": "Turnaround/Deadline",
+          "replies": [
+            "You can contact us at 984-833-1396.",
+            "www.decoinks.com",
+            "Yes we do have phone number you can call on it +1 (714) 790-1460",
+            "Yes"
+          ],
+          "best": "Sure! You can reach us at +1 (714) 790-1460. Feel free to give us a call!"
+        },
+        {
+          "q": "Would you happen to know how long the turnaround usually is?",
+          "n": 5,
+          "intent": "Turnaround/Deadline",
+          "replies": [
+            "Production takes 1–2 business days, with standard shipping taking 2–5 business days and we also offer fast shipping.",
+            "Production takes 1–2 business days, with standard shipping taking 2–5 business days and we also offer fast shipping.",
+            "No problem, Jacque. Thank you for the update. Take your time, and send the final draft whenever you’re ready.",
+            "Production takes 1–2 business days, with standard shipping taking 2–5 business days and we also offer fast shipping.",
+            "Production takes 1–2 business days, with standard shipping taking 2–5 business days and we also offer fast shipping."
+          ],
+          "best": "Production usually takes 1–2 business days, and then standard shipping is about 2–5 business days. If you need it faster, we do offer fast shipping options too!"
+        },
+        {
+          "q": "If I ordered something today, do you think I would get it by the 24th of next week?",
+          "n": 4,
+          "intent": "Turnaround/Deadline",
+          "replies": [
+            "Yes , sure",
+            "Yes , sure",
+            "how many transfers in total",
+            "how many transfers in total"
+          ],
+          "best": "Yes, absolutely! As long as you place your order today, you should receive it by the 24th of next week."
+        },
+        {
+          "q": "So how long?",
+          "n": 3,
+          "intent": "Turnaround/Deadline",
+          "replies": [
+            "We have received your payment, and your order has been confirmed.",
+            "We have received your payment, and your order has been confirmed.",
+            "Hey Fred,\n\nWe have started working on your order, and it is currently in our production queue. We will keep you updated throughout each stage of the process and notify you as soon as there are any updates."
+          ],
+          "best": "Hey there! Your order is in our production queue now, and we'll keep you posted on its progress. Thanks for your patience!"
+        },
+        {
+          "q": "When do you think it will be ready",
+          "n": 3,
+          "intent": "Turnaround/Deadline",
+          "replies": [
+            "We will proceed . We will ship either tomorrow or Friday",
+            "We will proceed . We will ship either tomorrow or Friday"
+          ],
+          "best": "We’re on it! Your order will ship either tomorrow or Friday. 😊"
+        },
+        {
+          "q": "How much for a gang sheet",
+          "n": 3,
+          "intent": "Turnaround/Deadline",
+          "replies": [
+            "It depends on size",
+            "Design size: 5.72\" x 4\" and t shirt size is large"
+          ],
+          "best": "It really depends on the size of the gang sheet you need! Just let me know the dimensions, and I can give you a quick quote."
+        },
+        {
+          "q": "Nice do have more design?",
+          "n": 3,
+          "intent": "Turnaround/Deadline",
+          "replies": [
+            "Yeah we do have. I am sending you",
+            "Our minimum order is $25, which is approximately 60 inches of DTF transfers. If you're unsure about sizing, send us your artwork and we'll help you calculate the required inches.",
+            "Heyy, hope you are doing well."
+          ],
+          "best": "Hey there! Yes, we have plenty more designs to choose from. Let me know what you're looking for, and I can help you find the perfect one!"
+        },
+        {
+          "q": "What’s the price",
+          "n": 2,
+          "intent": "Turnaround/Deadline",
+          "replies": [
+            "Pls see",
+            "How many t-shirts do you want to order ?"
+          ],
+          "best": "Hey there! Could you let me know how many t-shirts you're looking to order? That way, I can give you the best price! 😊"
+        },
+        {
+          "q": "Can I get 2 4xl instead of 2 2xl?",
+          "n": 2,
+          "intent": "Turnaround/Deadline",
+          "replies": [
+            "Would there be any chance that these sizes could still work for you? If so, we’d be happy to make it up to you on your next order.\n\nWe put a lot of care and effort into preparing your order, and we truly appreciate your understanding."
+          ],
+          "best": "Absolutely, we can switch those to 4XL for you! Just let me know if there's anything else you need."
+        },
+        {
+          "q": "How do i send it to youll",
+          "n": 2,
+          "intent": "Turnaround/Deadline",
+          "replies": [
+            "You can send it here with attachement icon. Alternatively you can send by email : info@decoinks.com"
+          ],
+          "best": "You can send it right here using the attachment icon, or if you prefer, you can email it to us at info@decoinks.com. Let me know if you need any help!"
+        },
+        {
+          "q": "You're welcome. How long are you promoting the $25 special?",
+          "n": 2,
+          "intent": "Turnaround/Deadline",
+          "replies": [
+            "We will keep it for some time",
+            "We will keep it for some time"
+          ],
+          "best": "We're planning to keep the $25 special going for a little while, so you have some time to take advantage of it! Let me know if you have any other questions!"
+        }
+      ]
+    },
+    {
+      "intent": "Payment",
+      "total": 33,
+      "questions": [
+        {
+          "q": "Ustedes están en Estados Unidos ?",
+          "n": 8,
+          "intent": "Payment",
+          "en": "Are you in the United States?",
+          "replies": [
+            "Sí, estamos ubicados en Corona, California, Estados Unidos. Realizamos envíos a todo el país y podemos ayudarle tanto con transferencias DTF como con productos terminados.",
+            "Sí, estamos ubicados en Corona, California, Estados Unidos. Realizamos envíos a todo el país y podemos ayudarle tanto con transferencias DTF como con productos terminados.",
+            "Sí, estamos ubicados en Corona, California, Estados Unidos. Realizamos envíos a todo el país y podemos ayudarle tanto con transferencias DTF como con productos terminados.",
+            "Sí, estamos ubicados en Corona, California, Estados Unidos. Realizamos envíos a todo el país y podemos ayudarle tanto con transferencias DTF como con productos terminados.",
+            "Sí, estamos ubicados en Corona, California, Estados Unidos. Realizamos envíos a todo el país y podemos ayudarle tanto con transferencias DTF como con productos terminados.",
+            "Sí, estamos ubicados en Corona, California, Estados Unidos. Realizamos envíos a todo el país y podemos ayudarle tanto con transferencias DTF como con productos terminados."
+          ],
+          "best": "Sí, estamos en Corona, California, Estados Unidos. Hacemos envíos a todo el país y estamos aquí para ayudarte con transferencias DTF y productos terminados.",
+          "best_en": "Yes, we are located in Corona, California, United States. We ship nationwide and are here to assist you with DTF transfers and finished products."
+        },
+        {
+          "q": "How many hat DTF’s come on 1000 inches",
+          "n": 6,
+          "intent": "Payment",
+          "replies": [
+            "Depends on teh size of your design.",
+            "This could be interested . Pls let me know if you need any assistance from our design team . We don’t charge for that however we expect printing orders based on the results"
+          ],
+          "best": "It really depends on the size of your designs! If you have a specific size in mind, I can help you figure it out. Just let me know!"
+        },
+        {
+          "q": "Do you guy do stickers",
+          "n": 6,
+          "intent": "Payment",
+          "replies": [
+            "Not now but will add soon .",
+            "Not now but will add soon .",
+            "Not now but will add soon .",
+            "Not now but will add soon ."
+          ],
+          "best": "Not right now, but we’re hoping to add stickers in the future!"
+        },
+        {
+          "q": "So depending on the size of the shirt determines the size of the DTF?",
+          "n": 6,
+          "intent": "Payment",
+          "replies": [
+            "Yes",
+            "Yes",
+            "Design size is Width 16\" x Height 14.4\" and t hoodie size is large",
+            "Yes",
+            "Yes you can do it",
+            "Pls let us know the t-shirts sizes"
+          ],
+          "best": "Yes, the size of the shirt does influence the size of the DTF transfer. We typically recommend a design size of 16\" wide by 14.4\" tall for larger shirts. Let me know if you have any specific sizes in mind!"
+        },
+        {
+          "q": "How would I pay when I officially place the order",
+          "n": 3,
+          "intent": "Payment",
+          "replies": [
+            "Zelle , PayPal , debit / credit cards",
+            "Which one do you have",
+            "Which one do you have"
+          ],
+          "best": "You can pay with Zelle, PayPal, or debit/credit cards! Which one works best for you?"
+        },
+        {
+          "q": "So sorry to bother you, can you email a receipt for the grand total of the transfers?",
+          "n": 2,
+          "intent": "Payment",
+          "replies": [
+            "Sure . I will send later in the morning here",
+            "Yes sure , do you get printed transfers regularly or just a while ?"
+          ],
+          "best": "No problem at all! I’ll email you the receipt for the grand total of the transfers shortly."
+        },
+        {
+          "q": "I have cash app, do you use that?",
+          "n": 2,
+          "intent": "Payment",
+          "replies": [
+            "Yes",
+            "Perfect! Would you like to pay via Zelle or PayPal?"
+          ],
+          "best": "Yes, we do accept Cash App! Just let me know when you're ready to place your order. 😊"
+        }
+      ]
+    },
+    {
+      "intent": "Catalog/Website",
+      "total": 16,
+      "questions": [
+        {
+          "q": "do you have a website",
+          "n": 3,
+          "intent": "Catalog/Website",
+          "replies": [
+            "www.decoinks.com",
+            "Yes we have a website."
+          ],
+          "best": "Yes, we do! You can check us out at www.decoinks.com. Let me know if you have any questions!"
+        },
+        {
+          "q": "Do you have a catalog about what can you print ?  Want some  designs for kids .",
+          "n": 3,
+          "intent": "Catalog/Website",
+          "replies": [],
+          "best": "Hey there! We don’t have a formal catalog, but we can definitely help you with a bunch of fun designs for kids. Just let me know what themes or ideas you have in mind, and I can suggest some awesome options!"
+        },
+        {
+          "q": "did you check these ones out",
+          "n": 2,
+          "intent": "Catalog/Website",
+          "replies": [
+            "Yeah we are making for these designs"
+          ],
+          "best": "Absolutely! I checked them out, and they look great! What do you have in mind for them?"
+        },
+        {
+          "q": "You aren’t able to guarantee next day?",
+          "n": 2,
+          "intent": "Catalog/Website",
+          "replies": [
+            "it will be expenses ,  Amazon is offering tranfers ?",
+            "it will be expenses ,  Amazon is offering tranfers ?"
+          ],
+          "best": "Unfortunately, we can't guarantee next-day delivery, but we do our best to get your orders out as quickly as possible! If you need something rushed, just let me know, and I can help you explore options."
+        },
+        {
+          "q": "Where are you located? Is shipping free or is there a tariff charge included with the price? Are you outsourcing or making your merchandise in the U.S.A.",
+          "n": 2,
+          "intent": "Catalog/Website",
+          "replies": [
+            "Hey! Quick follow-up 👋\n\nIf you’re still looking for DTF transfers or custom printing, we can help you get started with clean, high-quality prints and fast turnaround.\n\n👉 Let me know if you’d like a quick quote or guidance",
+            "Hey! Quick follow-up 👋\n\nIf you’re still looking for DTF transfers or custom printing, we can help you get started with clean, high-quality prints and fast turnaround.\n\n👉 Let me know if you’d like a quick quote or guidance"
+          ],
+          "best": "Hey there! We're based in the U.S. and all our merchandise is made right here. Shipping is free on orders over $100, but we don't charge any tariffs. Let me know if you have more questions or need a quote! 😊"
+        },
+        {
+          "q": "What types of printing do you offer?",
+          "n": 2,
+          "intent": "Catalog/Website",
+          "replies": [
+            "We offer:\n✔ Custom T-Shirt Printing\n✔ DTF Transfers (No minimum)\n✔ Gang Sheets for bulk printing\n👉 Tell us what you need and we’ll guide you"
+          ],
+          "best": "We offer custom T-shirt printing, DTF transfers with no minimums, and gang sheets for bulk printing. Just let me know what you’re looking for, and I’ll help you out!"
+        },
+        {
+          "q": "Can try that?",
+          "n": 2,
+          "intent": "Catalog/Website",
+          "replies": [
+            "Yeah definitely"
+          ],
+          "best": "Of course! Just let me know what you have in mind, and we can make it happen!"
+        }
+      ]
+    },
+    {
+      "intent": "Order Status",
+      "total": 11,
+      "questions": [
+        {
+          "q": "Has mud order shipped?",
+          "n": 3,
+          "intent": "Order Status",
+          "replies": [],
+          "best": "Hey there! Let me check on that for you. Can you give me your order number? I'll get back to you ASAP!"
+        },
+        {
+          "q": "Hello?",
+          "n": 2,
+          "intent": "Order Status",
+          "replies": [
+            "Let me see",
+            "It's ready I am sending you",
+            "Yes",
+            "Yes, absolutely! We can definitely do custom shirts with different designs on black shirts.",
+            "Pls wait",
+            "Valuable customer I am really for the delay as our operations starts now. No need to be worried as I am giving you the quote since you told me that you have heat press"
+          ],
+          "best": "Hey there! How can I help you today? 😊"
+        },
+        {
+          "q": "Did You get it",
+          "n": 2,
+          "intent": "Order Status",
+          "replies": [
+            "Yep got it",
+            "Yeah"
+          ],
+          "best": "Yep, I got it! Let me know if you need anything else."
+        },
+        {
+          "q": "What do you mean",
+          "n": 2,
+          "intent": "Order Status",
+          "replies": [
+            "S/sleeve 4.2 oz",
+            "We can do more designs with any additional cost"
+          ],
+          "best": "Could you let me know what specifically you’re referring to? I’d love to help clarify!"
+        },
+        {
+          "q": "Is it too late to add two more",
+          "n": 2,
+          "intent": "Order Status",
+          "replies": [
+            "yes we can add two more please tell us which size do you want to increase",
+            "That's correct, the $100 is for the DTF transfers only, not including the shirts."
+          ],
+          "best": "No problem at all! Just let me know the sizes you want to add, and we’ll get that sorted for you."
+        }
+      ]
+    },
+    {
+      "intent": "Sizes",
+      "total": 6,
+      "questions": [
+        {
+          "q": "What size is the large patter. The medium  is alittle  to small",
+          "n": 2,
+          "intent": "Sizes",
+          "replies": [
+            "let me check",
+            "If you increate the width from 10.75 inches , the efficeincy of the sheet drops drastically and hence increase teh cost"
+          ],
+          "best": "The large pattern is typically around 12 inches wide. If you need something different, just let me know and we can work something out!"
+        },
+        {
+          "q": "Ustedes realizan Camisetas personalizadas, y cuál es el precio de estas?",
+          "n": 2,
+          "intent": "Sizes",
+          "en": "Do you make custom t-shirts, and what is the price for them?",
+          "replies": [
+            "¡Sí, hacemos camisetas personalizadas! El precio depende del diseño y la cantidad. Por favor, proporcione más detalles para que pueda darle una cotización precisa.",
+            "Has dado tus diseños anteriormente. Si deseas continuar con esos diseños, podemos proceder."
+          ],
+          "best": "¡Sí, hacemos camisetas personalizadas! El precio varía según el diseño y la cantidad que necesites. Cuéntame un poco más sobre lo que tienes en mente y te ayudo con una cotización.",
+          "best_en": "Yes, we make custom t-shirts! The price varies depending on the design and the quantity you need. Tell me a bit more about what you have in mind, and I'll help you with a quote."
+        },
+        {
+          "q": "Can't wait man I'm excited!!!",
+          "n": 2,
+          "intent": "Sizes",
+          "replies": [
+            "And there is good news for you"
+          ],
+          "best": "I’m super excited too! We’re going to create something amazing together! 🎉"
+        }
+      ]
+    },
+    {
+      "intent": "DTF/Gangsheet",
+      "total": 5,
+      "questions": [
+        {
+          "q": "Do you have the DTF that looks like  binds into the shirt, not that thick film stuff",
+          "n": 5,
+          "intent": "DTF/Gangsheet",
+          "replies": [
+            "Hi Trina! We wanted to follow up. Do you have any questions?",
+            "and can provide DTG printed t-shirts"
+          ],
+          "best": "Hey there! Yes, we offer DTF transfers that have a softer feel and blend nicely into the fabric, so they won't have that thick film look. Let me know if you have any other questions!"
+        }
+      ]
+    },
+    {
+      "intent": "Reseller/Wholesale",
+      "total": 4,
+      "questions": [
+        {
+          "q": "what is your location",
+          "n": 2,
+          "intent": "Reseller/Wholesale",
+          "replies": [
+            "Pls share your designs and we will guide you further how many transfers you will get in our minimum size of sheet.\nOur prices are competitive and our custom design services  are free",
+            "Hi Orlandus! 😊\nFor DTF transfers, there is no strict minimum order — you can order even a single design if needed. However, most customers prefer gang sheets as they’re more cost-effective.\n\nShipping usually takes 3–5 business days across the USA after dispatch.\n\nWe’re based in Corona, California"
+          ],
+          "best": "Hey there! 😊 We’re located in Corona, California. If you have any other questions or need help with your order, just let me know!"
+        },
+        {
+          "q": "How much for ten",
+          "n": 2,
+          "intent": "Reseller/Wholesale",
+          "replies": [
+            "Do you need the same size of teh design you sent in the mockup?"
+          ],
+          "best": "Hey there! Just to clarify, are you looking for ten of the same design? If so, I can get you a quote based on that!"
+        }
+      ]
+    },
+    {
+      "intent": "Colors",
+      "total": 3,
+      "questions": [
+        {
+          "q": "Can u put on white",
+          "n": 3,
+          "intent": "Colors",
+          "replies": [],
+          "best": "Absolutely! We can definitely print on white fabric. Just let me know what design you have in mind, and I’ll help you get started!"
+        }
+      ]
+    }
+  ]
+}

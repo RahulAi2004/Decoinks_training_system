@@ -1,0 +1,267 @@
+// Practice chat: sessions with an AI customer; every intern reply is evaluated silently.
+import { Router } from 'express';
+import db, { uuid } from '../db.js';
+import { customerReply, getPersona } from '../services/simulator.js';
+import { evaluateReply } from '../services/evaluator.js';
+import { computeReadiness } from '../services/readiness.js';
+import { realChatList, realChatMessages } from '../services/realChats.js';
+
+const r = Router();
+
+function sessionMessages(sessionId) {
+  return db.prepare('SELECT * FROM session_messages WHERE session_id = ? ORDER BY created_at, rowid').all(sessionId);
+}
+
+function visibleMessages(sessionId) {
+  return sessionMessages(sessionId).map(m => {
+    const match = m.body.match(/\n?\[\[artwork:(.+?)\]\]\s*$/);
+    return match
+      ? { ...m, body: m.body.replace(match[0], '').trim(), is_artwork: 1, attachment_url: match[1] }
+      : m;
+  });
+}
+
+function ownSession(req, res) {
+  const s = db.prepare('SELECT * FROM practice_sessions WHERE id = ?').get(req.params.id);
+  if (!s) { res.status(404).json({ error: 'Session not found' }); return null; }
+  if (req.user.role !== 'admin' && s.intern_id !== req.user.id) { res.status(403).json({ error: 'Forbidden' }); return null; }
+  return s;
+}
+
+r.get('/personas', (req, res) => {
+  res.json(db.prepare('SELECT id, name, description, difficulty FROM personas WHERE is_active = 1 ORDER BY name').all());
+});
+
+r.get('/real-chats', (req, res) => {
+  res.json(realChatList());
+});
+
+// start a session (persona_id optional → random)
+r.post('/sessions', async (req, res) => {
+  let { persona_id } = req.body || {};
+  if (!persona_id) {
+    const p = db.prepare('SELECT id FROM personas WHERE is_active = 1 ORDER BY RANDOM() LIMIT 1').get();
+    persona_id = p?.id;
+  }
+  const persona = persona_id ? getPersona(persona_id) : null;
+  const id = uuid();
+  db.prepare('INSERT INTO practice_sessions (id, intern_id, persona_id) VALUES (?, ?, ?)').run(id, req.user.id, persona_id || null);
+
+  // the customer opens the conversation
+  let opener;
+  try { opener = await customerReply({ session: { id }, persona, conversation: [] }); }
+  catch (e) { opener = 'Hi! I saw your ad about custom shirts — can you tell me more?'; }
+  db.prepare('INSERT INTO session_messages (id, session_id, role, body) VALUES (?, ?, ?, ?)').run(uuid(), id, 'customer', opener);
+
+  res.json({ session_id: id, persona: persona ? { id: persona.id, name: persona.name, description: persona.description, difficulty: persona.difficulty } : null, messages: visibleMessages(id) });
+});
+
+r.get('/sessions/:id', (req, res) => {
+  const s = ownSession(req, res); if (!s) return;
+  const persona = s.persona_id ? getPersona(s.persona_id) : null;
+  const messages = visibleMessages(s.id);
+  const evals = db.prepare(
+    `SELECT e.* FROM evaluations e JOIN session_messages m ON m.id = e.session_message_id WHERE m.session_id = ?`
+  ).all(s.id).map(parseEval);
+  const real = db.prepare(
+    `SELECT rcs.*, rc.customer_name, rc.intent, rc.outcome, rc.summary
+     FROM real_chat_sessions rcs JOIN real_chats rc ON rc.id = rcs.real_chat_id
+     WHERE rcs.session_id = ?`
+  ).get(s.id);
+  res.json({ session: s, persona, real_chat: real || null, messages, evaluations: evals });
+});
+
+// intern sends a reply → store, evaluate silently, get next customer message
+r.post('/sessions/:id/messages', async (req, res) => {
+  const s = ownSession(req, res); if (!s) return;
+  if (s.status !== 'active') return res.status(400).json({ error: 'Session has ended' });
+  const body = String(req.body?.body || '').trim();
+  if (!body) return res.status(400).json({ error: 'Empty message' });
+
+  const before = sessionMessages(s.id);
+  const lastCustomer = [...before].reverse().find(m => m.role === 'customer');
+  const msgId = uuid();
+  db.prepare('INSERT INTO session_messages (id, session_id, role, body) VALUES (?, ?, ?, ?)').run(msgId, s.id, 'intern', body);
+
+  const persona = s.persona_id ? getPersona(s.persona_id) : null;
+  const conversation = [...before, { role: 'intern', body }];
+
+  // evaluate + simulate concurrently; neither failing should kill the turn
+  const [evalResult, custText] = await Promise.all([
+    evaluateReply({
+      internId: s.intern_id, sessionMessageId: msgId,
+      conversation, customerText: lastCustomer?.body || '', internReply: body,
+    }).catch(e => { console.error('eval error:', e.message); return null; }),
+    customerReply({ session: s, persona, conversation })
+      .catch(e => { console.error('simulator error:', e.message); return 'Sorry, could you say that again?'; }),
+  ]);
+
+  db.prepare('INSERT INTO session_messages (id, session_id, role, body) VALUES (?, ?, ?, ?)').run(uuid(), s.id, 'customer', custText);
+  res.json({ messages: visibleMessages(s.id), evaluation_recorded: !!evalResult });
+});
+
+function customerBody(m) {
+  const url = m.attachment_path ? `/real-chat-artwork/${m.attachment_path}` : '';
+  return url ? `${m.body}\n[[artwork:${url}]]` : m.body;
+}
+
+function revealNextRealCustomerBlock(sessionId, chatId, fromIndex) {
+  const originals = realChatMessages(chatId);
+  let index = Number(fromIndex || 0);
+
+  while (index < originals.length && originals[index].role === 'agent') index += 1;
+
+  let revealed = 0;
+  let actionable = 0;
+  while (index < originals.length && originals[index].role === 'customer') {
+    const m = originals[index];
+    db.prepare('INSERT INTO session_messages (id, session_id, role, body, created_at) VALUES (?, ?, ?, ?, datetime(?, ?))')
+      .run(uuid(), sessionId, 'customer', customerBody(m), 'now', `+${index} seconds`);
+    if (!m.is_artwork || !/^customer shared artwork\.?$/i.test(String(m.body || '').trim())) actionable += 1;
+    index += 1;
+    revealed += 1;
+  }
+
+  const reference = [];
+  while (index < originals.length && originals[index].role === 'agent') {
+    reference.push(originals[index].body);
+    index += 1;
+  }
+
+  db.prepare(`UPDATE real_chat_sessions
+    SET next_index = ?, current_reference = ?, current_customer_count = ?, replies_in_block = 0, updated_at = datetime('now')
+    WHERE session_id = ?`)
+    .run(index, reference.join('\n\n') || null, Math.max(1, actionable), sessionId);
+
+  return { revealed, done: index >= originals.length && revealed === 0, reference: reference.join('\n\n') || null };
+}
+
+r.post('/real-chats/:chatId/sessions', (req, res) => {
+  const chat = db.prepare('SELECT * FROM real_chats WHERE id = ?').get(req.params.chatId);
+  if (!chat) return res.status(404).json({ error: 'Real chat not found' });
+
+  const id = uuid();
+  db.prepare('INSERT INTO practice_sessions (id, intern_id, persona_id) VALUES (?, ?, NULL)').run(id, req.user.id);
+  db.prepare('INSERT INTO real_chat_sessions (session_id, real_chat_id, next_index) VALUES (?, ?, 0)').run(id, chat.id);
+  revealNextRealCustomerBlock(id, chat.id, 0);
+
+  res.json({ session_id: id, mode: 'real_chat', real_chat: chat, messages: visibleMessages(id) });
+});
+
+r.post('/real-chat-sessions/:id/messages', async (req, res) => {
+  const s = ownSession(req, res); if (!s) return;
+  if (s.status !== 'active') return res.status(400).json({ error: 'Session has ended' });
+  const state = db.prepare('SELECT * FROM real_chat_sessions WHERE session_id = ?').get(s.id);
+  if (!state) return res.status(404).json({ error: 'Real chat session not found' });
+
+  const body = String(req.body?.body || '').trim();
+  if (!body) return res.status(400).json({ error: 'Empty message' });
+
+  const before = visibleMessages(s.id);
+  const lastCustomer = [...before].reverse().find(m => m.role === 'customer');
+  const msgId = uuid();
+  db.prepare('INSERT INTO session_messages (id, session_id, role, body) VALUES (?, ?, ?, ?)').run(msgId, s.id, 'intern', body);
+
+  const conversation = [...before, { role: 'intern', body }];
+  const evalResult = await evaluateReply({
+    internId: s.intern_id,
+    sessionMessageId: msgId,
+    conversation,
+    customerText: lastCustomer?.body || '',
+    internReply: body,
+    modelReply: state.current_reference || null,
+  }).catch(e => { console.error('real chat eval error:', e.message); return null; });
+
+  const repliesInBlock = Number(state.replies_in_block || 0) + 1;
+  db.prepare(`UPDATE real_chat_sessions SET replies_in_block = ?, updated_at = datetime('now') WHERE session_id = ?`)
+    .run(repliesInBlock, s.id);
+
+  res.json({
+    messages: visibleMessages(s.id),
+    evaluation_recorded: !!evalResult,
+    waiting_for_more: true,
+    manual_next: true,
+  });
+});
+
+r.post('/real-chat-sessions/:id/continue', (req, res) => {
+  const s = ownSession(req, res); if (!s) return;
+  if (s.status !== 'active') return res.status(400).json({ error: 'Session has ended' });
+  const state = db.prepare('SELECT * FROM real_chat_sessions WHERE session_id = ?').get(s.id);
+  if (!state) return res.status(404).json({ error: 'Real chat session not found' });
+
+  const next = revealNextRealCustomerBlock(s.id, state.real_chat_id, state.next_index);
+  if (next.done) {
+    const scorecard = finishSession(s.id, s.intern_id);
+    return res.json({ messages: visibleMessages(s.id), complete: true, scorecard });
+  }
+
+  res.json({ messages: visibleMessages(s.id), complete: false });
+});
+
+// end session → scorecard
+r.post('/sessions/:id/end', (req, res) => {
+  const s = ownSession(req, res); if (!s) return;
+  res.json(finishSession(s.id, s.intern_id));
+});
+
+function finishSession(sessionId, internId) {
+  const evals = db.prepare(
+    `SELECT e.*, m.body AS intern_body FROM evaluations e JOIN session_messages m ON m.id = e.session_message_id
+     WHERE m.session_id = ? ORDER BY e.created_at`
+  ).all(sessionId).map(parseEval);
+  const overall = evals.length ? +(evals.reduce((a, e) => a + (e.overall || 0), 0) / evals.length).toFixed(1) : null;
+  db.prepare(`UPDATE practice_sessions SET status = 'ended', ended_at = datetime('now'), overall_score = ? WHERE id = ?`).run(overall, sessionId);
+  computeReadiness(internId, { snapshot: true });
+
+  const weakest = [...evals].sort((a, b) => (a.overall || 0) - (b.overall || 0)).slice(0, 3);
+  return { overall, turn_count: evals.length, evaluations: evals, weakest_turns: weakest };
+}
+
+r.get('/real-chat-sessions/:id/export', (req, res) => {
+  const s = ownSession(req, res); if (!s) return;
+  const real = db.prepare(
+    `SELECT rc.* FROM real_chat_sessions rcs JOIN real_chats rc ON rc.id = rcs.real_chat_id WHERE rcs.session_id = ?`
+  ).get(s.id);
+  if (!real) return res.status(404).json({ error: 'Real chat session not found' });
+  const messages = visibleMessages(s.id);
+  const evals = db.prepare(
+    `SELECT e.*, m.body AS intern_body FROM evaluations e JOIN session_messages m ON m.id = e.session_message_id
+     WHERE m.session_id = ? ORDER BY e.created_at`
+  ).all(s.id).map(parseEval);
+  const lines = [
+    `Decoinks Real Chat Practice`,
+    `Customer: ${real.customer_name}`,
+    `Intent: ${real.intent || ''}`,
+    `Summary: ${real.summary || ''}`,
+    '',
+    'Transcript:',
+    ...messages.map(m => `${m.role === 'intern' ? 'Intern' : 'Customer'}: ${m.body}${m.attachment_url ? `\n  Artwork: ${m.attachment_url}` : ''}`),
+    '',
+    'Scores:',
+    ...evals.map((e, i) => `Turn ${i + 1}: ${e.overall} overall | ideal: ${e.ideal_reply || ''}`),
+  ];
+  res.json({ filename: `${real.customer_name.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '') || 'real-chat'}-practice.txt`, text: lines.join('\n') });
+});
+
+r.get('/sessions', (req, res) => {
+  const rows = db.prepare(
+    `SELECT ps.*, p.name AS persona_name,
+       (SELECT COUNT(*) FROM session_messages m WHERE m.session_id = ps.id AND m.role='intern') AS intern_turns
+     FROM practice_sessions ps LEFT JOIN personas p ON p.id = ps.persona_id
+     WHERE ps.intern_id = ? ORDER BY ps.started_at DESC LIMIT 50`
+  ).all(req.user.id);
+  res.json(rows);
+});
+
+export function parseEval(e) {
+  return {
+    ...e,
+    rationale: safeParse(e.rationale, {}),
+    violations: safeParse(e.violations, []),
+    context: safeParse(e.context, {}),
+  };
+}
+function safeParse(s, fallback) { try { return JSON.parse(s) ?? fallback; } catch { return fallback; } }
+
+export default r;
