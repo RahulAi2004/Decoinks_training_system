@@ -44,6 +44,16 @@ r.post('/documents/:kind', upload.array('files', 10), async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+r.delete('/documents/:id', (req, res) => {
+  const row = db.prepare('SELECT * FROM documents WHERE id = ?').get(req.params.id);
+  if (!row) return res.status(404).json({ error: 'Document not found' });
+  if (row.storage_path && fs.existsSync(row.storage_path)) {
+    try { fs.unlinkSync(row.storage_path); } catch { /* DB delete still removes it from the app */ }
+  }
+  db.prepare('DELETE FROM documents WHERE id = ?').run(row.id);
+  res.json({ ok: true });
+});
+
 r.post('/ingest', async (req, res) => {
   try { res.json({ ingest: await ingestAll() }); }
   catch (e) { res.status(500).json({ error: e.message }); }

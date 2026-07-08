@@ -42,6 +42,17 @@ export default function Content() {
     finally { setBusy(false); }
   };
 
+  const deleteDocument = async (doc) => {
+    if (!confirm(`Delete ${doc.filename}?`)) return;
+    setBusy(true); setMsg(`Deleting ${doc.filename}...`);
+    try {
+      await api(`/admin/documents/${doc.id}`, { method: 'DELETE' });
+      setMsg(`${doc.filename} deleted.`);
+      load();
+    } catch (e) { setMsg(`Error: ${e.message}`); }
+    finally { setBusy(false); }
+  };
+
   const addProduct = async (e) => {
     e.preventDefault();
     if (!productForm.topic.trim() || !productForm.document) {
@@ -154,6 +165,8 @@ export default function Content() {
                           : d.parsed_status === 'error'
                             ? <span className="text-xs font-bold text-rose-600" title={d.parse_error}>✗ error</span>
                             : <span className="text-xs text-amber-600">{d.parsed_status}</span>}
+                        <button onClick={() => deleteDocument(d)} disabled={busy}
+                          className="ml-3 text-xs font-medium text-rose-600 hover:underline disabled:opacity-50">Delete</button>
                       </td>
                     </tr>
                   ))}
