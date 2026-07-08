@@ -25,6 +25,7 @@ export default function Practice() {
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const [awaitingNext, setAwaitingNext] = useState(false);
+  const [completedScorecard, setCompletedScorecard] = useState(null);
   const [scorecard, setScorecard] = useState(null);
   const bottomRef = useRef(null);
 
@@ -40,7 +41,7 @@ export default function Practice() {
     setBusy(true); setScorecard(null);
     try {
       const r = await api('/practice/sessions', { method: 'POST', body: { persona_id } });
-      setAwaitingNext(false);
+      setAwaitingNext(false); setCompletedScorecard(null);
       setSession({ ...r, mode: 'persona' }); setMessages(r.messages);
     } catch (e) { alert(e.message); }
     finally { setBusy(false); }
@@ -50,7 +51,7 @@ export default function Practice() {
     setBusy(true); setScorecard(null);
     try {
       const r = await api(`/practice/real-chats/${chatId}/sessions`, { method: 'POST' });
-      setAwaitingNext(false);
+      setAwaitingNext(false); setCompletedScorecard(null);
       setSession(r); setMessages(r.messages);
     } catch (e) { alert(e.message); }
     finally { setBusy(false); }
@@ -72,7 +73,7 @@ export default function Practice() {
       setMessages(r.messages);
       if (r.complete) {
         setScorecard({ ...r.scorecard, session_id: activeSession.session_id, real_chat: activeSession.real_chat });
-        setAwaitingNext(false);
+        setAwaitingNext(false); setCompletedScorecard(null);
         setSession(null);
       } else if (activeSession.mode === 'real_chat') {
         setAwaitingNext(!!r.waiting_for_more);
@@ -90,8 +91,7 @@ export default function Practice() {
       setMessages(r.messages);
       setAwaitingNext(false);
       if (r.complete) {
-        setScorecard({ ...r.scorecard, session_id: activeSession.session_id, real_chat: activeSession.real_chat });
-        setSession(null);
+        setCompletedScorecard({ ...r.scorecard, session_id: activeSession.session_id, real_chat: activeSession.real_chat });
       }
     } catch (e) { alert(e.message); }
     finally { setBusy(false); }
@@ -103,7 +103,7 @@ export default function Practice() {
     try {
       const r = await api(`/practice/sessions/${activeSession.session_id}/end`, { method: 'POST' });
       setScorecard({ ...r, session_id: activeSession.session_id, real_chat: activeSession.real_chat || null });
-      setAwaitingNext(false);
+      setAwaitingNext(false); setCompletedScorecard(null);
       setSession(null);
     } catch (e) { alert(e.message); }
     finally { setBusy(false); }
@@ -230,7 +230,9 @@ export default function Practice() {
         </div>
         <div className="flex gap-2">
           {session.mode === 'real_chat' && <Button variant="secondary" onClick={() => downloadTranscript(session.session_id)} disabled={busy}>Download chat</Button>}
-          <Button variant="danger" onClick={end} disabled={busy}>End & see scorecard</Button>
+          {completedScorecard
+            ? <Button onClick={() => { setScorecard(completedScorecard); setCompletedScorecard(null); setSession(null); }}>Check your results</Button>
+            : <Button variant="danger" onClick={end} disabled={busy}>End & see scorecard</Button>}
         </div>
       </div>
       <div className="flex-1 overflow-y-auto bg-white rounded-lg border border-slate-200 p-4 space-y-3">
@@ -255,9 +257,21 @@ export default function Practice() {
             </div>
           </div>
         )}
+        {session.mode === 'real_chat' && completedScorecard && !busy && (
+          <div className="flex justify-center">
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+              <span className="font-bold">Chat ended.</span> All customer messages are complete.
+            </div>
+          </div>
+        )}
         <div ref={bottomRef} />
       </div>
-      <form onSubmit={send} className="mt-3 flex gap-2">
+      {completedScorecard ? (
+        <div className="mt-3 flex justify-end gap-2">
+          <Button variant="secondary" onClick={() => downloadTranscript(session.session_id)} disabled={busy}>Download chat</Button>
+          <Button onClick={() => { setScorecard(completedScorecard); setCompletedScorecard(null); setSession(null); }}>Check your results</Button>
+        </div>
+      ) : <form onSubmit={send} className="mt-3 flex gap-2">
         <input value={input} onChange={e => setInput(e.target.value)} disabled={busy}
           placeholder="Reply like a Decoinks agent..." autoFocus
           className="flex-1 border border-slate-300 rounded-lg px-4 py-2.5 text-sm bg-white" />
@@ -265,7 +279,7 @@ export default function Practice() {
         {session.mode === 'real_chat' && awaitingNext && (
           <Button type="button" variant="secondary" onClick={continueReal} disabled={busy}>Next question</Button>
         )}
-      </form>
+      </form>}
     </div>
   );
 }
