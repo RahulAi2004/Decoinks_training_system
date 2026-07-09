@@ -6,6 +6,7 @@ import { evaluateReply } from '../services/evaluator.js';
 import { computeReadiness } from '../services/readiness.js';
 import { realChatList, realChatMessages } from '../services/realChats.js';
 import { getWritingStyle, nextCustomerMessage, randomWritingStyle, withPossibleArtwork, writingStyles } from '../services/writingStylePersonas.js';
+import { randomOrderFlowBlueprint } from '../services/orderFlows.js';
 
 const r = Router();
 
@@ -128,7 +129,12 @@ function compactCustomerText(m) {
     .trim();
 }
 
-function pickTalkBlueprint() {
+// Prefer the 10 complete order flows (full inquiry → paid → shipped, one per
+// writing style). Fall back to the 25 real chats if the flows doc is missing.
+async function pickTalkBlueprint() {
+  const orderFlow = await randomOrderFlowBlueprint();
+  if (orderFlow && orderFlow.customer_messages?.length) return orderFlow;
+
   const chats = realChatList().filter(c => Number(c.customer_messages || 0) > 0);
   const pool = chats.filter(c => Number(c.artwork_count || 0) > 0) || chats;
   const chat = (pool.length ? pool : chats)[Math.floor(Math.random() * (pool.length ? pool : chats).length)];
@@ -195,7 +201,7 @@ r.post('/talk-sessions', async (req, res) => {
   if (!style) return res.status(404).json({ error: 'Writing style document not found' });
   const id = uuid();
   const questions = style.questions || [];
-  const flow = pickTalkBlueprint();
+  const flow = await pickTalkBlueprint();
   db.prepare('INSERT INTO practice_sessions (id, intern_id, persona_id) VALUES (?, ?, NULL)').run(id, req.user.id);
   db.prepare(`INSERT INTO talk_customer_sessions
     (session_id, style_name, style_description, agent_tip, questions, next_index, flow_blueprint)
