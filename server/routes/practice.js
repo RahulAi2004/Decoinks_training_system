@@ -5,6 +5,7 @@ import { customerReply, getPersona } from '../services/simulator.js';
 import { evaluateReply } from '../services/evaluator.js';
 import { computeReadiness } from '../services/readiness.js';
 import { realChatList, realChatMessages } from '../services/realChats.js';
+import { getWritingStyle, nextCustomerMessage, writingStyles } from '../services/writingStylePersonas.js';
 
 const r = Router();
 
@@ -34,6 +35,10 @@ r.get('/personas', (req, res) => {
 
 r.get('/real-chats', (req, res) => {
   res.json(realChatList());
+});
+
+r.get('/talk-styles', async (req, res) => {
+  res.json(await writingStyles());
 });
 
 // start a session (persona_id optional → random)
@@ -146,6 +151,77 @@ r.post('/real-chats/:chatId/sessions', (req, res) => {
   revealNextRealCustomerBlock(id, chat.id, 0);
 
   res.json({ session_id: id, mode: 'real_chat', real_chat: chat, messages: visibleMessages(id) });
+});
+
+r.post('/talk-sessions', async (req, res) => {
+  const style = await getWritingStyle(req.body?.style_id);
+  if (!style) return res.status(404).json({ error: 'Writing style document not found' });
+  const id = uuid();
+  const questions = style.questions || [];
+  db.prepare('INSERT INTO practice_sessions (id, intern_id, persona_id) VALUES (?, ?, NULL)').run(id, req.user.id);
+  db.prepare(`INSERT INTO talk_customer_sessions
+    (session_id, style_name, style_description, agent_tip, questions, next_index)
+    VALUES (?, ?, ?, ?, ?, ?)`)
+    .run(id, style.name, style.description, style.agent_tip, JSON.stringify(questions), 1);
+  const opener = questions[0] || await nextCustomerMessage({ style, questions, nextIndex: 0, conversation: [] });
+  db.prepare('INSERT INTO session_messages (id, session_id, role, body) VALUES (?, ?, ?, ?)').run(uuid(), id, 'customer', opener);
+  res.json({ session_id: id, mode: 'talk_customer', style: { id: style.id, name: style.name, description: style.description, agent_tip: style.agent_tip }, messages: visibleMessages(id) });
+});
+
+r.post('/talk-sessions/:id/messages', async (req, res) => {
+  const s = ownSession(req, res); if (!s) return;
+  if (s.status !== 'active') return res.status(400).json({ error: 'Session has ended' });
+  const state = db.prepare('SELECT * FROM talk_customer_sessions WHERE session_id = ?').get(s.id);
+  if (!state) return res.status(404).json({ error: 'Talk-to-customer session not found' });
+  const body = String(req.body?.body || '').trim();
+  if (!body) return res.status(400).json({ error: 'Empty message' });
+
+  const before = visibleMessages(s.id);
+  const lastCustomer = [...before].reverse().find(m => m.role === 'customer');
+  const msgId = uuid();
+  db.prepare('INSERT INTO session_messages (id, session_id, role, body) VALUES (?, ?, ?, ?)').run(msgId, s.id, 'intern', body);
+
+  const questions = safeParse(state.questions, []);
+  const style = {
+    name: state.style_name,
+    description: state.style_description,
+    spotting: '',
+    agent_tip: state.agent_tip,
+  };
+  const conversation = [...before, { role: 'intern', body }];
+  const nextIndex = Number(state.next_index || 0);
+
+  if (questions.length && nextIndex >= questions.length) {
+    const evalResult = await evaluateReply({
+      internId: s.intern_id,
+      sessionMessageId: msgId,
+      conversation,
+      customerText: lastCustomer?.body || '',
+      internReply: body,
+      modelReply: state.agent_tip || null,
+    }).catch(e => { console.error('talk eval error:', e.message); return null; });
+    const scorecard = finishSession(s.id, s.intern_id);
+    return res.json({ messages: visibleMessages(s.id), evaluation_recorded: !!evalResult, complete: true, scorecard });
+  }
+
+  const [evalResult, customerText] = await Promise.all([
+    evaluateReply({
+      internId: s.intern_id,
+      sessionMessageId: msgId,
+      conversation,
+      customerText: lastCustomer?.body || '',
+      internReply: body,
+      modelReply: state.agent_tip || null,
+    }).catch(e => { console.error('talk eval error:', e.message); return null; }),
+    nextCustomerMessage({ style, questions, nextIndex, conversation })
+      .catch(e => { console.error('talk customer error:', e.message); return questions[Math.min(nextIndex, questions.length - 1)] || 'How much?'; }),
+  ]);
+
+  db.prepare('INSERT INTO session_messages (id, session_id, role, body) VALUES (?, ?, ?, ?)').run(uuid(), s.id, 'customer', customerText);
+  db.prepare(`UPDATE talk_customer_sessions SET next_index = ?, updated_at = datetime('now') WHERE session_id = ?`)
+    .run(nextIndex + 1, s.id);
+
+  res.json({ messages: visibleMessages(s.id), evaluation_recorded: !!evalResult });
 });
 
 r.post('/real-chat-sessions/:id/messages', async (req, res) => {

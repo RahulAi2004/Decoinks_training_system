@@ -1,0 +1,122 @@
+import fs from 'fs';
+import path from 'path';
+import mammoth from 'mammoth';
+import { completeText, resolveProvider } from '../llm.js';
+
+const CANDIDATES = [
+  path.join(process.cwd(), 'Decoinks-Writing-Style-Personas.docx'),
+  path.join(process.cwd(), 'content', 'training', 'Decoinks-Writing-Style-Personas.docx'),
+  path.join(process.cwd(), 'decoinks-writting-style-personas.docx'),
+];
+
+let cache = null;
+
+function slug(s) {
+  return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+function sourcePath() {
+  return CANDIDATES.find(f => fs.existsSync(f)) || CANDIDATES[0];
+}
+
+function afterLabel(lines, label) {
+  const i = lines.findIndex(x => x.toLowerCase() === label.toLowerCase());
+  return i >= 0 ? (lines[i + 1] || '').trim() : '';
+}
+
+function parseQuestions(section) {
+  const lines = section.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+  const start = lines.findIndex(x => /^20 real questions/i.test(x));
+  if (start < 0) return [];
+  return lines.slice(start + 1)
+    .map(x => x.match(/^\d+\.\s*(.+)$/)?.[1]?.trim())
+    .filter(Boolean);
+}
+
+export async function writingStyles() {
+  if (cache) return cache;
+  const file = sourcePath();
+  if (!fs.existsSync(file)) {
+    cache = [];
+    return cache;
+  }
+  const { value } = await mammoth.extractRawText({ path: file });
+  const matches = [...value.matchAll(/(?:^|\n)(\d{1,2})\.\s+(.+?)\n\s*How they write/g)];
+  const sections = matches.map((m, idx) => {
+    const start = m.index + (m[0].startsWith('\n') ? 1 : 0);
+    const end = matches[idx + 1]?.index ?? value.length;
+    return { number: Number(m[1]), name: m[2].trim(), text: value.slice(start, end) };
+  }).filter(x => x.number >= 1 && x.number <= 10);
+
+  cache = sections.map(s => {
+    const lines = s.text.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+    const description = afterLabel(lines, 'How they write');
+    const spotting = afterLabel(lines, 'How to spot them');
+    const agent_tip = afterLabel(lines, 'Agent tip');
+    const questions = parseQuestions(s.text);
+    return {
+      id: slug(s.name),
+      number: s.number,
+      name: s.name,
+      description,
+      spotting,
+      agent_tip,
+      questions,
+      source_file: path.basename(file),
+    };
+  });
+  return cache;
+}
+
+export async function getWritingStyle(id) {
+  const styles = await writingStyles();
+  return styles.find(s => s.id === id) || styles[0] || null;
+}
+
+export async function nextCustomerMessage({ style, questions, nextIndex, conversation }) {
+  const fallback = questions[Math.min(nextIndex, questions.length - 1)] || 'How much does it cost?';
+  const { provider } = resolveProvider();
+  if (provider === 'mock') return fallback;
+
+  const examples = questions.slice(0, 20).map((q, i) => `${i + 1}. ${q}`).join('\n');
+  const convo = conversation.slice(-10).map(m => `${m.role === 'customer' ? 'CUSTOMER' : 'INTERN'}: ${m.body}`).join('\n');
+  try {
+    const text = await completeText({
+      system:
+`You are role-playing a real Decoinks customer in a sales chat.
+
+CUSTOMER WRITING STYLE: ${style.name}
+HOW THEY WRITE: ${style.description}
+HOW TO SPOT THEM: ${style.spotting || ''}
+
+Write ONLY the next customer message. Do not evaluate the intern. Do not explain yourself.
+
+Rules:
+- Stay in this customer's writing style exactly: typos, slang, caps, emojis, broken wording, Spanish, urgency, or multi-question format as appropriate.
+- Use the examples as the style and topic source.
+- Ask about Decoinks-relevant things: DTF transfers, custom shirts, designs/artwork, mockups, pricing, shipping, payment, bulk, unclear/broken design files.
+- React naturally to the intern's last reply.
+- Keep it realistic Messenger style, usually 1 message. If the style is rambling or multi-question, it can contain multiple asks.
+- If a design/artwork is relevant, describe it like a customer would: broken file, blurry picture, unclear design, old laptop files, image not clear, needs mockup.`,
+      messages: [{
+        role: 'user',
+        content:
+`REAL CUSTOMER EXAMPLES:
+${examples}
+
+CONVERSATION SO FAR:
+${convo || '(Start the chat.)'}
+
+Suggested next source question if useful:
+${fallback}
+
+Return the next customer message only.`,
+      }],
+      maxTokens: 160,
+    });
+    return text.trim() || fallback;
+  } catch (e) {
+    console.error('writing style customer error:', e.message);
+    return fallback;
+  }
+}

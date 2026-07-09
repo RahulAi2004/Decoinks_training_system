@@ -134,6 +134,17 @@ CREATE TABLE IF NOT EXISTS real_chat_sessions (
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS talk_customer_sessions (
+  session_id TEXT PRIMARY KEY REFERENCES practice_sessions(id) ON DELETE CASCADE,
+  style_name TEXT NOT NULL,
+  style_description TEXT,
+  agent_tip TEXT,
+  questions TEXT NOT NULL,
+  next_index INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS company_products (
   id TEXT PRIMARY KEY,
   topic TEXT NOT NULL,

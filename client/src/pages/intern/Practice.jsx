@@ -19,6 +19,7 @@ function downloadText(filename, text) {
 export default function Practice() {
   const [personas, setPersonas] = useState([]);
   const [realChats, setRealChats] = useState([]);
+  const [talkStyles, setTalkStyles] = useState([]);
   const [tab, setTab] = useState('real');
   const [session, setSession] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -33,7 +34,8 @@ export default function Practice() {
     Promise.all([
       api('/practice/personas'),
       api('/practice/real-chats'),
-    ]).then(([p, c]) => { setPersonas(p); setRealChats(c); }).catch(console.error);
+      api('/practice/talk-styles'),
+    ]).then(([p, c, s]) => { setPersonas(p); setRealChats(c); setTalkStyles(s); }).catch(console.error);
   }, []);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
@@ -57,6 +59,16 @@ export default function Practice() {
     finally { setBusy(false); }
   };
 
+  const startTalk = async (style_id) => {
+    setBusy(true); setScorecard(null);
+    try {
+      const r = await api('/practice/talk-sessions', { method: 'POST', body: { style_id } });
+      setAwaitingNext(false); setCompletedScorecard(null);
+      setSession(r); setMessages(r.messages);
+    } catch (e) { alert(e.message); }
+    finally { setBusy(false); }
+  };
+
   const send = async (e) => {
     e.preventDefault();
     const body = input.trim();
@@ -68,13 +80,22 @@ export default function Practice() {
     try {
       const path = activeSession.mode === 'real_chat'
         ? `/practice/real-chat-sessions/${activeSession.session_id}/messages`
+        : activeSession.mode === 'talk_customer'
+          ? `/practice/talk-sessions/${activeSession.session_id}/messages`
         : `/practice/sessions/${activeSession.session_id}/messages`;
+      if (activeSession.mode === 'talk_customer') await new Promise(resolve => setTimeout(resolve, 15000));
       const r = await api(path, { method: 'POST', body: { body } });
       setMessages(r.messages);
       if (r.complete) {
-        setScorecard({ ...r.scorecard, session_id: activeSession.session_id, real_chat: activeSession.real_chat });
-        setAwaitingNext(false); setCompletedScorecard(null);
-        setSession(null);
+        const doneScorecard = { ...r.scorecard, session_id: activeSession.session_id, real_chat: activeSession.real_chat || null };
+        setAwaitingNext(false);
+        if (activeSession.mode === 'talk_customer' || activeSession.mode === 'real_chat') {
+          setCompletedScorecard(doneScorecard);
+        } else {
+          setCompletedScorecard(null);
+          setScorecard(doneScorecard);
+          setSession(null);
+        }
       } else if (activeSession.mode === 'real_chat') {
         setAwaitingNext(!!r.waiting_for_more);
       }
@@ -170,6 +191,7 @@ export default function Practice() {
 
         <div className="inline-flex rounded-lg border border-slate-200 bg-white p-1">
           <button onClick={() => setTab('real')} className={`px-3 py-1.5 rounded-md text-sm font-semibold ${tab === 'real' ? 'bg-violet-700 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>Real customer chats</button>
+          <button onClick={() => setTab('talk')} className={`px-3 py-1.5 rounded-md text-sm font-semibold ${tab === 'talk' ? 'bg-violet-700 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>Talk to customer</button>
           <button onClick={() => setTab('persona')} className={`px-3 py-1.5 rounded-md text-sm font-semibold ${tab === 'persona' ? 'bg-violet-700 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>AI personas</button>
         </div>
 
@@ -191,6 +213,26 @@ export default function Practice() {
                 </div>
               </button>
             ))}
+          </div>
+        ) : tab === 'talk' ? (
+          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-3">
+            {talkStyles.map(s => (
+              <button key={s.id} onClick={() => startTalk(s.id)} disabled={busy}
+                className="rounded-lg border border-slate-200 bg-white hover:border-violet-400 p-4 text-left transition">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="font-bold text-slate-800">{s.number}. {s.name}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{s.description}</p>
+                  </div>
+                </div>
+                <p className="mt-2 text-xs text-slate-500 line-clamp-3">{s.agent_tip}</p>
+                <div className="mt-3 flex flex-wrap gap-1.5 text-[11px]">
+                  <span className="px-2 py-0.5 rounded bg-violet-50 text-violet-700">{s.questions?.length || 0} real questions</span>
+                  <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-700">15s wait</span>
+                </div>
+              </button>
+            ))}
+            {talkStyles.length === 0 && <p className="text-sm text-slate-400">Writing-style personas document not found.</p>}
           </div>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -216,10 +258,16 @@ export default function Practice() {
     );
   }
 
-  const title = session.mode === 'real_chat' ? session.real_chat?.customer_name : (session.persona?.name || 'Customer');
+  const title = session.mode === 'real_chat'
+    ? session.real_chat?.customer_name
+    : session.mode === 'talk_customer'
+      ? session.style?.name
+      : (session.persona?.name || 'Customer');
   const subtitle = session.mode === 'real_chat'
     ? `${session.real_chat?.intent || 'Real transcript'}`
-    : session.persona?.description;
+    : session.mode === 'talk_customer'
+      ? session.style?.agent_tip
+      : session.persona?.description;
 
   return (
     <div className="flex flex-col h-[calc(100vh-3rem)]">
@@ -249,7 +297,7 @@ export default function Practice() {
             </div>
           </div>
         ))}
-        {busy && <p className="text-xs text-slate-400 italic">{session.mode === 'real_chat' ? 'checking your reply...' : 'customer is typing...'}</p>}
+        {busy && <p className="text-xs text-slate-400 italic">{session.mode === 'real_chat' ? 'checking your reply...' : session.mode === 'talk_customer' ? 'customer is thinking... next message in about 15 seconds' : 'customer is typing...'}</p>}
         {session.mode === 'real_chat' && awaitingNext && !busy && (
           <div className="flex justify-center">
             <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
@@ -257,7 +305,7 @@ export default function Practice() {
             </div>
           </div>
         )}
-        {session.mode === 'real_chat' && completedScorecard && !busy && (
+        {(session.mode === 'real_chat' || session.mode === 'talk_customer') && completedScorecard && !busy && (
           <div className="flex justify-center">
             <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
               <span className="font-bold">Chat ended.</span> All customer messages are complete.
@@ -268,7 +316,7 @@ export default function Practice() {
       </div>
       {completedScorecard ? (
         <div className="mt-3 flex justify-end gap-2">
-          <Button variant="secondary" onClick={() => downloadTranscript(session.session_id)} disabled={busy}>Download chat</Button>
+          {session.mode === 'real_chat' && <Button variant="secondary" onClick={() => downloadTranscript(session.session_id)} disabled={busy}>Download chat</Button>}
           <Button onClick={() => { setScorecard(completedScorecard); setCompletedScorecard(null); setSession(null); }}>Check your results</Button>
         </div>
       ) : <form onSubmit={send} className="mt-3 flex gap-2">
