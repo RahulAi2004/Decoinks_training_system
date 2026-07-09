@@ -110,6 +110,43 @@ function customerBody(m) {
   return url ? `${m.body}\n[[artwork:${url}]]` : m.body;
 }
 
+const TALK_FLOW_STAGES = [
+  'opening: customer shows interest or shares artwork',
+  'need: customer asks if Decoinks can make it / what product they need',
+  'artwork: customer clarifies design, image quality, mockup, or file issue',
+  'quantity and size: customer gives or asks about size, color, shirts, or transfers',
+  'price: customer asks cost, quote, or minimum',
+  'turnaround or shipping: customer asks when/how they can get it',
+  'payment/order: customer asks how to pay or how to place order',
+  'follow-up: customer hesitates, repeats, or asks one final practical question',
+];
+
+function compactCustomerText(m) {
+  return String(m.body || '')
+    .replace(/\[\[artwork:.+?\]\]/g, '')
+    .replace(/^Customer shared artwork\.?$/i, '')
+    .trim();
+}
+
+function pickTalkBlueprint() {
+  const chats = realChatList().filter(c => Number(c.customer_messages || 0) > 0);
+  const pool = chats.filter(c => Number(c.artwork_count || 0) > 0) || chats;
+  const chat = (pool.length ? pool : chats)[Math.floor(Math.random() * (pool.length ? pool : chats).length)];
+  if (!chat) return null;
+  const messages = realChatMessages(chat.id).filter(m => m.role === 'customer');
+  const customerMessages = messages.map(compactCustomerText).filter(Boolean);
+  const artworkUrls = messages.map(m => m.attachment_path ? `/real-chat-artwork/${m.attachment_path}` : '').filter(Boolean);
+  return {
+    intent: chat.intent,
+    products_discussed: chat.products_discussed,
+    stage_reached: chat.stage_reached,
+    summary: chat.summary,
+    customer_messages: customerMessages,
+    artwork_urls: artworkUrls,
+    stages: TALK_FLOW_STAGES,
+  };
+}
+
 function revealNextRealCustomerBlock(sessionId, chatId, fromIndex) {
   const originals = realChatMessages(chatId);
   let index = Number(fromIndex || 0);
@@ -158,13 +195,14 @@ r.post('/talk-sessions', async (req, res) => {
   if (!style) return res.status(404).json({ error: 'Writing style document not found' });
   const id = uuid();
   const questions = style.questions || [];
+  const flow = pickTalkBlueprint();
   db.prepare('INSERT INTO practice_sessions (id, intern_id, persona_id) VALUES (?, ?, NULL)').run(id, req.user.id);
   db.prepare(`INSERT INTO talk_customer_sessions
-    (session_id, style_name, style_description, agent_tip, questions, next_index)
-    VALUES (?, ?, ?, ?, ?, ?)`)
-    .run(id, style.name, style.description, style.agent_tip, JSON.stringify(questions), 1);
-  const openerText = await nextCustomerMessage({ style, questions, nextIndex: 0, conversation: [] });
-  const opener = withPossibleArtwork(openerText, { force: true });
+    (session_id, style_name, style_description, agent_tip, questions, next_index, flow_blueprint)
+    VALUES (?, ?, ?, ?, ?, ?, ?)`)
+    .run(id, style.name, style.description, style.agent_tip, JSON.stringify(questions), 1, flow ? JSON.stringify(flow) : null);
+  const openerText = await nextCustomerMessage({ style, questions, nextIndex: 0, conversation: [], flow });
+  const opener = withPossibleArtwork(openerText, { force: true, artworkUrl: flow?.artwork_urls?.[0] || '' });
   db.prepare('INSERT INTO session_messages (id, session_id, role, body) VALUES (?, ?, ?, ?)').run(uuid(), id, 'customer', opener);
   res.json({ session_id: id, mode: 'talk_customer', style: { name: 'Customer', description: 'Live AI customer', agent_tip: 'Reply naturally and handle the customer like a real Decoinks chat.' }, messages: visibleMessages(id) });
 });
@@ -191,6 +229,7 @@ r.post('/talk-sessions/:id/messages', async (req, res) => {
   };
   const conversation = [...before, { role: 'intern', body }];
   const nextIndex = Number(state.next_index || 0);
+  const flow = safeParse(state.flow_blueprint, null);
 
   const [evalResult, customerText] = await Promise.all([
     evaluateReply({
@@ -201,12 +240,13 @@ r.post('/talk-sessions/:id/messages', async (req, res) => {
       internReply: body,
       modelReply: state.agent_tip || null,
     }).catch(e => { console.error('talk eval error:', e.message); return null; }),
-    nextCustomerMessage({ style, questions, nextIndex, conversation })
+    nextCustomerMessage({ style, questions, nextIndex, conversation, flow })
       .catch(e => { console.error('talk customer error:', e.message); return questions[Math.min(nextIndex, questions.length - 1)] || 'How much?'; }),
   ]);
 
   const shouldForceArtwork = nextIndex === 1 || nextIndex % 5 === 0;
-  db.prepare('INSERT INTO session_messages (id, session_id, role, body) VALUES (?, ?, ?, ?)').run(uuid(), s.id, 'customer', withPossibleArtwork(customerText, { force: shouldForceArtwork }));
+  const flowArtwork = flow?.artwork_urls?.[nextIndex % (flow.artwork_urls.length || 1)] || '';
+  db.prepare('INSERT INTO session_messages (id, session_id, role, body) VALUES (?, ?, ?, ?)').run(uuid(), s.id, 'customer', withPossibleArtwork(customerText, { force: shouldForceArtwork, artworkUrl: flowArtwork }));
   db.prepare(`UPDATE talk_customer_sessions SET next_index = ?, updated_at = datetime('now') WHERE session_id = ?`)
     .run(nextIndex + 1, s.id);
 

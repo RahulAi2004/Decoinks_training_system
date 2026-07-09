@@ -238,6 +238,13 @@ for (const [column, ddl] of [
   if (!exists) db.prepare(ddl).run();
 }
 
+for (const [column, ddl] of [
+  ['flow_blueprint', 'ALTER TABLE talk_customer_sessions ADD COLUMN flow_blueprint TEXT'],
+]) {
+  const exists = db.prepare('PRAGMA table_info(talk_customer_sessions)').all().some(c => c.name === column);
+  if (!exists) db.prepare(ddl).run();
+}
+
 export const uuid = () => crypto.randomUUID();
 
 // ---- settings helpers ----

@@ -92,20 +92,28 @@ export function randomArtworkUrl() {
   return `/real-chat-artwork/${file}`;
 }
 
-export function withPossibleArtwork(text, { force = false } = {}) {
+export function withPossibleArtwork(text, { force = false, artworkUrl = '' } = {}) {
   const shouldAttach = force || /\b(art|artwork|design|logo|picture|pic|image|mock ?up|file|photo|shirt)\b/i.test(text);
   if (!shouldAttach) return text;
-  const url = randomArtworkUrl();
+  const url = artworkUrl || randomArtworkUrl();
   if (!url) return text;
   return `${text}\n[[artwork:${url}]]`;
 }
 
-export async function nextCustomerMessage({ style, questions, nextIndex, conversation }) {
-  const fallback = questions.length ? questions[nextIndex % questions.length] : 'How much does it cost?';
+export async function nextCustomerMessage({ style, questions, nextIndex, conversation, flow = null }) {
+  const sourceMessages = flow?.customer_messages || [];
+  const fallback = sourceMessages.length
+    ? sourceMessages[nextIndex % sourceMessages.length]
+    : questions.length
+      ? questions[nextIndex % questions.length]
+      : 'How much does it cost?';
   const { provider } = resolveProvider();
   if (provider === 'mock') return fallback;
 
   const examples = questions.slice(0, 20).map((q, i) => `${i + 1}. ${q}`).join('\n');
+  const flowMessages = (flow?.customer_messages || []).slice(0, 12).map((m, i) => `${i + 1}. ${m}`).join('\n');
+  const flowStages = flow?.stages || [];
+  const stage = flowStages[Math.min(nextIndex, flowStages.length - 1)] || flowStages.at?.(-1) || 'continue the customer inquiry';
   const convo = conversation.slice(-10).map(m => `${m.role === 'customer' ? 'CUSTOMER' : 'INTERN'}: ${m.body}`).join('\n');
   const isOpening = conversation.length === 0;
   try {
@@ -122,7 +130,8 @@ Write ONLY the next customer message. Do not evaluate the intern. Do not explain
 Rules:
 - Stay in this customer's writing style exactly: typos, slang, caps, emojis, broken wording, Spanish, urgency, or multi-question format as appropriate.
 - Use the examples as the writing pattern, not as a checklist.
-- Ask about ONE thing only. Never bundle price + examples + shipping + order details in the same message.
+- Follow the real chat flow. Move only one stage forward at a time.
+- Ask about ONE thing only. Never bundle price + examples + shipping + order details in the same message unless the real source message did.
 - Keep it like a real customer chat: short, incomplete, casual, sometimes unclear.
 - Maximum 12 words unless the selected writing style genuinely requires a longer broken sentence.
 - Do not sound professional, scripted, or like a lead form.
@@ -136,11 +145,22 @@ Rules:
 `REAL CUSTOMER EXAMPLES:
 ${examples}
 
+REAL CHAT FLOW TO IMITATE:
+Intent: ${flow?.intent || 'custom shirts / DTF inquiry'}
+Products: ${flow?.products_discussed || ''}
+Stage reached in source chat: ${flow?.stage_reached || ''}
+Summary: ${flow?.summary || ''}
+Actual customer message sequence:
+${flowMessages || '(No source sequence available.)'}
+
 CONVERSATION SO FAR:
 ${convo || '(Start the chat.)'}
 
 ${isOpening ? `Opening message instruction:
-Start with a very short design/artwork message, for example "can you make this", "how much for this", "you can do this?", or similar in the chosen style.` : `Suggested next source question if useful:
+Start like the source customer starts. If artwork is attached, keep text tiny: "can you make this", "how much for this", "you can do this?", or similar.` : `Current flow stage:
+${stage}
+
+Suggested source message to adapt:
 ${fallback}
 `}
 
