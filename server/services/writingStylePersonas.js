@@ -100,6 +100,32 @@ export function withPossibleArtwork(text, { force = false, artworkUrl = '' } = {
   return `${text}\n[[artwork:${url}]]`;
 }
 
+// Cheap yes/no check: has the intern actually closed the whole order?
+// Used to auto-end a talk-to-customer session once the deal is done, instead
+// of relying on the in-character customer to gracefully sign off.
+export async function isOrderComplete({ conversation }) {
+  const { provider } = resolveProvider();
+  if (provider === 'mock') return false;
+  const convo = conversation.slice(-16).map(m => `${m.role === 'customer' ? 'CUSTOMER' : 'AGENT'}: ${m.body}`).join('\n');
+  try {
+    const text = await completeText({
+      system:
+`You judge whether a Decoinks sales chat has reached a COMPLETED order.
+An order is COMPLETE only when ALL of these have happened in the chat:
+1) a price was given, 2) the design/mockup was handled, 3) quantity was confirmed,
+4) payment was made or clearly arranged, AND 5) shipping/delivery was arranged.
+If any step is still open, it is NOT complete.
+Answer with exactly one word: YES or NO.`,
+      messages: [{ role: 'user', content: `CHAT:\n${convo}\n\nIs the order fully completed? Answer YES or NO.` }],
+      maxTokens: 3,
+    });
+    return /\byes\b/i.test(text);
+  } catch (e) {
+    console.error('order complete check error:', e.message);
+    return false;
+  }
+}
+
 export async function nextCustomerMessage({ style, questions, nextIndex, conversation, flow = null }) {
   const sourceMessages = flow?.customer_messages || [];
   const fallback = sourceMessages.length
@@ -138,6 +164,9 @@ Rules:
 - React naturally to the intern's last reply.
 - Send exactly 1 chat bubble.
 - If a design/artwork is relevant, describe it like a customer would: broken file, blurry picture, unclear design, old laptop files, image not clear, needs mockup.
+- Keep the conversation going in your style until the ORDER is actually done. Do NOT stop just because there were only a few example messages — keep asking naturally until every step is handled.
+- The order is DONE only after the intern has: given a price, handled your design/mockup, confirmed quantity, AND arranged payment + shipping/delivery. When (and only when) all of that is done and you are satisfied, send a short happy closing in your style (e.g. "ok paid, thanks!", "gracias, listo", "perfect see you") and end the message with the exact tag [[DONE]].
+- If the order is NOT fully done yet, keep chatting and NEVER write [[DONE]].
 - Do not say you are an AI, persona, trainee, or practice scenario. You are just the customer.`,
       messages: [{
         role: 'user',

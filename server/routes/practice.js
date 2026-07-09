@@ -5,7 +5,7 @@ import { customerReply, getPersona } from '../services/simulator.js';
 import { evaluateReply } from '../services/evaluator.js';
 import { computeReadiness } from '../services/readiness.js';
 import { realChatList, realChatMessages } from '../services/realChats.js';
-import { getWritingStyle, nextCustomerMessage, randomWritingStyle, withPossibleArtwork, writingStyles } from '../services/writingStylePersonas.js';
+import { getWritingStyle, isOrderComplete, nextCustomerMessage, randomWritingStyle, withPossibleArtwork, writingStyles } from '../services/writingStylePersonas.js';
 import { randomOrderFlowBlueprint } from '../services/orderFlows.js';
 
 const r = Router();
@@ -207,7 +207,7 @@ r.post('/talk-sessions', async (req, res) => {
     (session_id, style_name, style_description, agent_tip, questions, next_index, flow_blueprint)
     VALUES (?, ?, ?, ?, ?, ?, ?)`)
     .run(id, style.name, style.description, style.agent_tip, JSON.stringify(questions), 1, flow ? JSON.stringify(flow) : null);
-  const openerText = await nextCustomerMessage({ style, questions, nextIndex: 0, conversation: [], flow });
+  const openerText = (await nextCustomerMessage({ style, questions, nextIndex: 0, conversation: [], flow })).replace(/\[\[\s*DONE\s*\]\]/gi, '').trim();
   const opener = withPossibleArtwork(openerText, { force: true, artworkUrl: flow?.artwork_urls?.[0] || '' });
   db.prepare('INSERT INTO session_messages (id, session_id, role, body) VALUES (?, ?, ?, ?)').run(uuid(), id, 'customer', opener);
   res.json({ session_id: id, mode: 'talk_customer', style: { name: 'Customer', description: 'Live AI customer', agent_tip: 'Reply naturally and handle the customer like a real Decoinks chat.' }, messages: visibleMessages(id) });
@@ -237,7 +237,14 @@ r.post('/talk-sessions/:id/messages', async (req, res) => {
   const nextIndex = Number(state.next_index || 0);
   const flow = safeParse(state.flow_blueprint, null);
 
-  const [evalResult, customerText] = await Promise.all([
+  // The customer keeps chatting in-style until the order is actually closed.
+  // A dedicated completion check (only after the order could realistically be
+  // done) decides when to end; a hard cap prevents an endless session.
+  const stagesLen = flow?.stages?.length || 8;
+  const hardCap = stagesLen + 6;
+  const canBeDone = nextIndex >= 3;
+
+  const [evalResult, customerText, orderComplete] = await Promise.all([
     evaluateReply({
       internId: s.intern_id,
       sessionMessageId: msgId,
@@ -248,13 +255,26 @@ r.post('/talk-sessions/:id/messages', async (req, res) => {
     }).catch(e => { console.error('talk eval error:', e.message); return null; }),
     nextCustomerMessage({ style, questions, nextIndex, conversation, flow })
       .catch(e => { console.error('talk customer error:', e.message); return questions[Math.min(nextIndex, questions.length - 1)] || 'How much?'; }),
+    canBeDone
+      ? isOrderComplete({ conversation }).catch(e => { console.error('talk done check error:', e.message); return false; })
+      : Promise.resolve(false),
   ]);
+
+  let done = /\[\[DONE\]\]/i.test(customerText) || orderComplete;
+  if (nextIndex < 3) done = false;               // never end before the order can realistically be handled
+  if (nextIndex >= hardCap) done = true;         // safety net so a session can't run forever
+  const cleanCustomer = customerText.replace(/\[\[\s*DONE\s*\]\]/gi, '').trim() || 'ok thanks!';
 
   const shouldForceArtwork = nextIndex === 1 || nextIndex % 5 === 0;
   const flowArtwork = flow?.artwork_urls?.[nextIndex % (flow.artwork_urls.length || 1)] || '';
-  db.prepare('INSERT INTO session_messages (id, session_id, role, body) VALUES (?, ?, ?, ?)').run(uuid(), s.id, 'customer', withPossibleArtwork(customerText, { force: shouldForceArtwork, artworkUrl: flowArtwork }));
+  db.prepare('INSERT INTO session_messages (id, session_id, role, body) VALUES (?, ?, ?, ?)').run(uuid(), s.id, 'customer', withPossibleArtwork(cleanCustomer, { force: shouldForceArtwork, artworkUrl: flowArtwork }));
   db.prepare(`UPDATE talk_customer_sessions SET next_index = ?, updated_at = datetime('now') WHERE session_id = ?`)
     .run(nextIndex + 1, s.id);
+
+  if (done) {
+    const scorecard = finishSession(s.id, s.intern_id);
+    return res.json({ messages: visibleMessages(s.id), evaluation_recorded: !!evalResult, complete: true, scorecard });
+  }
 
   res.json({ messages: visibleMessages(s.id), evaluation_recorded: !!evalResult });
 });
