@@ -73,8 +73,33 @@ export async function getWritingStyle(id) {
   return styles.find(s => s.id === id) || styles[0] || null;
 }
 
+export async function randomWritingStyle() {
+  const styles = await writingStyles();
+  if (!styles.length) return null;
+  return styles[Math.floor(Math.random() * styles.length)];
+}
+
+export function randomArtworkUrl() {
+  const dir = path.join(process.cwd(), 'data', 'real-chat-artwork');
+  if (!fs.existsSync(dir)) return '';
+  const files = fs.readdirSync(dir)
+    .filter(name => /\.(png|jpe?g|webp|gif)$/i.test(name))
+    .sort();
+  if (!files.length) return '';
+  const file = files[Math.floor(Math.random() * files.length)];
+  return `/real-chat-artwork/${file}`;
+}
+
+export function withPossibleArtwork(text, { force = false } = {}) {
+  const shouldAttach = force || /\b(art|artwork|design|logo|picture|pic|image|mock ?up|file|photo|shirt)\b/i.test(text);
+  if (!shouldAttach) return text;
+  const url = randomArtworkUrl();
+  if (!url) return text;
+  return `${text}\n[[artwork:${url}]]`;
+}
+
 export async function nextCustomerMessage({ style, questions, nextIndex, conversation }) {
-  const fallback = questions[Math.min(nextIndex, questions.length - 1)] || 'How much does it cost?';
+  const fallback = questions.length ? questions[nextIndex % questions.length] : 'How much does it cost?';
   const { provider } = resolveProvider();
   if (provider === 'mock') return fallback;
 
@@ -97,7 +122,8 @@ Rules:
 - Ask about Decoinks-relevant things: DTF transfers, custom shirts, designs/artwork, mockups, pricing, shipping, payment, bulk, unclear/broken design files.
 - React naturally to the intern's last reply.
 - Keep it realistic Messenger style, usually 1 message. If the style is rambling or multi-question, it can contain multiple asks.
-- If a design/artwork is relevant, describe it like a customer would: broken file, blurry picture, unclear design, old laptop files, image not clear, needs mockup.`,
+- If a design/artwork is relevant, describe it like a customer would: broken file, blurry picture, unclear design, old laptop files, image not clear, needs mockup.
+- Do not say you are an AI, persona, trainee, or practice scenario. You are just the customer.`,
       messages: [{
         role: 'user',
         content:

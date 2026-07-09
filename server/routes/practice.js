@@ -5,7 +5,7 @@ import { customerReply, getPersona } from '../services/simulator.js';
 import { evaluateReply } from '../services/evaluator.js';
 import { computeReadiness } from '../services/readiness.js';
 import { realChatList, realChatMessages } from '../services/realChats.js';
-import { getWritingStyle, nextCustomerMessage, writingStyles } from '../services/writingStylePersonas.js';
+import { getWritingStyle, nextCustomerMessage, randomWritingStyle, withPossibleArtwork, writingStyles } from '../services/writingStylePersonas.js';
 
 const r = Router();
 
@@ -154,7 +154,7 @@ r.post('/real-chats/:chatId/sessions', (req, res) => {
 });
 
 r.post('/talk-sessions', async (req, res) => {
-  const style = await getWritingStyle(req.body?.style_id);
+  const style = req.body?.style_id ? await getWritingStyle(req.body.style_id) : await randomWritingStyle();
   if (!style) return res.status(404).json({ error: 'Writing style document not found' });
   const id = uuid();
   const questions = style.questions || [];
@@ -163,9 +163,10 @@ r.post('/talk-sessions', async (req, res) => {
     (session_id, style_name, style_description, agent_tip, questions, next_index)
     VALUES (?, ?, ?, ?, ?, ?)`)
     .run(id, style.name, style.description, style.agent_tip, JSON.stringify(questions), 1);
-  const opener = questions[0] || await nextCustomerMessage({ style, questions, nextIndex: 0, conversation: [] });
+  const openerText = await nextCustomerMessage({ style, questions, nextIndex: 0, conversation: [] });
+  const opener = withPossibleArtwork(openerText, { force: true });
   db.prepare('INSERT INTO session_messages (id, session_id, role, body) VALUES (?, ?, ?, ?)').run(uuid(), id, 'customer', opener);
-  res.json({ session_id: id, mode: 'talk_customer', style: { id: style.id, name: style.name, description: style.description, agent_tip: style.agent_tip }, messages: visibleMessages(id) });
+  res.json({ session_id: id, mode: 'talk_customer', style: { name: 'Customer', description: 'Live AI customer', agent_tip: 'Reply naturally and handle the customer like a real Decoinks chat.' }, messages: visibleMessages(id) });
 });
 
 r.post('/talk-sessions/:id/messages', async (req, res) => {
@@ -191,19 +192,6 @@ r.post('/talk-sessions/:id/messages', async (req, res) => {
   const conversation = [...before, { role: 'intern', body }];
   const nextIndex = Number(state.next_index || 0);
 
-  if (questions.length && nextIndex >= questions.length) {
-    const evalResult = await evaluateReply({
-      internId: s.intern_id,
-      sessionMessageId: msgId,
-      conversation,
-      customerText: lastCustomer?.body || '',
-      internReply: body,
-      modelReply: state.agent_tip || null,
-    }).catch(e => { console.error('talk eval error:', e.message); return null; });
-    const scorecard = finishSession(s.id, s.intern_id);
-    return res.json({ messages: visibleMessages(s.id), evaluation_recorded: !!evalResult, complete: true, scorecard });
-  }
-
   const [evalResult, customerText] = await Promise.all([
     evaluateReply({
       internId: s.intern_id,
@@ -217,7 +205,8 @@ r.post('/talk-sessions/:id/messages', async (req, res) => {
       .catch(e => { console.error('talk customer error:', e.message); return questions[Math.min(nextIndex, questions.length - 1)] || 'How much?'; }),
   ]);
 
-  db.prepare('INSERT INTO session_messages (id, session_id, role, body) VALUES (?, ?, ?, ?)').run(uuid(), s.id, 'customer', customerText);
+  const shouldForceArtwork = nextIndex === 1 || nextIndex % 5 === 0;
+  db.prepare('INSERT INTO session_messages (id, session_id, role, body) VALUES (?, ?, ?, ?)').run(uuid(), s.id, 'customer', withPossibleArtwork(customerText, { force: shouldForceArtwork }));
   db.prepare(`UPDATE talk_customer_sessions SET next_index = ?, updated_at = datetime('now') WHERE session_id = ?`)
     .run(nextIndex + 1, s.id);
 

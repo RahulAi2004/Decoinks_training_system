@@ -19,7 +19,6 @@ function downloadText(filename, text) {
 export default function Practice() {
   const [personas, setPersonas] = useState([]);
   const [realChats, setRealChats] = useState([]);
-  const [talkStyles, setTalkStyles] = useState([]);
   const [tab, setTab] = useState('real');
   const [session, setSession] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -34,8 +33,7 @@ export default function Practice() {
     Promise.all([
       api('/practice/personas'),
       api('/practice/real-chats'),
-      api('/practice/talk-styles'),
-    ]).then(([p, c, s]) => { setPersonas(p); setRealChats(c); setTalkStyles(s); }).catch(console.error);
+    ]).then(([p, c]) => { setPersonas(p); setRealChats(c); }).catch(console.error);
   }, []);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
@@ -59,10 +57,10 @@ export default function Practice() {
     finally { setBusy(false); }
   };
 
-  const startTalk = async (style_id) => {
+  const startTalk = async () => {
     setBusy(true); setScorecard(null);
     try {
-      const r = await api('/practice/talk-sessions', { method: 'POST', body: { style_id } });
+      const r = await api('/practice/talk-sessions', { method: 'POST' });
       setAwaitingNext(false); setCompletedScorecard(null);
       setSession(r); setMessages(r.messages);
     } catch (e) { alert(e.message); }
@@ -215,24 +213,15 @@ export default function Practice() {
             ))}
           </div>
         ) : tab === 'talk' ? (
-          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-3">
-            {talkStyles.map(s => (
-              <button key={s.id} onClick={() => startTalk(s.id)} disabled={busy}
-                className="rounded-lg border border-slate-200 bg-white hover:border-violet-400 p-4 text-left transition">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="font-bold text-slate-800">{s.number}. {s.name}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">{s.description}</p>
-                  </div>
-                </div>
-                <p className="mt-2 text-xs text-slate-500 line-clamp-3">{s.agent_tip}</p>
-                <div className="mt-3 flex flex-wrap gap-1.5 text-[11px]">
-                  <span className="px-2 py-0.5 rounded bg-violet-50 text-violet-700">{s.questions?.length || 0} real questions</span>
-                  <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-700">15s wait</span>
-                </div>
-              </button>
-            ))}
-            {talkStyles.length === 0 && <p className="text-sm text-slate-400">Writing-style personas document not found.</p>}
+          <div className="max-w-2xl">
+            <button onClick={startTalk} disabled={busy}
+              className="w-full rounded-lg border border-violet-200 bg-white hover:border-violet-500 hover:bg-violet-50 p-5 text-left transition">
+              <p className="font-black text-lg text-slate-800">Start live customer chat</p>
+              <p className="mt-1 text-sm text-slate-500">
+                A Decoinks customer will chat naturally, use real customer writing styles, ask broken or unclear questions, and share artwork/design images during the conversation.
+              </p>
+              <div className="mt-4 inline-flex rounded-md bg-violet-700 px-3 py-2 text-sm font-bold text-white">Start chat</div>
+            </button>
           </div>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -297,7 +286,7 @@ export default function Practice() {
             </div>
           </div>
         ))}
-        {busy && <p className="text-xs text-slate-400 italic">{session.mode === 'real_chat' ? 'checking your reply...' : session.mode === 'talk_customer' ? 'customer is thinking... next message in about 15 seconds' : 'customer is typing...'}</p>}
+        {busy && <p className="text-xs text-slate-400 italic">{session.mode === 'real_chat' ? 'checking your reply...' : 'customer is typing...'}</p>}
         {session.mode === 'real_chat' && awaitingNext && !busy && (
           <div className="flex justify-center">
             <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
