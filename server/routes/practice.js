@@ -5,7 +5,7 @@ import { customerReply, getPersona } from '../services/simulator.js';
 import { evaluateReply } from '../services/evaluator.js';
 import { computeReadiness } from '../services/readiness.js';
 import { realChatList, realChatMessages } from '../services/realChats.js';
-import { getWritingStyle, isOrderComplete, nextCustomerMessage, randomWritingStyle, withPossibleArtwork, writingStyles } from '../services/writingStylePersonas.js';
+import { getWritingStyle, isOrderComplete, nextCustomerMessage, randomArtworkUrl, randomWritingStyle, styleForFlow, writingStyles } from '../services/writingStylePersonas.js';
 import { randomOrderFlowBlueprint } from '../services/orderFlows.js';
 
 const r = Router();
@@ -129,6 +129,15 @@ function compactCustomerText(m) {
     .trim();
 }
 
+const DESIGN_HINT = /\b(design|logo|picture|pic|image|mock ?up|artwork|art|photo|attach|sample|example)\b/i;
+// Attach the customer's single design image only once per session — either when
+// the message clearly talks about a design, or at the design stage of the flow.
+function customerBodyWithDesign(text, url, alreadyShared, forceDesignStage = false) {
+  if (alreadyShared || !url) return text;
+  if (forceDesignStage || DESIGN_HINT.test(text)) return `${text}\n[[artwork:${url}]]`;
+  return text;
+}
+
 // Prefer the 10 complete order flows (full inquiry → paid → shipped, one per
 // writing style). Fall back to the 25 real chats if the flows doc is missing.
 async function pickTalkBlueprint() {
@@ -197,18 +206,26 @@ r.post('/real-chats/:chatId/sessions', (req, res) => {
 });
 
 r.post('/talk-sessions', async (req, res) => {
-  const style = req.body?.style_id ? await getWritingStyle(req.body.style_id) : await randomWritingStyle();
+  const flow = await pickTalkBlueprint();
+  // One coherent customer drives the whole chat: the flow decides who the
+  // customer is, and the writing style is matched to that same customer.
+  const style = flow
+    ? await styleForFlow(flow)
+    : (req.body?.style_id ? await getWritingStyle(req.body.style_id) : await randomWritingStyle());
   if (!style) return res.status(404).json({ error: 'Writing style document not found' });
   const id = uuid();
-  const questions = style.questions || [];
-  const flow = await pickTalkBlueprint();
+  const questions = flow?.customer_messages?.length ? flow.customer_messages : (style.questions || []);
+  // Pick ONE design image for this customer and reuse it whenever they share
+  // their artwork, so it looks like one real customer, not a new image each time.
+  if (flow) flow.session_artwork = flow.artwork_urls?.[0] || randomArtworkUrl();
+
   db.prepare('INSERT INTO practice_sessions (id, intern_id, persona_id) VALUES (?, ?, NULL)').run(id, req.user.id);
   db.prepare(`INSERT INTO talk_customer_sessions
     (session_id, style_name, style_description, agent_tip, questions, next_index, flow_blueprint)
     VALUES (?, ?, ?, ?, ?, ?, ?)`)
     .run(id, style.name, style.description, style.agent_tip, JSON.stringify(questions), 1, flow ? JSON.stringify(flow) : null);
   const openerText = (await nextCustomerMessage({ style, questions, nextIndex: 0, conversation: [], flow })).replace(/\[\[\s*DONE\s*\]\]/gi, '').trim();
-  const opener = withPossibleArtwork(openerText, { force: true, artworkUrl: flow?.artwork_urls?.[0] || '' });
+  const opener = customerBodyWithDesign(openerText, flow?.session_artwork, false);
   db.prepare('INSERT INTO session_messages (id, session_id, role, body) VALUES (?, ?, ?, ?)').run(uuid(), id, 'customer', opener);
   res.json({ session_id: id, mode: 'talk_customer', style: { name: 'Customer', description: 'Live AI customer', agent_tip: 'Reply naturally and handle the customer like a real Decoinks chat.' }, messages: visibleMessages(id) });
 });
@@ -265,9 +282,13 @@ r.post('/talk-sessions/:id/messages', async (req, res) => {
   if (nextIndex >= hardCap) done = true;         // safety net so a session can't run forever
   const cleanCustomer = customerText.replace(/\[\[\s*DONE\s*\]\]/gi, '').trim() || 'ok thanks!';
 
-  const shouldForceArtwork = nextIndex === 1 || nextIndex % 5 === 0;
-  const flowArtwork = flow?.artwork_urls?.[nextIndex % (flow.artwork_urls.length || 1)] || '';
-  db.prepare('INSERT INTO session_messages (id, session_id, role, body) VALUES (?, ?, ?, ?)').run(uuid(), s.id, 'customer', withPossibleArtwork(cleanCustomer, { force: shouldForceArtwork, artworkUrl: flowArtwork }));
+  // Share the customer's ONE design image only once, at a natural moment, and
+  // reuse the same image — never a new random picture on every message.
+  const alreadyShared = db.prepare("SELECT COUNT(*) c FROM session_messages WHERE session_id = ? AND body LIKE '%[[artwork:%'").get(s.id).c > 0;
+  const isDesignStage = nextIndex === 2 || nextIndex === 3;
+  const sessionArtwork = flow?.session_artwork || '';
+  const customerBubble = customerBodyWithDesign(cleanCustomer, sessionArtwork, alreadyShared, isDesignStage);
+  db.prepare('INSERT INTO session_messages (id, session_id, role, body) VALUES (?, ?, ?, ?)').run(uuid(), s.id, 'customer', customerBubble);
   db.prepare(`UPDATE talk_customer_sessions SET next_index = ?, updated_at = datetime('now') WHERE session_id = ?`)
     .run(nextIndex + 1, s.id);
 

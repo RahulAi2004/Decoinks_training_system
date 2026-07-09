@@ -73,6 +73,37 @@ export async function getWritingStyle(id) {
   return styles.find(s => s.id === id) || styles[0] || null;
 }
 
+// Match an order-flow customer to the matching persona (rich description),
+// so the flow AND the writing style describe the SAME customer. Falls back to
+// a style built straight from the flow's own label + real messages.
+export async function styleForFlow(flow) {
+  const target = String(flow?.writing_style || '').toLowerCase();
+  if (target) {
+    const styles = await writingStyles();
+    const pairs = [
+      ['spanish', 'spanish'], ['one-liner', 'one-liner'], ['emoji', 'emoji'],
+      ['slang', 'texter'], ['texter', 'texter'], ['rambler', 'rambler'],
+      ['no-punctuation', 'rambler'], ['polite', 'polite'], ['impatient', 'impatient'],
+      ['bulk', 'bulk'], ['business', 'bulk'], ['multi-question', 'multi-question'],
+      ['all-caps', 'all-caps'], ['shouter', 'all-caps'],
+    ];
+    for (const [needle, personaKey] of pairs) {
+      if (target.includes(needle)) {
+        const found = styles.find(s => s.name.toLowerCase().includes(personaKey));
+        if (found) return { ...found, agent_tip: flow.agent_tip || found.agent_tip, questions: flow.customer_messages?.length ? flow.customer_messages : found.questions };
+      }
+    }
+  }
+  return {
+    id: 'flow',
+    name: flow?.writing_style || 'Customer',
+    description: flow?.writing_style || 'real customer writing style',
+    spotting: '',
+    agent_tip: flow?.agent_tip || '',
+    questions: flow?.customer_messages || [],
+  };
+}
+
 export async function randomWritingStyle() {
   const styles = await writingStyles();
   if (!styles.length) return null;
