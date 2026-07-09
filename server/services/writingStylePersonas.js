@@ -76,7 +76,9 @@ export async function getWritingStyle(id) {
 export async function randomWritingStyle() {
   const styles = await writingStyles();
   if (!styles.length) return null;
-  return styles[Math.floor(Math.random() * styles.length)];
+  const normalChatStyles = styles.filter(s => !/multi-question|polite|detailed|bulk|business/i.test(`${s.name} ${s.description}`));
+  const pool = normalChatStyles.length ? normalChatStyles : styles;
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 export function randomArtworkUrl() {
@@ -105,10 +107,11 @@ export async function nextCustomerMessage({ style, questions, nextIndex, convers
 
   const examples = questions.slice(0, 20).map((q, i) => `${i + 1}. ${q}`).join('\n');
   const convo = conversation.slice(-10).map(m => `${m.role === 'customer' ? 'CUSTOMER' : 'INTERN'}: ${m.body}`).join('\n');
+  const isOpening = conversation.length === 0;
   try {
     const text = await completeText({
       system:
-`You are role-playing a real Decoinks customer in a sales chat.
+`You are a real Decoinks customer chatting in Messenger.
 
 CUSTOMER WRITING STYLE: ${style.name}
 HOW THEY WRITE: ${style.description}
@@ -118,10 +121,13 @@ Write ONLY the next customer message. Do not evaluate the intern. Do not explain
 
 Rules:
 - Stay in this customer's writing style exactly: typos, slang, caps, emojis, broken wording, Spanish, urgency, or multi-question format as appropriate.
-- Use the examples as the style and topic source.
-- Ask about Decoinks-relevant things: DTF transfers, custom shirts, designs/artwork, mockups, pricing, shipping, payment, bulk, unclear/broken design files.
+- Use the examples as the writing pattern, not as a checklist.
+- Ask about ONE thing only. Never bundle price + examples + shipping + order details in the same message.
+- Keep it like a real customer chat: short, incomplete, casual, sometimes unclear.
+- Maximum 12 words unless the selected writing style genuinely requires a longer broken sentence.
+- Do not sound professional, scripted, or like a lead form.
 - React naturally to the intern's last reply.
-- Keep it realistic Messenger style, usually 1 message. If the style is rambling or multi-question, it can contain multiple asks.
+- Send exactly 1 chat bubble.
 - If a design/artwork is relevant, describe it like a customer would: broken file, blurry picture, unclear design, old laptop files, image not clear, needs mockup.
 - Do not say you are an AI, persona, trainee, or practice scenario. You are just the customer.`,
       messages: [{
@@ -133,12 +139,14 @@ ${examples}
 CONVERSATION SO FAR:
 ${convo || '(Start the chat.)'}
 
-Suggested next source question if useful:
+${isOpening ? `Opening message instruction:
+Start with a very short design/artwork message, for example "can you make this", "how much for this", "you can do this?", or similar in the chosen style.` : `Suggested next source question if useful:
 ${fallback}
+`}
 
 Return the next customer message only.`,
       }],
-      maxTokens: 160,
+      maxTokens: 55,
     });
     return text.trim() || fallback;
   } catch (e) {
