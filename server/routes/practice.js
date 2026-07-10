@@ -4,7 +4,7 @@ import db, { uuid } from '../db.js';
 import { customerReply, getPersona } from '../services/simulator.js';
 import { evaluateReply } from '../services/evaluator.js';
 import { computeReadiness } from '../services/readiness.js';
-import { realChatList, realChatMessages } from '../services/realChats.js';
+import { realChatList, realChatMessages, randomCustomerDesignUrl } from '../services/realChats.js';
 import { getWritingStyle, isOrderComplete, nextCustomerMessage, randomArtworkUrl, randomWritingStyle, styleForFlow, writingStyles } from '../services/writingStylePersonas.js';
 import { randomOrderFlowBlueprint } from '../services/orderFlows.js';
 
@@ -217,7 +217,8 @@ r.post('/talk-sessions', async (req, res) => {
   const questions = flow?.customer_messages?.length ? flow.customer_messages : (style.questions || []);
   // Pick ONE design image for this customer and reuse it whenever they share
   // their artwork, so it looks like one real customer, not a new image each time.
-  if (flow) flow.session_artwork = flow.artwork_urls?.[0] || randomArtworkUrl();
+  // Use only a real customer-shared DESIGN image (never an agent PayPal QR / mockup).
+  if (flow) flow.session_artwork = flow.artwork_urls?.[0] || randomCustomerDesignUrl() || randomArtworkUrl();
 
   db.prepare('INSERT INTO practice_sessions (id, intern_id, persona_id) VALUES (?, ?, NULL)').run(id, req.user.id);
   db.prepare(`INSERT INTO talk_customer_sessions

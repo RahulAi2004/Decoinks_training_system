@@ -236,6 +236,21 @@ export function realChatMessages(chatId) {
   return db.prepare('SELECT * FROM real_chat_messages WHERE chat_id = ? ORDER BY message_index').all(chatId);
 }
 
+// Only images a CUSTOMER actually shared as their design — excludes agent-sent
+// artifacts like PayPal QR codes and mockups, so the talk-to-customer AI never
+// passes a payment QR off as the customer's artwork.
+export function customerDesignUrls() {
+  return db.prepare("SELECT DISTINCT attachment_path FROM real_chat_messages WHERE role='customer' AND is_artwork=1 AND attachment_path IS NOT NULL")
+    .all()
+    .map(r => `/real-chat-artwork/${r.attachment_path}`);
+}
+
+export function randomCustomerDesignUrl() {
+  const urls = customerDesignUrls();
+  if (!urls.length) return '';
+  return urls[Math.floor(Math.random() * urls.length)];
+}
+
 export function artworkPath(filename) {
   if (!filename || filename.includes('..') || /[\\/]/.test(filename)) return null;
   const full = path.join(ARTWORK_DIR, filename);
