@@ -33,10 +33,11 @@ export default function Content() {
   };
 
   const reingest = async () => {
-    setBusy(true); setMsg('Re-ingesting all content…');
+    setBusy(true); setMsg('Training the AI on your knowledge base…');
     try {
       const r = await api('/admin/ingest', { method: 'POST' });
-      setMsg(`Ingested: ${r.ingest.filter(x => x.status === 'ready').length}/${r.ingest.length} files ready.`);
+      const ready = r.ingest.filter(x => x.status === 'ready').length;
+      setMsg(`✅ Trained — ${ready}/${r.ingest.length} documents indexed. The AI agent now answers from this knowledge.`);
       load();
     } catch (e) { setMsg(`Error: ${e.message}`); }
     finally { setBusy(false); }
@@ -91,9 +92,9 @@ export default function Content() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-black text-slate-800">Content</h1>
-        <Button variant="secondary" onClick={reingest} disabled={busy}>↻ Re-ingest everything</Button>
+        <Button onClick={reingest} disabled={busy}>🧠 Train on knowledge base</Button>
       </div>
-      <p className="text-sm text-slate-500">Uploaded files land in <code className="bg-slate-200 px-1 rounded">./content/</code> and are parsed → chunked → embedded automatically. Accepted: PDF, DOCX, XLSX, TXT, MD, JSON.</p>
+      <p className="text-sm text-slate-500">Uploaded files land in <code className="bg-slate-200 px-1 rounded">./content/</code> and are parsed → chunked → embedded automatically on upload. Press <span className="font-semibold">Train on knowledge base</span> anytime to re-index everything so the AI agent answers from the latest documents.</p>
       {msg && <p className={`text-sm ${msg.startsWith('Error') ? 'text-rose-600' : 'text-emerald-700'}`}>{busy ? '⏳ ' : ''}{msg}</p>}
 
       <Card title="Company Products">
