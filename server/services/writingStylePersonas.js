@@ -141,13 +141,15 @@ export async function isOrderComplete({ conversation }) {
   try {
     const text = await completeText({
       system:
-`You judge whether a Decoinks sales chat has reached a COMPLETED order.
-An order is COMPLETE only when ALL of these have happened in the chat:
-1) a price was given, 2) the design/mockup was handled, 3) quantity was confirmed,
-4) payment was made or clearly arranged, AND 5) shipping/delivery was arranged.
-If any step is still open, it is NOT complete.
+`You judge whether a Decoinks sales chat has reached a COMPLETED order, based on
+what the AGENT has delivered. The order is COMPLETE once the AGENT has, across
+the chat: given a price, handled the design/mockup, and confirmed BOTH payment
+(e.g. "payment received", invoice paid) AND shipping/delivery (e.g. shipping
+time, tracking, or that it will ship). The customer re-asking an old question
+does NOT make it incomplete — judge only by what the agent has already provided.
+If payment AND shipping are both confirmed by the agent, answer YES.
 Answer with exactly one word: YES or NO.`,
-      messages: [{ role: 'user', content: `CHAT:\n${convo}\n\nIs the order fully completed? Answer YES or NO.` }],
+      messages: [{ role: 'user', content: `CHAT:\n${convo}\n\nHas the agent confirmed both payment and shipping? Answer YES or NO.` }],
       maxTokens: 3,
     });
     return /\byes\b/i.test(text);
@@ -188,6 +190,7 @@ Rules:
 - Stay in this customer's writing style exactly: typos, slang, caps, emojis, broken wording, Spanish, urgency, or multi-question format as appropriate.
 - Use the examples as the writing pattern, not as a checklist.
 - Follow the real chat flow. Move only one stage forward at a time.
+- Never repeat a question the agent has already answered. Always move the order FORWARD toward payment and shipping — do not loop back to price or design once they are handled.
 - Ask about ONE thing only. Never bundle price + examples + shipping + order details in the same message unless the real source message did.
 - Keep it like a real customer chat: short, incomplete, casual, sometimes unclear.
 - Maximum 12 words unless the selected writing style genuinely requires a longer broken sentence.
