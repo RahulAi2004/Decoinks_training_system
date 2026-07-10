@@ -7,7 +7,7 @@ import { computeReadiness } from '../services/readiness.js';
 import { realChatList, realChatMessages, randomCustomerDesignUrl } from '../services/realChats.js';
 import { getWritingStyle, isOrderComplete, nextCustomerMessage, randomArtworkUrl, randomWritingStyle, styleForFlow, writingStyles } from '../services/writingStylePersonas.js';
 import { randomOrderFlowBlueprint } from '../services/orderFlows.js';
-import { approvedExampleTexts } from '../services/customerExamples.js';
+import { relevantExampleTexts } from '../services/customerExamples.js';
 
 const r = Router();
 
@@ -226,7 +226,8 @@ r.post('/talk-sessions', async (req, res) => {
     (session_id, style_name, style_description, agent_tip, questions, next_index, flow_blueprint)
     VALUES (?, ?, ?, ?, ?, ?, ?)`)
     .run(id, style.name, style.description, style.agent_tip, JSON.stringify(questions), 1, flow ? JSON.stringify(flow) : null);
-  const openerText = (await nextCustomerMessage({ style, questions, nextIndex: 0, conversation: [], flow, approvedExamples: approvedExampleTexts() })).replace(/\[\[\s*DONE\s*\]\]/gi, '').trim();
+  const openerExamples = await relevantExampleTexts(`${flow?.intent || ''} ${flow?.products_discussed || ''}`);
+  const openerText = (await nextCustomerMessage({ style, questions, nextIndex: 0, conversation: [], flow, approvedExamples: openerExamples })).replace(/\[\[\s*DONE\s*\]\]/gi, '').trim();
   const opener = customerBodyWithDesign(openerText, flow?.session_artwork, false);
   db.prepare('INSERT INTO session_messages (id, session_id, role, body) VALUES (?, ?, ?, ?)').run(uuid(), id, 'customer', opener);
   res.json({ session_id: id, mode: 'talk_customer', style: { name: 'Customer', description: 'Live AI customer', agent_tip: 'Reply naturally and handle the customer like a real Decoinks chat.' }, messages: visibleMessages(id) });
@@ -273,7 +274,8 @@ r.post('/talk-sessions/:id/messages', async (req, res) => {
       internReply: body,
       modelReply: state.agent_tip || null,
     }).catch(e => { console.error('talk eval error:', e.message); return null; }),
-    nextCustomerMessage({ style, questions, nextIndex, conversation, flow, approvedExamples: approvedExampleTexts() })
+    relevantExampleTexts(`${lastCustomer?.body || ''} ${body}`)
+      .then(approvedExamples => nextCustomerMessage({ style, questions, nextIndex, conversation, flow, approvedExamples }))
       .catch(e => { console.error('talk customer error:', e.message); return questions[Math.min(nextIndex, questions.length - 1)] || 'How much?'; }),
     canBeDone
       ? isOrderComplete({ conversation }).catch(e => { console.error('talk done check error:', e.message); return false; })

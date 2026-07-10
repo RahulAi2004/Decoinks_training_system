@@ -4,11 +4,11 @@
 // not repeat flagged mistakes.
 import { completeText, resolveProvider } from '../llm.js';
 import { kbContext } from '../rag.js';
-import { approvedAgentExamples } from './agentExamples.js';
+import { relevantAgentExamples } from './agentExamples.js';
 import { getPrompt } from './prompts.js';
 
 export async function agentReply({ conversation = [], customerText }) {
-  const examples = approvedAgentExamples(20);
+  const examples = await relevantAgentExamples(customerText || conversation.at(-1)?.body || '', 12);
   const corrections = examples.filter(e => e.is_correction);
   const goodExamples = examples.filter(e => !e.is_correction);
 

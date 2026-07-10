@@ -261,6 +261,14 @@ for (const [column, ddl] of [
   if (!exists) db.prepare(ddl).run();
 }
 
+for (const [table, column, ddl] of [
+  ['customer_examples', 'embedding', 'ALTER TABLE customer_examples ADD COLUMN embedding TEXT'],
+  ['agent_examples', 'embedding', 'ALTER TABLE agent_examples ADD COLUMN embedding TEXT'],
+]) {
+  const exists = db.prepare(`PRAGMA table_info(${table})`).all().some(c => c.name === column);
+  if (!exists) db.prepare(ddl).run();
+}
+
 export const uuid = () => crypto.randomUUID();
 
 // ---- settings helpers ----
