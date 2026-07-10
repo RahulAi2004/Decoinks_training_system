@@ -277,7 +277,14 @@ r.post('/talk-sessions/:id/messages', async (req, res) => {
       : Promise.resolve(false),
   ]);
 
-  let done = /\[\[DONE\]\]/i.test(customerText) || orderComplete;
+  // Deterministic backstop: if the agent has clearly confirmed BOTH payment and
+  // shipping, the order is closed regardless of the LLM yes/no check.
+  const agentText = conversation.filter(m => m.role === 'intern').map(m => m.body).join(' ').toLowerCase();
+  const paymentConfirmed = /(payment received|payment went through|got your payment|received your payment|you(?:'re| are) paid|order (?:is )?(?:paid|confirmed))/.test(agentText);
+  const shippingConfirmed = /(ship(?:s|ping|ped|ping out)?\b|tracking|deliver|arrives|usps|fedex|\bups\b)/.test(agentText);
+  const agentClosedOrder = paymentConfirmed && shippingConfirmed;
+
+  let done = /\[\[DONE\]\]/i.test(customerText) || orderComplete || agentClosedOrder;
   if (nextIndex < 3) done = false;               // never end before the order can realistically be handled
   if (nextIndex >= hardCap) done = true;         // safety net so a session can't run forever
   const cleanCustomer = customerText.replace(/\[\[\s*DONE\s*\]\]/gi, '').trim() || 'ok thanks!';

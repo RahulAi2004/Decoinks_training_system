@@ -175,6 +175,7 @@ export async function nextCustomerMessage({ style, questions, nextIndex, convers
   const stage = flowStages[Math.min(nextIndex, flowStages.length - 1)] || flowStages.at?.(-1) || 'continue the customer inquiry';
   const convo = conversation.slice(-10).map(m => `${m.role === 'customer' ? 'CUSTOMER' : 'INTERN'}: ${m.body}`).join('\n');
   const isOpening = conversation.length === 0;
+  const lastIntern = [...conversation].reverse().find(m => m.role === 'intern')?.body || '';
   try {
     const text = await completeText({
       system:
@@ -195,7 +196,8 @@ Rules:
 - Keep it like a real customer chat: short, incomplete, casual, sometimes unclear.
 - Maximum 12 words unless the selected writing style genuinely requires a longer broken sentence.
 - Do not sound professional, scripted, or like a lead form.
-- React naturally to the intern's last reply.
+- MOST IMPORTANT: actually respond to what the intern just said. If the intern ASKED you something (quantity, size, color, budget, which design, your address), ANSWER it directly in your style. If the intern gave info or an option, react to it (agree, pick one, push back, or ask a short follow-up). Do NOT ignore their message and fire off an unrelated scripted question.
+- Never change your writing style during the chat. Stay in the SAME persona and tone you started with, from first message to last.
 - Send exactly 1 chat bubble.
 - If a design/artwork is relevant, describe it like a customer would: broken file, blurry picture, unclear design, old laptop files, image not clear, needs mockup.
 - Keep the conversation going in your style until the ORDER is actually done. Do NOT stop just because there were only a few example messages — keep asking naturally until every step is handled.
@@ -220,11 +222,13 @@ CONVERSATION SO FAR:
 ${convo || '(Start the chat.)'}
 
 ${isOpening ? `Opening message instruction:
-Start like the source customer starts. If artwork is attached, keep text tiny: "can you make this", "how much for this", "you can do this?", or similar.` : `Current flow stage:
-${stage}
+Start like the source customer starts. If artwork is attached, keep text tiny: "can you make this", "how much for this", "you can do this?", or similar.` : `THE INTERN JUST SAID:
+"${lastIntern}"
 
-Suggested source message to adapt:
-${fallback}
+Your job now, in your persona style:
+1. First, directly answer or react to what the intern just said above.
+2. Then, if it makes sense, nudge the order one step forward (current stage: ${stage}).
+Only fall back to this scripted idea if the intern did NOT ask you anything specific: "${fallback}"
 `}
 
 Return the next customer message only.`,
