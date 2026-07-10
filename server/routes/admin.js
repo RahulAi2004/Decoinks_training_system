@@ -10,6 +10,8 @@ import { ingestAll, CONTENT_DIR } from '../ingest.js';
 import { activeModelLabel } from '../llm.js';
 import { parseEval } from './practice.js';
 import { addCustomerExample, listCustomerExamples, deleteCustomerExample } from '../services/customerExamples.js';
+import { addAgentExample, listAgentExamples, deleteAgentExample } from '../services/agentExamples.js';
+import { agentReply } from '../services/agentReplies.js';
 
 const r = Router();
 
@@ -51,6 +53,36 @@ r.post('/customer-examples', (req, res) => {
 r.delete('/customer-examples/:id', (req, res) => {
   deleteCustomerExample(req.params.id);
   res.json({ ok: true });
+});
+
+// ---------- AI agent training: approved replies + corrections ----------
+r.get('/agent-examples', (req, res) => {
+  res.json(listAgentExamples());
+});
+
+r.post('/agent-examples', (req, res) => {
+  const saved = addAgentExample({
+    customerText: req.body?.customer_text,
+    reply: req.body?.reply,
+    isCorrection: !!req.body?.is_correction,
+    userId: req.user.id,
+  });
+  if (!saved) return res.status(400).json({ error: 'Empty reply' });
+  res.json(saved);
+});
+
+r.delete('/agent-examples/:id', (req, res) => {
+  deleteAgentExample(req.params.id);
+  res.json({ ok: true });
+});
+
+// Admin plays the customer; the AI answers as the Decoinks agent (KB-grounded).
+r.post('/agent-chat', async (req, res) => {
+  const customerText = String(req.body?.customer_text || '').trim();
+  if (!customerText) return res.status(400).json({ error: 'Empty customer message' });
+  const conversation = Array.isArray(req.body?.conversation) ? req.body.conversation : [];
+  const reply = await agentReply({ conversation, customerText });
+  res.json({ reply });
 });
 
 r.post('/documents/:kind', upload.array('files', 10), async (req, res) => {

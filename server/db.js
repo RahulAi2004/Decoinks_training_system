@@ -152,6 +152,15 @@ CREATE TABLE IF NOT EXISTS customer_examples (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS agent_examples (
+  id TEXT PRIMARY KEY,
+  customer_text TEXT,
+  reply TEXT NOT NULL,
+  is_correction INTEGER NOT NULL DEFAULT 0,
+  created_by TEXT REFERENCES users(id) ON DELETE SET NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS company_products (
   id TEXT PRIMARY KEY,
   topic TEXT NOT NULL,
