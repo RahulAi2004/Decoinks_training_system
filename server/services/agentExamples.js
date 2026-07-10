@@ -46,9 +46,14 @@ export async function relevantAgentExamples(query, limit = 10) {
     if (!query || !String(query).trim()) return rows.slice(0, limit).map(({ customer_text, reply, is_correction }) => ({ customer_text, reply, is_correction }));
     await backfillEmbeddings(rows);
     const [qv] = await embedBatch([String(query)], LOCAL_MODEL);
+    // Only surface examples/corrections that are actually RELEVANT to this message.
+    // Corrections get a small boost, but an unrelated correction must NOT be
+    // injected as a hard rule — otherwise it leaks into every answer.
+    const THRESHOLD = 0.14;
     return rows
-      .map(r => ({ r, score: cosine(qv, JSON.parse(r.embedding)) }))
-      .sort((a, b) => (b.r.is_correction - a.r.is_correction) || (b.score - a.score))
+      .map(r => ({ r, score: cosine(qv, JSON.parse(r.embedding)) + (r.is_correction ? 0.04 : 0) }))
+      .filter(x => x.score >= THRESHOLD)
+      .sort((a, b) => b.score - a.score)
       .slice(0, limit)
       .map(({ r }) => ({ customer_text: r.customer_text, reply: r.reply, is_correction: r.is_correction }));
   } catch (e) {

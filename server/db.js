@@ -152,6 +152,14 @@ CREATE TABLE IF NOT EXISTS customer_examples (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS real_chat_qa (
+  id TEXT PRIMARY KEY,
+  customer_text TEXT NOT NULL,
+  agent_reply TEXT NOT NULL,
+  embedding TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS agent_examples (
   id TEXT PRIMARY KEY,
   customer_text TEXT,
