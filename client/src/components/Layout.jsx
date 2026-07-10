@@ -11,6 +11,7 @@ const internNav = [
 ];
 const adminNav = [
   ['/admin', 'Dashboard', '📊'],
+  ['/admin/ai-chat', 'Chat with AI', '💬'],
   ['/admin/content', 'Content', '📂'],
   ['/admin/interns', 'Interns', '👥'],
   ['/admin/review', 'Reply Review', '🔍'],

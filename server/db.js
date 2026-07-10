@@ -145,6 +145,13 @@ CREATE TABLE IF NOT EXISTS talk_customer_sessions (
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS customer_examples (
+  id TEXT PRIMARY KEY,
+  body TEXT NOT NULL,
+  created_by TEXT REFERENCES users(id) ON DELETE SET NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS company_products (
   id TEXT PRIMARY KEY,
   topic TEXT NOT NULL,

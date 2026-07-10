@@ -159,7 +159,7 @@ Answer with exactly one word: YES or NO.`,
   }
 }
 
-export async function nextCustomerMessage({ style, questions, nextIndex, conversation, flow = null }) {
+export async function nextCustomerMessage({ style, questions, nextIndex, conversation, flow = null, approvedExamples = [] }) {
   const sourceMessages = flow?.customer_messages || [];
   const fallback = sourceMessages.length
     ? sourceMessages[nextIndex % sourceMessages.length]
@@ -170,6 +170,7 @@ export async function nextCustomerMessage({ style, questions, nextIndex, convers
   if (provider === 'mock') return fallback;
 
   const examples = questions.slice(0, 20).map((q, i) => `${i + 1}. ${q}`).join('\n');
+  const approved = (approvedExamples || []).slice(0, 15).map((m, i) => `${i + 1}. ${m}`).join('\n');
   const flowMessages = (flow?.customer_messages || []).slice(0, 12).map((m, i) => `${i + 1}. ${m}`).join('\n');
   const flowStages = flow?.stages || [];
   const stage = flowStages[Math.min(nextIndex, flowStages.length - 1)] || flowStages.at?.(-1) || 'continue the customer inquiry';
@@ -207,7 +208,10 @@ Rules:
       messages: [{
         role: 'user',
         content:
-`REAL CUSTOMER EXAMPLES:
+`${approved ? `ADMIN-APPROVED GOOD CUSTOMER MESSAGES (imitate this quality and phrasing most of all):
+${approved}
+
+` : ''}REAL CUSTOMER EXAMPLES:
 ${examples}
 
 REAL CHAT FLOW TO IMITATE:

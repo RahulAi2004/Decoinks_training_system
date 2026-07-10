@@ -15,6 +15,7 @@ import InternDetail from './pages/admin/InternDetail';
 import Review from './pages/admin/Review';
 import Readiness from './pages/admin/Readiness';
 import Settings from './pages/admin/Settings';
+import AiChat from './pages/admin/AiChat';
 import { Spinner } from './components/ui';
 
 function Guard({ role, children }) {
@@ -41,6 +42,7 @@ export default function App() {
           </Route>
           <Route element={<Guard role="admin"><Layout /></Guard>}>
             <Route path="/admin" element={<Dashboard />} />
+            <Route path="/admin/ai-chat" element={<AiChat />} />
             <Route path="/admin/content" element={<Content />} />
             <Route path="/admin/interns" element={<Interns />} />
             <Route path="/admin/interns/:id" element={<InternDetail />} />

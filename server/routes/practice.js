@@ -7,6 +7,7 @@ import { computeReadiness } from '../services/readiness.js';
 import { realChatList, realChatMessages, randomCustomerDesignUrl } from '../services/realChats.js';
 import { getWritingStyle, isOrderComplete, nextCustomerMessage, randomArtworkUrl, randomWritingStyle, styleForFlow, writingStyles } from '../services/writingStylePersonas.js';
 import { randomOrderFlowBlueprint } from '../services/orderFlows.js';
+import { approvedExampleTexts } from '../services/customerExamples.js';
 
 const r = Router();
 
@@ -225,7 +226,7 @@ r.post('/talk-sessions', async (req, res) => {
     (session_id, style_name, style_description, agent_tip, questions, next_index, flow_blueprint)
     VALUES (?, ?, ?, ?, ?, ?, ?)`)
     .run(id, style.name, style.description, style.agent_tip, JSON.stringify(questions), 1, flow ? JSON.stringify(flow) : null);
-  const openerText = (await nextCustomerMessage({ style, questions, nextIndex: 0, conversation: [], flow })).replace(/\[\[\s*DONE\s*\]\]/gi, '').trim();
+  const openerText = (await nextCustomerMessage({ style, questions, nextIndex: 0, conversation: [], flow, approvedExamples: approvedExampleTexts() })).replace(/\[\[\s*DONE\s*\]\]/gi, '').trim();
   const opener = customerBodyWithDesign(openerText, flow?.session_artwork, false);
   db.prepare('INSERT INTO session_messages (id, session_id, role, body) VALUES (?, ?, ?, ?)').run(uuid(), id, 'customer', opener);
   res.json({ session_id: id, mode: 'talk_customer', style: { name: 'Customer', description: 'Live AI customer', agent_tip: 'Reply naturally and handle the customer like a real Decoinks chat.' }, messages: visibleMessages(id) });
@@ -262,8 +263,9 @@ r.post('/talk-sessions/:id/messages', async (req, res) => {
   const hardCap = stagesLen + 6;
   const canBeDone = nextIndex >= 3;
 
+  const isAdmin = req.user.role === 'admin';
   const [evalResult, customerText, orderComplete] = await Promise.all([
-    evaluateReply({
+    isAdmin ? Promise.resolve(null) : evaluateReply({
       internId: s.intern_id,
       sessionMessageId: msgId,
       conversation,
@@ -271,7 +273,7 @@ r.post('/talk-sessions/:id/messages', async (req, res) => {
       internReply: body,
       modelReply: state.agent_tip || null,
     }).catch(e => { console.error('talk eval error:', e.message); return null; }),
-    nextCustomerMessage({ style, questions, nextIndex, conversation, flow })
+    nextCustomerMessage({ style, questions, nextIndex, conversation, flow, approvedExamples: approvedExampleTexts() })
       .catch(e => { console.error('talk customer error:', e.message); return questions[Math.min(nextIndex, questions.length - 1)] || 'How much?'; }),
     canBeDone
       ? isOrderComplete({ conversation }).catch(e => { console.error('talk done check error:', e.message); return false; })
@@ -372,7 +374,8 @@ function finishSession(sessionId, internId) {
   ).all(sessionId).map(parseEval);
   const overall = evals.length ? +(evals.reduce((a, e) => a + (e.overall || 0), 0) / evals.length).toFixed(1) : null;
   db.prepare(`UPDATE practice_sessions SET status = 'ended', ended_at = datetime('now'), overall_score = ? WHERE id = ?`).run(overall, sessionId);
-  computeReadiness(internId, { snapshot: true });
+  const u = db.prepare('SELECT role FROM users WHERE id = ?').get(internId);
+  if (u?.role === 'intern') computeReadiness(internId, { snapshot: true });
 
   const weakest = [...evals].sort((a, b) => (a.overall || 0) - (b.overall || 0)).slice(0, 3);
   return { overall, turn_count: evals.length, evaluations: evals, weakest_turns: weakest };

@@ -9,6 +9,7 @@ import { createUser } from '../auth.js';
 import { ingestAll, CONTENT_DIR } from '../ingest.js';
 import { activeModelLabel } from '../llm.js';
 import { parseEval } from './practice.js';
+import { addCustomerExample, listCustomerExamples, deleteCustomerExample } from '../services/customerExamples.js';
 
 const r = Router();
 
@@ -34,6 +35,22 @@ const upload = multer({
 
 r.get('/documents', (req, res) => {
   res.json(db.prepare('SELECT * FROM documents ORDER BY kind, filename').all());
+});
+
+// ---------- AI customer training: approved example messages ----------
+r.get('/customer-examples', (req, res) => {
+  res.json(listCustomerExamples());
+});
+
+r.post('/customer-examples', (req, res) => {
+  const saved = addCustomerExample(req.body?.body, req.user.id);
+  if (!saved) return res.status(400).json({ error: 'Empty message' });
+  res.json(saved);
+});
+
+r.delete('/customer-examples/:id', (req, res) => {
+  deleteCustomerExample(req.params.id);
+  res.json({ ok: true });
 });
 
 r.post('/documents/:kind', upload.array('files', 10), async (req, res) => {
