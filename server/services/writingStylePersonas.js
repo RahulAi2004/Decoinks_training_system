@@ -226,7 +226,7 @@ CONVERSATION SO FAR:
 ${convo || '(Start the chat.)'}
 
 ${isOpening ? `Opening message instruction:
-Start like the source customer starts. If artwork is attached, keep text tiny: "can you make this", "how much for this", "you can do this?", or similar.` : `THE INTERN JUST SAID:
+Open the way a real customer starts a chat — a short greeting or a clear first question that says WHAT they want, in your style. For example: "hi do you make custom shirts?", "hello, can you print this design?", "hey do you do DTF transfers?", "hi how much for custom hoodies?". NEVER open with a bare "how much" or "what" with no product context. If artwork is attached, a tiny "can you make this?" is fine.` : `THE INTERN JUST SAID:
 "${lastIntern}"
 
 Your job now, in your persona style:

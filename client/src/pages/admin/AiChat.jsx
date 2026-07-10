@@ -23,6 +23,10 @@ export default function AiChat() {
   const [cInput, setCInput] = useState('');
   const [cEnded, setCEnded] = useState(false);
   const [cSaved, setCSaved] = useState(new Set());
+  const [cCorrecting, setCCorrecting] = useState(null); // {id, text}
+
+  // Enter sends, Shift+Enter makes a new line.
+  const onEnter = (submit) => (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(e); } };
 
   // agent mode (AI = agent)
   const [aMessages, setAMessages] = useState([]);
@@ -62,6 +66,17 @@ export default function AiChat() {
     try {
       await api('/admin/customer-examples', { method: 'POST', body: { body: m.body } });
       setCSaved(prev => new Set(prev).add(m.id));
+      loadCustomer();
+    } catch (e) { alert(e.message); }
+  };
+  const submitCustomerCorrection = async (m) => {
+    const text = cCorrecting.text.trim();
+    if (!text) return;
+    try {
+      await api('/admin/customer-examples', { method: 'POST', body: { body: text } });
+      setCMessages(ms => ms.map(x => x.id === m.id ? { ...x, body: text } : x));
+      setCSaved(prev => new Set(prev).add(m.id));
+      setCCorrecting(null);
       loadCustomer();
     } catch (e) { alert(e.message); }
   };
@@ -172,9 +187,23 @@ export default function AiChat() {
                 <div className="flex-1 overflow-y-auto bg-white rounded-lg border border-slate-200 p-4 space-y-3">
                   {cMessages.map((m, i) => bubble(m, i, m.role === 'intern' ? 'right' : 'left',
                     m.role !== 'intern' && m.id && m.id !== 'tmp' && (
-                      cSaved.has(m.id)
-                        ? <span className="mt-1 inline-block text-[11px] font-semibold text-emerald-600">✓ Saved as example</span>
-                        : <button onClick={() => saveCustomerMsg(m)} className="mt-1 text-[11px] font-semibold text-violet-600 hover:text-violet-800">★ Save as example</button>
+                      cCorrecting?.id === m.id ? (
+                        <div className="mt-1.5 space-y-1.5">
+                          <textarea value={cCorrecting.text} onChange={e => setCCorrecting({ id: m.id, text: e.target.value })} rows={2}
+                            className="w-full border border-amber-300 rounded-lg px-2.5 py-1.5 text-xs bg-amber-50" />
+                          <div className="flex gap-2">
+                            <Button onClick={() => submitCustomerCorrection(m)} disabled={!cCorrecting.text.trim()}>Save correction</Button>
+                            <button onClick={() => setCCorrecting(null)} className="text-xs text-slate-500 hover:text-slate-700">Cancel</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="mt-1 flex gap-3">
+                          {cSaved.has(m.id)
+                            ? <span className="text-[11px] font-semibold text-emerald-600">✓ Saved</span>
+                            : <button onClick={() => saveCustomerMsg(m)} className="text-[11px] font-semibold text-violet-600 hover:text-violet-800">★ Save as example</button>}
+                          <button onClick={() => setCCorrecting({ id: m.id, text: m.body })} className="text-[11px] font-semibold text-amber-600 hover:text-amber-800">✎ Correct</button>
+                        </div>
+                      )
                     )
                   ))}
                   {busy && <p className="text-xs text-slate-400 italic">customer is typing…</p>}
@@ -182,10 +211,10 @@ export default function AiChat() {
                   <div ref={bottomRef} />
                 </div>
                 {!cEnded && (
-                  <form onSubmit={sendCustomer} className="mt-3 flex gap-2">
-                    <input value={cInput} onChange={e => setCInput(e.target.value)} disabled={busy} autoFocus
-                      placeholder="Reply as the Decoinks agent…"
-                      className="flex-1 border border-slate-300 rounded-lg px-4 py-2.5 text-sm bg-white" />
+                  <form onSubmit={sendCustomer} className="mt-3 flex gap-2 items-end">
+                    <textarea value={cInput} onChange={e => setCInput(e.target.value)} onKeyDown={onEnter(sendCustomer)} disabled={busy} autoFocus rows={1}
+                      placeholder="Reply as the Decoinks agent…  (Enter to send, Shift+Enter for new line)"
+                      className="flex-1 resize-none border border-slate-300 rounded-lg px-4 py-2.5 text-sm bg-white" />
                     <Button disabled={busy || !cInput.trim()}>Send</Button>
                   </form>
                 )}
@@ -225,10 +254,10 @@ export default function AiChat() {
                 {busy && <p className="text-xs text-slate-400 italic">agent is typing…</p>}
                 <div ref={bottomRef} />
               </div>
-              <form onSubmit={sendAgent} className="mt-3 flex gap-2">
-                <input value={aInput} onChange={e => setAInput(e.target.value)} disabled={busy} autoFocus
-                  placeholder="Message as the customer…"
-                  className="flex-1 border border-slate-300 rounded-lg px-4 py-2.5 text-sm bg-white" />
+              <form onSubmit={sendAgent} className="mt-3 flex gap-2 items-end">
+                <textarea value={aInput} onChange={e => setAInput(e.target.value)} onKeyDown={onEnter(sendAgent)} disabled={busy} autoFocus rows={1}
+                  placeholder="Message as the customer…  (Enter to send, Shift+Enter for new line)"
+                  className="flex-1 resize-none border border-slate-300 rounded-lg px-4 py-2.5 text-sm bg-white" />
                 <Button disabled={busy || !aInput.trim()}>Send</Button>
               </form>
             </>
