@@ -5,6 +5,7 @@
 import { completeText, resolveProvider } from '../llm.js';
 import { kbContext } from '../rag.js';
 import { approvedAgentExamples } from './agentExamples.js';
+import { getPrompt } from './prompts.js';
 
 export async function agentReply({ conversation = [], customerText }) {
   const examples = approvedAgentExamples(20);
@@ -28,11 +29,7 @@ export async function agentReply({ conversation = [], customerText }) {
 
   try {
     const text = await completeText({
-      system:
-`You are a Decoinks sales agent replying to a customer on Messenger.
-Answer ONLY from the SOURCE OF TRUTH (knowledge base) below. If it is not covered, ask a short clarifying question instead of inventing facts.
-Style: warm and helpful, 1-3 short sentences, at most one emoji, in the customer's language. Follow Acknowledge -> Answer -> Advance.
-Write ONLY the agent's next reply. Do not explain yourself.`,
+      system: getPrompt('agent_system'),
       messages: [{
         role: 'user',
         content:

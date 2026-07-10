@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import mammoth from 'mammoth';
 import { completeText, resolveProvider } from '../llm.js';
+import { getPrompt } from './prompts.js';
 
 const CANDIDATES = [
   path.join(process.cwd(), 'Decoinks-Writing-Style-Personas.docx'),
@@ -140,15 +141,7 @@ export async function isOrderComplete({ conversation }) {
   const convo = conversation.slice(-16).map(m => `${m.role === 'customer' ? 'CUSTOMER' : 'AGENT'}: ${m.body}`).join('\n');
   try {
     const text = await completeText({
-      system:
-`You judge whether a Decoinks sales chat has reached a COMPLETED order, based on
-what the AGENT has delivered. The order is COMPLETE once the AGENT has, across
-the chat: given a price, handled the design/mockup, and confirmed BOTH payment
-(e.g. "payment received", invoice paid) AND shipping/delivery (e.g. shipping
-time, tracking, or that it will ship). The customer re-asking an old question
-does NOT make it incomplete — judge only by what the agent has already provided.
-If payment AND shipping are both confirmed by the agent, answer YES.
-Answer with exactly one word: YES or NO.`,
+      system: getPrompt('order_complete_check'),
       messages: [{ role: 'user', content: `CHAT:\n${convo}\n\nHas the agent confirmed both payment and shipping? Answer YES or NO.` }],
       maxTokens: 3,
     });
@@ -179,32 +172,11 @@ export async function nextCustomerMessage({ style, questions, nextIndex, convers
   const lastIntern = [...conversation].reverse().find(m => m.role === 'intern')?.body || '';
   try {
     const text = await completeText({
-      system:
-`You are a real Decoinks customer chatting in Messenger.
-
-CUSTOMER WRITING STYLE: ${style.name}
-HOW THEY WRITE: ${style.description}
-HOW TO SPOT THEM: ${style.spotting || ''}
-
-Write ONLY the next customer message. Do not evaluate the intern. Do not explain yourself.
-
-Rules:
-- Stay in this customer's writing style exactly: typos, slang, caps, emojis, broken wording, Spanish, urgency, or multi-question format as appropriate.
-- Use the examples as the writing pattern, not as a checklist.
-- Follow the real chat flow. Move only one stage forward at a time.
-- Never repeat a question the agent has already answered. Always move the order FORWARD toward payment and shipping — do not loop back to price or design once they are handled.
-- Ask about ONE thing only. Never bundle price + examples + shipping + order details in the same message unless the real source message did.
-- Keep it like a real customer chat: short, incomplete, casual, sometimes unclear.
-- Maximum 12 words unless the selected writing style genuinely requires a longer broken sentence.
-- Do not sound professional, scripted, or like a lead form.
-- MOST IMPORTANT: actually respond to what the intern just said. If the intern ASKED you something (quantity, size, color, budget, which design, your address), ANSWER it directly in your style. If the intern gave info or an option, react to it (agree, pick one, push back, or ask a short follow-up). Do NOT ignore their message and fire off an unrelated scripted question.
-- Never change your writing style during the chat. Stay in the SAME persona and tone you started with, from first message to last.
-- Send exactly 1 chat bubble.
-- If a design/artwork is relevant, describe it like a customer would: broken file, blurry picture, unclear design, old laptop files, image not clear, needs mockup.
-- Keep the conversation going in your style until the ORDER is actually done. Do NOT stop just because there were only a few example messages — keep asking naturally until every step is handled.
-- The order is DONE only after the intern has: given a price, handled your design/mockup, confirmed quantity, AND arranged payment + shipping/delivery. When (and only when) all of that is done and you are satisfied, send a short happy closing in your style (e.g. "ok paid, thanks!", "gracias, listo", "perfect see you") and end the message with the exact tag [[DONE]].
-- If the order is NOT fully done yet, keep chatting and NEVER write [[DONE]].
-- Do not say you are an AI, persona, trainee, or practice scenario. You are just the customer.`,
+      system: getPrompt('customer_system', {
+        style_name: style.name,
+        style_description: style.description,
+        style_spotting: style.spotting || '',
+      }),
       messages: [{
         role: 'user',
         content:

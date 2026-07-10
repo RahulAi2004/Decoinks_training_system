@@ -12,6 +12,7 @@ import { parseEval } from './practice.js';
 import { addCustomerExample, listCustomerExamples, deleteCustomerExample } from '../services/customerExamples.js';
 import { addAgentExample, listAgentExamples, deleteAgentExample } from '../services/agentExamples.js';
 import { agentReply } from '../services/agentReplies.js';
+import { listPrompts, setPrompt, resetPrompt } from '../services/prompts.js';
 
 const r = Router();
 
@@ -74,6 +75,23 @@ r.post('/agent-examples', (req, res) => {
 r.delete('/agent-examples/:id', (req, res) => {
   deleteAgentExample(req.params.id);
   res.json({ ok: true });
+});
+
+// ---------- Editable AI prompts ----------
+r.get('/prompts', (req, res) => {
+  res.json(listPrompts());
+});
+
+r.put('/prompts/:key', (req, res) => {
+  const ok = setPrompt(req.params.key, req.body?.text);
+  if (!ok) return res.status(404).json({ error: 'Unknown prompt' });
+  res.json(listPrompts().find(p => p.key === req.params.key));
+});
+
+r.post('/prompts/:key/reset', (req, res) => {
+  const ok = resetPrompt(req.params.key);
+  if (!ok) return res.status(404).json({ error: 'Unknown prompt' });
+  res.json(listPrompts().find(p => p.key === req.params.key));
 });
 
 // Admin plays the customer; the AI answers as the Decoinks agent (KB-grounded).
