@@ -18,6 +18,8 @@ export default function AiChat() {
   const [newExample, setNewExample] = useState('');
 
   // customer mode (AI = customer)
+  const [personas, setPersonas] = useState([]);
+  const [persona, setPersona] = useState('');   // '' = random
   const [session, setSession] = useState(null);
   const [cMessages, setCMessages] = useState([]);
   const [cInput, setCInput] = useState('');
@@ -36,14 +38,17 @@ export default function AiChat() {
 
   const loadCustomer = () => api('/admin/customer-examples').then(setCustomerExamples).catch(console.error);
   const loadAgent = () => api('/admin/agent-examples').then(setAgentExamples).catch(console.error);
-  useEffect(() => { loadCustomer(); loadAgent(); }, []);
+  useEffect(() => {
+    loadCustomer(); loadAgent();
+    api('/practice/talk-styles').then(setPersonas).catch(console.error);
+  }, []);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [cMessages, aMessages]);
 
   // ---------------- Customer mode ----------------
   const startCustomer = async () => {
     setBusy(true);
     try {
-      const r = await api('/practice/talk-sessions', { method: 'POST' });
+      const r = await api('/practice/talk-sessions', { method: 'POST', body: persona ? { style_id: persona } : {} });
       setSession(r); setCMessages(r.messages); setCEnded(false); setCSaved(new Set());
     } catch (e) { alert(e.message); }
     finally { setBusy(false); }
@@ -175,14 +180,29 @@ export default function AiChat() {
           {mode === 'customer' ? (
             !session ? (
               <Card>
-                <p className="text-sm text-slate-600 mb-3">Start a chat with an AI customer. You reply as the Decoinks agent; approve the AI's good customer messages.</p>
+                <p className="text-sm text-slate-600 mb-3">Pick a persona to train, then start a chat. You reply as the Decoinks agent; approve or correct the AI customer's messages.</p>
+                <label className="block mb-3">
+                  <span className="text-xs font-semibold text-slate-500">Persona</span>
+                  <select value={persona} onChange={e => setPersona(e.target.value)}
+                    className="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
+                    <option value="">🎲 Random persona</option>
+                    {personas.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  </select>
+                </label>
                 <Button onClick={startCustomer} disabled={busy}>{busy ? 'Starting…' : 'Start AI customer chat'}</Button>
               </Card>
             ) : (
               <>
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs font-semibold text-slate-500">{cEnded ? 'Chat ended' : 'Live — AI customer'}</p>
-                  <Button variant="secondary" onClick={startCustomer} disabled={busy}>New chat</Button>
+                <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
+                  <p className="text-xs font-semibold text-slate-500">{cEnded ? 'Chat ended' : 'Live'} — <span className="text-violet-600">{session.style?.name || 'AI customer'}</span></p>
+                  <div className="flex items-center gap-2">
+                    <select value={persona} onChange={e => setPersona(e.target.value)} disabled={busy}
+                      className="border border-slate-300 rounded-md px-2 py-1 text-xs bg-white">
+                      <option value="">🎲 Random</option>
+                      {personas.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                    </select>
+                    <Button variant="secondary" onClick={startCustomer} disabled={busy}>New chat</Button>
+                  </div>
                 </div>
                 <div className="flex-1 overflow-y-auto bg-white rounded-lg border border-slate-200 p-4 space-y-3">
                   {cMessages.map((m, i) => bubble(m, i, m.role === 'intern' ? 'right' : 'left',

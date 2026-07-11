@@ -209,14 +209,16 @@ r.post('/real-chats/:chatId/sessions', (req, res) => {
 
 r.post('/talk-sessions', async (req, res) => {
   const flow = await pickTalkBlueprint();
-  // One coherent customer drives the whole chat: the flow decides who the
-  // customer is, and the writing style is matched to that same customer.
-  const style = flow
-    ? await styleForFlow(flow)
-    : (req.body?.style_id ? await getWritingStyle(req.body.style_id) : await randomWritingStyle());
+  // If a persona was explicitly chosen (admin "Chat with AI"), that persona
+  // drives the voice. Otherwise the flow decides the customer and the style is
+  // matched to it (interns get a random, hidden persona).
+  const chosen = req.body?.style_id ? await getWritingStyle(req.body.style_id) : null;
+  const style = chosen || (flow ? await styleForFlow(flow) : await randomWritingStyle());
   if (!style) return res.status(404).json({ error: 'Writing style document not found' });
   const id = uuid();
-  const questions = flow?.customer_messages?.length ? flow.customer_messages : (style.questions || []);
+  const questions = chosen?.questions?.length
+    ? chosen.questions
+    : (flow?.customer_messages?.length ? flow.customer_messages : (style.questions || []));
   // Pick ONE design image for this customer and reuse it whenever they share
   // their artwork, so it looks like one real customer, not a new image each time.
   // Use only a real customer-shared DESIGN image (never an agent PayPal QR / mockup).
@@ -233,7 +235,12 @@ r.post('/talk-sessions', async (req, res) => {
   const openerText = (await nextCustomerMessage({ style, questions, nextIndex: 0, conversation: [], flow, approvedExamples: openerExamples, realExamples: openerReal })).replace(/\[\[\s*DONE\s*\]\]/gi, '').trim();
   const opener = customerBodyWithDesign(openerText, flow?.session_artwork, false);
   db.prepare('INSERT INTO session_messages (id, session_id, role, body) VALUES (?, ?, ?, ?)').run(uuid(), id, 'customer', opener);
-  res.json({ session_id: id, mode: 'talk_customer', style: { name: 'Customer', description: 'Live AI customer', agent_tip: 'Reply naturally and handle the customer like a real Decoinks chat.' }, messages: visibleMessages(id) });
+  // Reveal the real persona name only when one was explicitly chosen (admin);
+  // interns keep a generic "Customer" so the persona stays hidden.
+  const styleOut = chosen
+    ? { name: style.name, description: style.description, agent_tip: style.agent_tip }
+    : { name: 'Customer', description: 'Live AI customer', agent_tip: 'Reply naturally and handle the customer like a real Decoinks chat.' };
+  res.json({ session_id: id, mode: 'talk_customer', style: styleOut, messages: visibleMessages(id) });
 });
 
 r.post('/talk-sessions/:id/messages', async (req, res) => {
