@@ -9,6 +9,7 @@ import { getWritingStyle, isOrderComplete, nextCustomerMessage, randomArtworkUrl
 import { randomOrderFlowBlueprint } from '../services/orderFlows.js';
 import { relevantExampleTexts } from '../services/customerExamples.js';
 import { relevantRealCustomerMsgs } from '../services/realChatQa.js';
+import { visibleMessages as supervisedVisible, autoReleaseIfDue, getSupervised, afterAgentReply } from '../services/supervised.js';
 
 const r = Router();
 
@@ -323,6 +324,50 @@ r.post('/talk-sessions/:id/messages', async (req, res) => {
   }
 
   res.json({ messages: visibleMessages(s.id), evaluation_recorded: !!evalResult });
+});
+
+// ---- Supervised live sessions (agent side; admin gates each customer message) ----
+r.get('/supervised', (req, res) => {
+  const rows = db.prepare(`
+    SELECT ps.id, ps.status, rc.customer_name, rc.intent,
+      (SELECT COUNT(*) FROM session_messages m WHERE m.session_id = ps.id AND m.role = 'customer') AS customer_shown
+    FROM real_chat_sessions rcs JOIN practice_sessions ps ON ps.id = rcs.session_id JOIN real_chats rc ON rc.id = rcs.real_chat_id
+    WHERE rcs.supervised = 1 AND ps.intern_id = ? AND ps.status = 'active' ORDER BY ps.started_at DESC`).all(req.user.id);
+  res.json(rows);
+});
+
+r.get('/supervised/:id', (req, res) => {
+  const s = db.prepare('SELECT * FROM practice_sessions WHERE id = ? AND intern_id = ?').get(req.params.id, req.user.id);
+  if (!s) return res.status(404).json({ error: 'Session not found' });
+  autoReleaseIfDue(req.params.id);
+  const st = getSupervised(req.params.id);
+  const rc = db.prepare('SELECT rc.customer_name, rc.intent FROM real_chat_sessions rcs JOIN real_chats rc ON rc.id = rcs.real_chat_id WHERE rcs.session_id = ?').get(req.params.id);
+  res.json({ session_id: req.params.id, mode: 'supervised', real_chat: rc, status: s.status,
+    messages: supervisedVisible(req.params.id), customer_pending: !!(st?.pending_body || st?.pending_attachment) });
+});
+
+r.post('/supervised/:id/messages', async (req, res) => {
+  const s = db.prepare('SELECT * FROM practice_sessions WHERE id = ? AND intern_id = ?').get(req.params.id, req.user.id);
+  if (!s) return res.status(404).json({ error: 'Session not found' });
+  if (s.status !== 'active') return res.status(400).json({ error: 'Session has ended' });
+  const body = String(req.body?.body || '').trim();
+  if (!body) return res.status(400).json({ error: 'Empty message' });
+
+  const before = supervisedVisible(req.params.id);
+  const lastCustomer = [...before].reverse().find(m => m.role === 'customer');
+  const msgId = uuid();
+  db.prepare('INSERT INTO session_messages (id, session_id, role, body) VALUES (?, ?, ?, ?)').run(msgId, req.params.id, 'intern', body);
+  await evaluateReply({
+    internId: s.intern_id, sessionMessageId: msgId, conversation: [...before, { role: 'intern', body }],
+    customerText: lastCustomer?.body || '', internReply: body, modelReply: null,
+  }).catch(e => { console.error('supervised eval error:', e.message); });
+
+  const state = afterAgentReply(req.params.id);
+  if (state === 'done') {
+    const scorecard = finishSession(req.params.id, s.intern_id);
+    return res.json({ messages: supervisedVisible(req.params.id), complete: true, scorecard });
+  }
+  res.json({ messages: supervisedVisible(req.params.id), complete: false, customer_pending: true });
 });
 
 r.post('/real-chat-sessions/:id/messages', async (req, res) => {

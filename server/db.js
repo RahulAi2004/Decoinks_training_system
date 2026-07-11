@@ -257,6 +257,11 @@ CREATE INDEX IF NOT EXISTS idx_company_products_created ON company_products(crea
 for (const [column, ddl] of [
   ['current_customer_count', 'ALTER TABLE real_chat_sessions ADD COLUMN current_customer_count INTEGER NOT NULL DEFAULT 0'],
   ['replies_in_block', 'ALTER TABLE real_chat_sessions ADD COLUMN replies_in_block INTEGER NOT NULL DEFAULT 0'],
+  ['supervised', 'ALTER TABLE real_chat_sessions ADD COLUMN supervised INTEGER NOT NULL DEFAULT 0'],
+  ['pending_body', 'ALTER TABLE real_chat_sessions ADD COLUMN pending_body TEXT'],
+  ['pending_attachment', 'ALTER TABLE real_chat_sessions ADD COLUMN pending_attachment TEXT'],
+  ['pending_since', 'ALTER TABLE real_chat_sessions ADD COLUMN pending_since TEXT'],
+  ['pending_original', 'ALTER TABLE real_chat_sessions ADD COLUMN pending_original TEXT'],
 ]) {
   const exists = db.prepare('PRAGMA table_info(real_chat_sessions)').all().some(c => c.name === column);
   if (!exists) db.prepare(ddl).run();

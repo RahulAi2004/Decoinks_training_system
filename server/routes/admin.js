@@ -10,6 +10,8 @@ import { ingestAll, CONTENT_DIR } from '../ingest.js';
 import { activeModelLabel } from '../llm.js';
 import { parseEval } from './practice.js';
 import { addCustomerExample, listCustomerExamples, deleteCustomerExample } from '../services/customerExamples.js';
+import { realChatList } from '../services/realChats.js';
+import { createSupervised, getSupervised, pendingInfo, editPending, releasePending, autoReleaseIfDue, suggestCustomerMessage, visibleMessages as supervisedVisible } from '../services/supervised.js';
 import { addAgentExample, listAgentExamples, deleteAgentExample } from '../services/agentExamples.js';
 import { agentReply } from '../services/agentReplies.js';
 import { listPrompts, setPrompt, resetPrompt } from '../services/prompts.js';
@@ -98,6 +100,58 @@ r.put('/conversations/messages/:msgId', (req, res) => {
   db.prepare('UPDATE session_messages SET body = ? WHERE id = ?').run(body + (artMatch ? artMatch[0] : ''), req.params.msgId);
   addCustomerExample(body, req.user.id);   // corrected message trains the AI customer
   res.json({ ok: true });
+});
+
+// ---------- Supervised live training (admin monitors, edits customer msgs) ----------
+r.get('/supervised/options', (req, res) => {
+  const agents = db.prepare("SELECT id, name, email FROM users WHERE role = 'intern' AND is_active = 1 ORDER BY name").all();
+  const customers = realChatList().map(c => ({ id: c.id, name: c.customer_name, intent: c.intent }));
+  res.json({ agents, customers });
+});
+
+r.get('/supervised', (req, res) => {
+  const rows = db.prepare(`
+    SELECT ps.id, ps.status, ps.started_at, u.name AS agent_name, rc.customer_name,
+      (CASE WHEN rcs.pending_body IS NOT NULL OR rcs.pending_attachment IS NOT NULL THEN 1 ELSE 0 END) AS has_pending
+    FROM real_chat_sessions rcs
+    JOIN practice_sessions ps ON ps.id = rcs.session_id
+    JOIN users u ON u.id = ps.intern_id
+    JOIN real_chats rc ON rc.id = rcs.real_chat_id
+    WHERE rcs.supervised = 1 AND ps.status = 'active'
+    ORDER BY ps.started_at DESC`).all();
+  res.json(rows);
+});
+
+r.post('/supervised', (req, res) => {
+  const { agent_id, real_chat_id } = req.body || {};
+  if (!agent_id || !real_chat_id) return res.status(400).json({ error: 'Pick an agent and a customer' });
+  try { res.json({ session_id: createSupervised(agent_id, real_chat_id) }); }
+  catch (e) { res.status(400).json({ error: e.message }); }
+});
+
+r.get('/supervised/:id', (req, res) => {
+  autoReleaseIfDue(req.params.id);
+  const st = getSupervised(req.params.id);
+  if (!st) return res.status(404).json({ error: 'Session not found' });
+  const ps = db.prepare(`SELECT ps.id, ps.status, u.name AS agent_name, rc.customer_name
+    FROM practice_sessions ps JOIN users u ON u.id = ps.intern_id
+    JOIN real_chat_sessions rcs ON rcs.session_id = ps.id JOIN real_chats rc ON rc.id = rcs.real_chat_id
+    WHERE ps.id = ?`).get(req.params.id);
+  res.json({ session: ps, messages: supervisedVisible(req.params.id), pending: pendingInfo(st) });
+});
+
+r.put('/supervised/:id/pending', (req, res) => {
+  editPending(req.params.id, req.body?.body);
+  res.json({ ok: true });
+});
+
+r.post('/supervised/:id/release', (req, res) => {
+  releasePending(req.params.id, true);
+  res.json({ ok: true });
+});
+
+r.post('/supervised/:id/suggest', async (req, res) => {
+  res.json({ suggestion: await suggestCustomerMessage(req.params.id) });
 });
 
 // ---------- AI agent training: approved replies + corrections ----------

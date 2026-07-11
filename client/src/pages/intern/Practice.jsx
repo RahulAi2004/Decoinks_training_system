@@ -19,6 +19,8 @@ function downloadText(filename, text) {
 export default function Practice() {
   const [personas, setPersonas] = useState([]);
   const [realChats, setRealChats] = useState([]);
+  const [supervisedList, setSupervisedList] = useState([]);
+  const [customerTyping, setCustomerTyping] = useState(false);
   const [tab, setTab] = useState('real');
   const [session, setSession] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -42,6 +44,31 @@ export default function Practice() {
       api('/practice/real-chats'),
     ]).then(([p, c]) => { setPersonas(p); setRealChats(c); }).catch(console.error);
   }, []);
+
+  // Poll for live (supervised) sessions an admin assigned to this agent — acts as a notification.
+  useEffect(() => {
+    const load = () => api('/practice/supervised').then(setSupervisedList).catch(() => {});
+    load();
+    const t = setInterval(load, 5000);
+    return () => clearInterval(t);
+  }, []);
+
+  // While in a live session, poll so admin-released customer messages appear.
+  useEffect(() => {
+    if (session?.mode !== 'supervised') return;
+    let alive = true;
+    const tick = async () => {
+      try {
+        const r = await api(`/practice/supervised/${session.session_id}`);
+        if (!alive) return;
+        setMessages(r.messages);
+        setCustomerTyping(!!r.customer_pending);
+        if (r.status === 'ended') setCustomerTyping(false);
+      } catch { /* ignore */ }
+    };
+    const t = setInterval(tick, 2000);
+    return () => { alive = false; clearInterval(t); };
+  }, [session]);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
   const startPersona = async (persona_id) => {
@@ -60,6 +87,16 @@ export default function Practice() {
       const r = await api(`/practice/real-chats/${chatId}/sessions`, { method: 'POST' });
       setAwaitingNext(false); setCompletedScorecard(null);
       setSession(r); setMessages(r.messages);
+    } catch (e) { alert(e.message); }
+    finally { setBusy(false); }
+  };
+
+  const startSupervised = async (id) => {
+    setBusy(true); setScorecard(null);
+    try {
+      const r = await api(`/practice/supervised/${id}`);
+      setAwaitingNext(false); setCompletedScorecard(null); setCustomerTyping(!!r.customer_pending);
+      setSession({ ...r, mode: 'supervised' }); setMessages(r.messages);
     } catch (e) { alert(e.message); }
     finally { setBusy(false); }
   };
@@ -87,6 +124,8 @@ export default function Practice() {
         ? `/practice/real-chat-sessions/${activeSession.session_id}/messages`
         : activeSession.mode === 'talk_customer'
           ? `/practice/talk-sessions/${activeSession.session_id}/messages`
+        : activeSession.mode === 'supervised'
+          ? `/practice/supervised/${activeSession.session_id}/messages`
         : `/practice/sessions/${activeSession.session_id}/messages`;
       if (activeSession.mode === 'talk_customer') await new Promise(resolve => setTimeout(resolve, 15000));
       const r = await api(path, { method: 'POST', body: { body } });
@@ -94,7 +133,7 @@ export default function Practice() {
       if (r.complete) {
         const doneScorecard = { ...r.scorecard, session_id: activeSession.session_id, real_chat: activeSession.real_chat || null };
         setAwaitingNext(false);
-        if (activeSession.mode === 'talk_customer' || activeSession.mode === 'real_chat') {
+        if (['talk_customer', 'real_chat', 'supervised'].includes(activeSession.mode)) {
           setCompletedScorecard(doneScorecard);
         } else {
           setCompletedScorecard(null);
@@ -104,6 +143,8 @@ export default function Practice() {
       } else if (activeSession.mode === 'real_chat') {
         setAwaitingNext(!!r.waiting_for_more);
         if (r.waiting_for_more) startCountdown();   // customer replies after 15s
+      } else if (activeSession.mode === 'supervised') {
+        setCustomerTyping(!!r.customer_pending);    // admin is preparing the next customer message
       }
     } catch (e2) { alert(e2.message); }
     finally { setBusy(false); }
@@ -227,12 +268,29 @@ export default function Practice() {
         </div>
 
         <div className="inline-flex rounded-lg border border-slate-200 bg-white p-1">
+          {supervisedList.length > 0 && (
+            <button onClick={() => setTab('live')} className={`px-3 py-1.5 rounded-md text-sm font-semibold flex items-center gap-1.5 ${tab === 'live' ? 'bg-violet-700 text-white' : 'text-violet-700 hover:bg-violet-50'}`}>
+              🎧 Live session <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-rose-500 text-white">{supervisedList.length}</span>
+            </button>
+          )}
           <button onClick={() => setTab('real')} className={`px-3 py-1.5 rounded-md text-sm font-semibold ${tab === 'real' ? 'bg-violet-700 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>Real customer chats</button>
           <button onClick={() => setTab('talk')} className={`px-3 py-1.5 rounded-md text-sm font-semibold ${tab === 'talk' ? 'bg-violet-700 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>Talk to customer</button>
           <button onClick={() => setTab('persona')} className={`px-3 py-1.5 rounded-md text-sm font-semibold ${tab === 'persona' ? 'bg-violet-700 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>AI personas</button>
         </div>
 
-        {tab === 'real' ? (
+        {tab === 'live' ? (
+          <div className="grid md:grid-cols-2 gap-3">
+            {supervisedList.length === 0 && <p className="text-sm text-slate-400">No live sessions assigned right now.</p>}
+            {supervisedList.map(s => (
+              <button key={s.id} onClick={() => startSupervised(s.id)} disabled={busy}
+                className="rounded-lg border border-violet-300 bg-violet-50 hover:bg-violet-100 p-4 text-left transition">
+                <p className="font-bold text-violet-800">🎧 {s.customer_name}</p>
+                <p className="text-xs text-slate-500 mt-0.5">{s.intent || 'Live customer'} · {s.customer_shown} messages so far</p>
+                <div className="mt-3 inline-flex rounded-md bg-violet-700 px-3 py-1.5 text-sm font-bold text-white">Join live chat</div>
+              </button>
+            ))}
+          </div>
+        ) : tab === 'real' ? (
           <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-3">
             {realChats.map(c => (
               <button key={c.id} onClick={() => startReal(c.id)} disabled={busy}
@@ -286,16 +344,18 @@ export default function Practice() {
     );
   }
 
-  const title = session.mode === 'real_chat'
+  const title = (session.mode === 'real_chat' || session.mode === 'supervised')
     ? session.real_chat?.customer_name
     : session.mode === 'talk_customer'
       ? session.style?.name
       : (session.persona?.name || 'Customer');
-  const subtitle = session.mode === 'real_chat'
-    ? `${session.real_chat?.intent || 'Real transcript'}`
-    : session.mode === 'talk_customer'
-      ? session.style?.agent_tip
-      : session.persona?.description;
+  const subtitle = session.mode === 'supervised'
+    ? '🎧 Live — supervised by admin'
+    : session.mode === 'real_chat'
+      ? `${session.real_chat?.intent || 'Real transcript'}`
+      : session.mode === 'talk_customer'
+        ? session.style?.agent_tip
+        : session.persona?.description;
 
   return (
     <div className="flex flex-col h-[calc(100vh-3rem)]">
@@ -326,6 +386,7 @@ export default function Practice() {
           </div>
         ))}
         {busy && <p className="text-xs text-slate-400 italic">{session.mode === 'real_chat' ? 'checking your reply...' : 'customer is typing...'}</p>}
+        {session.mode === 'supervised' && customerTyping && !busy && <p className="text-xs text-slate-400 italic">customer is typing…</p>}
         {session.mode === 'real_chat' && awaitingNext && !busy && (
           <div className="flex justify-center">
             <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
