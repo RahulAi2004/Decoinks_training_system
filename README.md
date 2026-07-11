@@ -14,9 +14,8 @@ npm run ingest                # parse + chunk + embed everything in ./content/
 npm run dev                   # API on :4000, app on http://localhost:5173
 ```
 
-**Demo logins**
-- Admin — `admin@decoinks.com` / `admin123`
-- Intern — `intern@decoinks.com` / `intern123`
+The first admin login comes from `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `.env`.
+Additional trainee accounts are created from **Admin → Decoinks Agents**.
 
 ## .env
 
@@ -24,8 +23,8 @@ npm run dev                   # API on :4000, app on http://localhost:5173
 | --- | --- |
 | `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` | Real AI simulator/evaluator/quiz-gen. **Without any key the app still runs** in mock mode: scripted customer personas, heuristic scoring (labelled `mock`), local hash embeddings. |
 | `JWT_SECRET` | Session signing — set to a long random string. |
-| `PORT` | API port (default 4000). |
-| `DATABASE_URL` | Blank = SQLite at `data/app.db` (default). The schema mirrors the Postgres+pgvector design in `server/db.js`; porting = swapping the driver. |
+| `API_PORT` | API port (default 4000). The Vite development server uses `PORT` for its own port (default 5173). |
+| `ADMIN_NAME` / `ADMIN_EMAIL` / `ADMIN_PASSWORD` | First admin account created by `npm run seed` or Docker startup. |
 
 If `OPENAI_API_KEY` is set, embeddings use `text-embedding-3-small`; otherwise a local
 deterministic vector store is used. Provider + model for chat/eval are selectable in
@@ -64,3 +63,15 @@ client/            React 18 + Vite + Tailwind 4 + Recharts
 content/           uploaded source-of-truth files
 data/app.db        SQLite (gitignored)
 ```
+
+## Docker deployment
+
+```bash
+docker compose up -d --build
+```
+
+The app is served at `http://localhost:4000`. Both `./data` and `./content` are
+mounted into the container so the database and admin-uploaded content survive a
+rebuild. Startup seeds missing defaults and ingests content only when the database
+has no ready documents; use **Admin → Content → Train on knowledge base** after
+changing knowledge files on an existing deployment.

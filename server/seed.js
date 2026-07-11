@@ -1,4 +1,4 @@
-// Seed: demo admin + intern, the 10 configurable personas, default settings, and a
+// Seed: configured admin, the 10 configurable personas, default settings, and a
 // starter quiz bank whose facts come from the ingested content (content/qa + knowledge).
 import 'dotenv/config';
 import db, { uuid, setSetting, DEFAULT_SETTINGS } from './db.js';
@@ -8,7 +8,7 @@ function upsertUser({ name, email, password, role }) {
   const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
   if (existing) return console.log(`  user exists: ${email}`);
   createUser({ name, email, password, role });
-  console.log(`  ✓ ${role}: ${email} / ${password}`);
+  console.log(`  ✓ ${role}: ${email}`);
 }
 
 console.log('Seeding users…');
@@ -87,4 +87,8 @@ for (const [question, type, options, correct, source] of QUIZZES) {
 }
 console.log(`  ✓ ${quizAdded} quiz question(s) added`);
 
-console.log('\nSeed complete. Login: admin@decoinks.com / admin123 · intern@decoinks.com / intern123');
+if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
+  console.log(`\nSeed complete. Admin login: ${String(process.env.ADMIN_EMAIL).toLowerCase().trim()}`);
+} else {
+  console.log('\nSeed complete. No admin account was configured.');
+}

@@ -16,5 +16,8 @@ export default defineConfig({
       '/real-chat-artwork': `http://localhost:${process.env.API_PORT || 4000}`,
     },
   },
-  build: { outDir: path.join(__dirname, '..', 'dist') },
+  build: {
+    outDir: path.join(__dirname, '..', 'dist'),
+    emptyOutDir: true,
+  },
 });

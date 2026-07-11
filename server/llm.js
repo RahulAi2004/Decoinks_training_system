@@ -9,10 +9,15 @@ const GROQ_DEFAULT = 'llama-3.3-70b-versatile';
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 const DEFAULT_MODEL = { anthropic: ANTHROPIC_DEFAULT, openai: OPENAI_DEFAULT, groq: GROQ_DEFAULT };
+const SUPPORTED_PROVIDERS = new Set(['auto', 'anthropic', 'openai', 'groq', 'mock']);
 
 export function resolveProvider() {
-  const cfg = getSetting('llm') || {};
-  let provider = cfg.provider || 'auto';
+  const stored = getSetting('llm');
+  const cfg = stored && typeof stored === 'object' && !Array.isArray(stored) ? stored : {};
+  const requested = String(cfg.provider || 'auto').toLowerCase().trim();
+  // A corrupted/old setting must never silently turn into an authenticated
+  // OpenAI request via the generic OpenAI-compatible branch below.
+  let provider = SUPPORTED_PROVIDERS.has(requested) ? requested : 'mock';
   if (provider === 'auto') {
     // Groq is preferred over OpenAI in auto-detect (free tier, and OpenAI keys here
     // may lack quota). Anthropic still wins if its key is set.
@@ -24,7 +29,10 @@ export function resolveProvider() {
   if (provider === 'anthropic' && !process.env.ANTHROPIC_API_KEY) provider = 'mock';
   if (provider === 'groq' && !process.env.GROQ_API_KEY) provider = 'mock';
   if (provider === 'openai' && !process.env.OPENAI_API_KEY) provider = 'mock';
-  const model = cfg.model || DEFAULT_MODEL[provider] || OPENAI_DEFAULT;
+  // A model entered for one provider is not portable to a provider selected by
+  // auto-detection. Explicit provider selections may still use custom models.
+  const customModel = requested !== 'auto' && requested === provider ? String(cfg.model || '').trim() : '';
+  const model = customModel || DEFAULT_MODEL[provider] || OPENAI_DEFAULT;
   return { provider, model };
 }
 

@@ -48,8 +48,8 @@ export async function embedBatch(texts, model = preferredModel()) {
 }
 
 export function cosine(a, b) {
+  if (!a || !b || a.length !== b.length || a.length === 0) return 0;
   let dot = 0, na = 0, nb = 0;
-  const n = Math.min(a.length, b.length);
-  for (let i = 0; i < n; i++) { dot += a[i] * b[i]; na += a[i] * a[i]; nb += b[i] * b[i]; }
+  for (let i = 0; i < a.length; i++) { dot += a[i] * b[i]; na += a[i] * a[i]; nb += b[i] * b[i]; }
   return dot / ((Math.sqrt(na) || 1) * (Math.sqrt(nb) || 1));
 }

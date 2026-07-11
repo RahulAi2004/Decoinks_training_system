@@ -9,4 +9,6 @@ services:
       - "4000:4000"
     volumes:
       - ./data:/app/data
-      - ./content/company-products:/app/content/company-products
+      # Persist every admin upload (knowledge, training, Q&A, and company products)
+      # across container rebuilds.
+      - ./content:/app/content

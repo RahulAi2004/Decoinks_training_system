@@ -8,10 +8,10 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(undefined);   // undefined = loading
 
   useEffect(() => {
-    if (!getToken()) { setUser(null); return; }
-    api('/auth/me').then(setUser).catch(() => setUser(null));
     const onExpired = () => setUser(null);
     window.addEventListener('auth-expired', onExpired);
+    if (!getToken()) setUser(null);
+    else api('/auth/me').then(setUser).catch(() => setUser(null));
     return () => window.removeEventListener('auth-expired', onExpired);
   }, []);
 

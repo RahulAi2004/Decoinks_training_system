@@ -2,7 +2,17 @@
 set -e
 
 node server/seed.js
-node server/ingest.js
+
+# Ingest bundled/uploaded knowledge on a fresh database only. Re-ingesting every
+# restart replaces all document/chunk rows and can make startup slow or costly
+# when remote embeddings are enabled. Admins can explicitly re-ingest from the
+# Content page after changing files.
+DOC_COUNT="$(node --input-type=module -e "import db from './server/db.js'; console.log(db.prepare(\"SELECT COUNT(*) c FROM documents WHERE parsed_status='ready'\").get().c)")"
+if [ "$DOC_COUNT" = "0" ]; then
+  node server/ingest.js
+else
+  echo "Knowledge base already contains $DOC_COUNT ready document(s); skipping startup ingest."
+fi
 
 # Real customer chats: the 50 successful (ordered/paid) chats with real images.
 SUCCESS_COUNT="$(node --input-type=module -e "import db from './server/db.js'; console.log(db.prepare(\"SELECT COUNT(*) c FROM real_chats WHERE source_filename='Decoinks-All-Customers'\").get().c)")"
