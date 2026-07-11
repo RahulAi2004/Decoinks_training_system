@@ -5,13 +5,14 @@
 import { completeText, resolveProvider } from '../llm.js';
 import { kbContext } from '../rag.js';
 import { relevantAgentExamples } from './agentExamples.js';
-import { relevantRealAgentReplies } from './realChatQa.js';
 import { getPrompt } from './prompts.js';
 
+// SOURCE OF TRUTH = the confirmed company knowledge base only. Raw sales-chat data
+// is NOT used for the agent's facts (agents improvised, quoted promo prices, etc.).
+// Only the knowledge base + admin-confirmed corrections/examples drive answers.
 export async function agentReply({ conversation = [], customerText }) {
   const query = customerText || conversation.at(-1)?.body || '';
   const examples = await relevantAgentExamples(query, 12);
-  const realReplies = await relevantRealAgentReplies(query, 5);
   const corrections = examples.filter(e => e.is_correction);
   const goodExamples = examples.filter(e => !e.is_correction);
 
@@ -21,10 +22,8 @@ export async function agentReply({ conversation = [], customerText }) {
   }
 
   const cust = customerText || conversation.at(-1)?.body || '';
-  const kb = await kbContext(cust, { k: 6 });
+  const kb = await kbContext(cust, { k: 8 });
   const convo = conversation.slice(-10).map(m => `${m.role === 'customer' ? 'CUSTOMER' : 'AGENT'}: ${m.body}`).join('\n');
-  // The mined examples are often Spanish; force the reply to match the customer's
-  // language so an English customer never gets a Spanish answer.
   const looksSpanish = /[ñ¿¡]|[áéíóú]|\b(hola|cuanto|cuánto|precio|gracias|necesito|quiero|env[ií]o|camisetas?|pedido|cu[aá]l|tama[ñn]o)\b/i.test(cust);
   const langRule = looksSpanish
     ? 'Reply in Spanish (the customer is writing in Spanish).'
@@ -36,9 +35,6 @@ export async function agentReply({ conversation = [], customerText }) {
   const goodBlock = goodExamples.length
     ? `ADMIN-APPROVED GOOD AGENT REPLIES (imitate this quality and tone):\n${goodExamples.map((g, i) => `${i + 1}. ${g.reply}`).join('\n')}\n\n`
     : '';
-  const realBlock = realReplies.length
-    ? `HOW REAL DECOINKS AGENTS REPLIED to similar customer messages (match this style and accuracy; do not copy verbatim):\n${realReplies.map((r, i) => `${i + 1}. Customer: "${r.customer_text}"\n   Agent: "${r.agent_reply}"`).join('\n')}\n\n`
-    : '';
 
   try {
     const text = await completeText({
@@ -46,8 +42,8 @@ export async function agentReply({ conversation = [], customerText }) {
       messages: [{
         role: 'user',
         content:
-`${correctionBlock}${goodBlock}${realBlock}SOURCE OF TRUTH (knowledge base):
-${kb || '(No KB excerpts retrieved.)'}
+`${correctionBlock}${goodBlock}SOURCE OF TRUTH — the confirmed company knowledge base. Answer ONLY from this. If it is not covered here, ask a short clarifying question — do NOT invent prices, minimums, or policies:
+${kb || '(No knowledge-base excerpts found for this question — ask the customer for more detail instead of guessing.)'}
 
 CONVERSATION SO FAR:
 ${convo || '(Start of chat.)'}
@@ -55,7 +51,7 @@ ${convo || '(Start of chat.)'}
 CUSTOMER JUST SAID: "${cust}"
 
 ${langRule}
-Write the Decoinks agent's next reply.`,
+Write the Decoinks agent's next reply, using only the knowledge base above for any facts.`,
       }],
       maxTokens: 200,
     });
