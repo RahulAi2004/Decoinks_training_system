@@ -10,6 +10,7 @@ import db, { DATA_DIR, uuid } from '../db.js';
 
 const DOCX = path.join(process.cwd(), 'Decoinks-All-Customers.docx');
 const JSON_FILE = path.join(process.cwd(), 'decoinks-successful-chats.json');
+const LIBRARY_JSON_FILE = path.join(process.cwd(), 'decoinks-customer-library.json');
 const ART_DIR = path.join(DATA_DIR, 'real-chat-artwork');
 
 const TARGET = 50;
@@ -175,4 +176,124 @@ export function importSuccessfulFromJson(jsonPath = JSON_FILE) {
   });
   tx();
   return chats.length;
+}
+
+// Build a compact, searchable library from every usable conversation in the
+// full export. The existing hand-picked 50 remain active; these additional
+// chats are imported as inactive until an admin adds them from Live Training.
+export async function buildCustomerLibraryJson(docxPath = DOCX, outPath = LIBRARY_JSON_FILE) {
+  const { value } = await mammoth.extractRawText({ path: docxPath });
+  const zip = await JSZip.loadAsync(fs.readFileSync(docxPath));
+  const convImages = await imagesByConversation(zip);
+  const conversations = parseConversations(value).filter(c => {
+    const named = c.name && !/^customer$/i.test(c.name) && /^[A-Za-z]/.test(c.name) && c.name.length <= 80;
+    const customerMessages = c.messages.filter(m => m.role === 'customer' && !m.is_artwork).length;
+    return named && customerMessages > 0 && c.messages.length >= 2;
+  });
+
+  fs.mkdirSync(ART_DIR, { recursive: true });
+  for (const file of fs.readdirSync(ART_DIR)) {
+    if (/^lib-\d+-\d+\./.test(file)) fs.unlinkSync(path.join(ART_DIR, file));
+  }
+
+  const chats = [];
+  for (const conversation of conversations) {
+    const sourceNumber = conversation.index + 1;
+    const images = [...(convImages[conversation.index] || [])];
+    let usedImages = 0;
+    const messages = [];
+    for (const message of conversation.messages) {
+      let attachment_path = null;
+      if (message.role === 'customer' && message.is_artwork && message.needs_image && images.length && usedImages < MAX_IMG_PER_CHAT) {
+        const source = images.shift();
+        const extension = path.extname(source) || '.jpg';
+        const outputName = `lib-${sourceNumber}-${usedImages + 1}${extension}`;
+        const buffer = await zip.file(`word/media/${source}`)?.async('nodebuffer');
+        if (buffer) {
+          fs.writeFileSync(path.join(ART_DIR, outputName), buffer);
+          attachment_path = outputName;
+          usedImages += 1;
+        }
+      }
+      messages.push({
+        role: message.role,
+        body: message.body,
+        sent_at: message.sent_at,
+        is_artwork: message.is_artwork,
+        attachment_path,
+      });
+    }
+    const text = messages.map(m => m.body).join(' ');
+    const ordered = PAID.test(text) || (ADDRESS.test(text) && PRICE.test(text));
+    chats.push({
+      source_number: sourceNumber,
+      customer_name: conversation.name,
+      outcome: ordered ? 'ORDERED' : 'LEAD',
+      intent: inferIntent(text.toLowerCase()),
+      products_discussed: '',
+      stage_reached: ordered ? 'Ordered / paid' : 'Lead conversation',
+      summary: summarize(messages),
+      messages,
+    });
+  }
+
+  fs.writeFileSync(outPath, JSON.stringify({ chats }));
+  return {
+    chats: chats.length,
+    withImages: chats.filter(c => c.messages.some(m => m.attachment_path)).length,
+    images: chats.reduce((sum, c) => sum + c.messages.filter(m => m.attachment_path).length, 0),
+  };
+}
+
+export function importCustomerLibraryFromJson(jsonPath = LIBRARY_JSON_FILE) {
+  if (!fs.existsSync(jsonPath)) throw new Error(`Customer-library JSON not found: ${jsonPath}`);
+  const { chats } = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+  let added = 0;
+  let refreshed = 0;
+  let matchedActive = 0;
+
+  const tx = db.transaction(() => {
+    for (const chat of chats) {
+      const librarySourceNumber = 100000 + Number(chat.source_number || 0);
+      let row = db.prepare(`SELECT id FROM real_chats
+        WHERE source_filename = 'Decoinks-All-Customers-Library' AND source_number = ?`).get(librarySourceNumber);
+
+      if (!row) {
+        const activeMatch = db.prepare(`SELECT id FROM real_chats
+          WHERE source_filename <> 'Decoinks-All-Customers-Library'
+            AND customer_name = ? COLLATE NOCASE AND COALESCE(summary, '') = ? LIMIT 1`)
+          .get(chat.customer_name, chat.summary || '');
+        if (activeMatch) { matchedActive += 1; continue; }
+
+        row = { id: uuid() };
+        db.prepare(`INSERT INTO real_chats
+          (id, source_number, customer_name, outcome, order_value, products_discussed, stage_reached,
+           intent, message_count, artwork_count, summary, source_filename, is_available)
+          VALUES (?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, 'Decoinks-All-Customers-Library', 0)`)
+          .run(row.id, librarySourceNumber, chat.customer_name, chat.outcome || 'LEAD',
+            chat.products_discussed || '', chat.stage_reached || '', chat.intent || 'General order',
+            chat.messages.length, chat.messages.filter(m => m.attachment_path).length, chat.summary || '');
+        added += 1;
+      } else {
+        db.prepare(`UPDATE real_chats SET customer_name = ?, outcome = ?, products_discussed = ?,
+          stage_reached = ?, intent = ?, message_count = ?, artwork_count = ?, summary = ? WHERE id = ?`)
+          .run(chat.customer_name, chat.outcome || 'LEAD', chat.products_discussed || '', chat.stage_reached || '',
+            chat.intent || 'General order', chat.messages.length,
+            chat.messages.filter(m => m.attachment_path).length, chat.summary || '', row.id);
+        db.prepare('DELETE FROM real_chat_messages WHERE chat_id = ?').run(row.id);
+        refreshed += 1;
+      }
+
+      chat.messages.forEach((message, index) => {
+        db.prepare(`INSERT INTO real_chat_messages
+          (id, chat_id, message_index, role, body, sent_at, is_artwork, attachment_path, original_marker)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, '')`)
+          .run(uuid(), row.id, index, message.role, message.body, message.sent_at || '',
+            message.is_artwork ? 1 : 0,
+            message.role === 'customer' ? message.attachment_path || null : null);
+      });
+    }
+  });
+  tx();
+  return { total: chats.length, added, refreshed, matchedActive };
 }

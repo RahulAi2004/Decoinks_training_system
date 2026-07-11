@@ -222,12 +222,13 @@ export async function importRealChats(sourcePath = path.join(process.cwd(), SOUR
   return { chats: chats.length, images: images.length };
 }
 
-export function realChatList() {
+export function realChatList({ includeInactive = false } = {}) {
   return db.prepare(`
     SELECT rc.*,
       (SELECT COUNT(*) FROM real_chat_messages m WHERE m.chat_id = rc.id AND m.role = 'customer') AS customer_messages,
       (SELECT COUNT(*) FROM real_chat_messages m WHERE m.chat_id = rc.id AND m.role = 'agent') AS agent_messages
     FROM real_chats rc
+    ${includeInactive ? '' : 'WHERE rc.is_available = 1'}
     ORDER BY rc.source_number
   `).all();
 }

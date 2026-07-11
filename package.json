@@ -11,6 +11,7 @@
     "build": "vite build --config client/vite.config.js",
     "ingest": "node server/ingest.js",
     "import:real-chats": "node server/import-real-chats.js",
+    "import:customer-library": "node server/import-customer-library.js --rebuild",
     "seed": "node server/seed.js"
   },
   "dependencies": {

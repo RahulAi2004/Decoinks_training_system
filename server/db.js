@@ -105,6 +105,7 @@ CREATE TABLE IF NOT EXISTS real_chats (
   artwork_count INTEGER NOT NULL DEFAULT 0,
   summary TEXT,
   source_filename TEXT,
+  is_available INTEGER NOT NULL DEFAULT 1,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -262,8 +263,18 @@ for (const [column, ddl] of [
   ['pending_attachment', 'ALTER TABLE real_chat_sessions ADD COLUMN pending_attachment TEXT'],
   ['pending_since', 'ALTER TABLE real_chat_sessions ADD COLUMN pending_since TEXT'],
   ['pending_original', 'ALTER TABLE real_chat_sessions ADD COLUMN pending_original TEXT'],
+  ['hold_seconds', 'ALTER TABLE real_chat_sessions ADD COLUMN hold_seconds INTEGER NOT NULL DEFAULT 15'],
+  ['auto_send_enabled', 'ALTER TABLE real_chat_sessions ADD COLUMN auto_send_enabled INTEGER NOT NULL DEFAULT 1'],
+  ['paused_seconds_left', 'ALTER TABLE real_chat_sessions ADD COLUMN paused_seconds_left INTEGER'],
 ]) {
   const exists = db.prepare('PRAGMA table_info(real_chat_sessions)').all().some(c => c.name === column);
+  if (!exists) db.prepare(ddl).run();
+}
+
+for (const [column, ddl] of [
+  ['is_available', 'ALTER TABLE real_chats ADD COLUMN is_available INTEGER NOT NULL DEFAULT 1'],
+]) {
+  const exists = db.prepare('PRAGMA table_info(real_chats)').all().some(c => c.name === column);
   if (!exists) db.prepare(ddl).run();
 }
 

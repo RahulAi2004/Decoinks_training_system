@@ -20,6 +20,11 @@ if [ "$SUCCESS_COUNT" = "0" ] && [ -f "decoinks-successful-chats.json" ]; then
   node server/import-successful-chats.js
 fi
 
+LIBRARY_COUNT="$(node --input-type=module -e "import db from './server/db.js'; console.log(db.prepare(\"SELECT COUNT(*) c FROM real_chats WHERE source_filename='Decoinks-All-Customers-Library'\").get().c)")"
+if [ "$LIBRARY_COUNT" = "0" ] && [ -f "decoinks-customer-library.json" ]; then
+  node server/import-customer-library.js
+fi
+
 QA_COUNT="$(node --input-type=module -e "import db from './server/db.js'; console.log(db.prepare('SELECT COUNT(*) c FROM real_chat_qa').get().c)")"
 if [ "$QA_COUNT" = "0" ] && [ -f "decoinks-all-customers-qa.json" ]; then
   node server/import-all-customers.js
