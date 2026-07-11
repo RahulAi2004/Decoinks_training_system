@@ -13,8 +13,14 @@ export default function Conversations() {
   const [convo, setConvo] = useState(null);
   const [editing, setEditing] = useState(null);   // {id, text}
   const [msg, setMsg] = useState('');
+  const [agentFilter, setAgentFilter] = useState('');
+  const [modeFilter, setModeFilter] = useState('');
 
   useEffect(() => { api('/admin/conversations').then(setList).catch(console.error); }, []);
+
+  const agents = [...new Set((list || []).map(s => s.agent_name).filter(Boolean))].sort();
+  const filtered = (list || []).filter(s =>
+    (!agentFilter || s.agent_name === agentFilter) && (!modeFilter || s.mode === modeFilter));
 
   const open = async (id) => {
     if (openId === id) { setOpenId(null); setConvo(null); return; }
@@ -43,10 +49,29 @@ export default function Conversations() {
       </div>
       {msg && <p className="text-sm text-emerald-700">{msg}</p>}
 
+      <div className="flex flex-wrap items-center gap-2">
+        <select value={agentFilter} onChange={e => setAgentFilter(e.target.value)}
+          className="border border-slate-300 rounded-lg px-3 py-1.5 text-sm bg-white">
+          <option value="">All agents</option>
+          {agents.map(a => <option key={a} value={a}>{a}</option>)}
+        </select>
+        <select value={modeFilter} onChange={e => setModeFilter(e.target.value)}
+          className="border border-slate-300 rounded-lg px-3 py-1.5 text-sm bg-white">
+          <option value="">All types</option>
+          <option value="real_chat">Real customer</option>
+          <option value="talk_customer">AI customer</option>
+          <option value="persona">AI persona</option>
+        </select>
+        <span className="text-xs text-slate-400">{filtered.length} of {list.length}</span>
+        {(agentFilter || modeFilter) && (
+          <button onClick={() => { setAgentFilter(''); setModeFilter(''); }} className="text-xs font-semibold text-violet-600 hover:text-violet-800">Clear</button>
+        )}
+      </div>
+
       <Card>
         <div className="divide-y divide-slate-100">
-          {list.length === 0 && <p className="text-sm text-slate-400 py-4">No conversations yet.</p>}
-          {list.map(s => (
+          {filtered.length === 0 && <p className="text-sm text-slate-400 py-4">No conversations match.</p>}
+          {filtered.map(s => (
             <div key={s.id}>
               <button onClick={() => open(s.id)} className="w-full flex items-center justify-between gap-3 py-3 text-left hover:bg-slate-50 -mx-2 px-2 rounded">
                 <div className="min-w-0">
