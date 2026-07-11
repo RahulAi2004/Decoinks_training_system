@@ -102,7 +102,7 @@ export default function Dashboard() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-black text-slate-800">Admin Dashboard</h1>
-          <p className="text-sm text-slate-500">Training health, readiness, scoring quality, and intern activity in one view.</p>
+          <p className="text-sm text-slate-500">Training health, readiness, scoring quality, and agent activity in one view.</p>
         </div>
         <div className={`rounded-lg border px-3 py-2 ${scoreClass(data.totals.avg_readiness || 0)}`}>
           <p className="text-xs font-semibold uppercase opacity-70">System status</p>
@@ -111,11 +111,11 @@ export default function Dashboard() {
       </div>
 
       <div className="grid sm:grid-cols-2 xl:grid-cols-5 gap-3">
-        <StatCard label="Interns" value={data.totals.interns} sub={`${derived.active.length} active accounts`} tone="blue" />
+        <StatCard label="Agents" value={data.totals.interns} sub={`${derived.active.length} active accounts`} tone="blue" />
         <StatCard label="Ready" value={data.totals.ready} sub={`${Math.max(0, data.totals.interns - data.totals.ready)} not ready`} tone="green" />
         <StatCard label="Avg readiness" value={`${data.totals.avg_readiness}%`} sub="weighted live score" tone={data.totals.avg_readiness >= 85 ? 'green' : data.totals.avg_readiness >= 70 ? 'amber' : 'rose'} />
         <StatCard label="Graded replies" value={data.totals.graded_replies} sub={`${derived.violations} violations flagged`} tone={derived.violations ? 'amber' : 'slate'} />
-        <StatCard label="Practice sessions" value={data.totals.sessions} sub={`${derived.noActivity.length} interns need first turn`} />
+        <StatCard label="Practice sessions" value={data.totals.sessions} sub={`${derived.noActivity.length} agents need first turn`} />
       </div>
 
       <div className="grid xl:grid-cols-[0.9fr_1.2fr_0.9fr] gap-4">
@@ -141,11 +141,11 @@ export default function Dashboard() {
           <div className="space-y-3">
             <div className="rounded-lg border border-rose-100 bg-rose-50 p-3">
               <p className="text-2xl font-black text-rose-700">{derived.atRisk.length}</p>
-              <p className="text-xs font-semibold text-rose-700">interns graded but not ready</p>
+              <p className="text-xs font-semibold text-rose-700">agents graded but not ready</p>
             </div>
             <div className="rounded-lg border border-amber-100 bg-amber-50 p-3">
               <p className="text-2xl font-black text-amber-700">{derived.noActivity.length}</p>
-              <p className="text-xs font-semibold text-amber-700">interns with no graded replies</p>
+              <p className="text-xs font-semibold text-amber-700">agents with no graded replies</p>
             </div>
             <div className="rounded-lg border border-slate-200 bg-white p-3">
               <p className="text-xs font-semibold uppercase text-slate-400">Weakest dimensions</p>
@@ -192,10 +192,10 @@ export default function Dashboard() {
                 </div>
               </div>
               <Link className="inline-flex rounded-lg bg-violet-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-violet-800" to={`/admin/interns/${derived.top.id}`}>
-                Open intern detail
+                Open agent detail
               </Link>
             </div>
-          ) : <p className="text-sm text-slate-400">No interns yet.</p>}
+          ) : <p className="text-sm text-slate-400">No agents yet.</p>}
         </Card>
       </div>
 
@@ -205,7 +205,7 @@ export default function Dashboard() {
             <thead>
               <tr className="text-left text-xs text-slate-400 uppercase">
                 <th className="py-2">Rank</th>
-                <th>Intern</th>
+                <th>Agent</th>
                 <th>Readiness</th>
                 <th className="min-w-44">Progress</th>
                 <th>Graded</th>
@@ -235,7 +235,7 @@ export default function Dashboard() {
                 </tr>
               ))}
               {derived.leaderboard.length === 0 && (
-                <tr><td colSpan="8" className="py-6 text-center text-sm text-slate-400">No interns yet.</td></tr>
+                <tr><td colSpan="8" className="py-6 text-center text-sm text-slate-400">No agents yet.</td></tr>
               )}
             </tbody>
           </table>

@@ -56,6 +56,50 @@ r.delete('/customer-examples/:id', (req, res) => {
   res.json({ ok: true });
 });
 
+// ---------- Conversation review: see every agent chat, fix customer messages ----------
+r.get('/conversations', (req, res) => {
+  const rows = db.prepare(`
+    SELECT ps.id, ps.status, ps.started_at, ps.overall_score,
+      u.name AS agent_name,
+      (SELECT COUNT(*) FROM session_messages m WHERE m.session_id = ps.id) AS msg_count,
+      CASE WHEN rcs.session_id IS NOT NULL THEN 'real_chat'
+           WHEN tcs.session_id IS NOT NULL THEN 'talk_customer'
+           ELSE 'persona' END AS mode,
+      rc.customer_name AS real_name, tcs.style_name AS style_name
+    FROM practice_sessions ps
+    JOIN users u ON u.id = ps.intern_id
+    LEFT JOIN real_chat_sessions rcs ON rcs.session_id = ps.id
+    LEFT JOIN real_chats rc ON rc.id = rcs.real_chat_id
+    LEFT JOIN talk_customer_sessions tcs ON tcs.session_id = ps.id
+    WHERE (SELECT COUNT(*) FROM session_messages m WHERE m.session_id = ps.id) > 0
+    ORDER BY ps.started_at DESC LIMIT 300`).all();
+  res.json(rows);
+});
+
+r.get('/conversations/:id', (req, res) => {
+  const s = db.prepare(`SELECT ps.*, u.name AS agent_name FROM practice_sessions ps JOIN users u ON u.id = ps.intern_id WHERE ps.id = ?`).get(req.params.id);
+  if (!s) return res.status(404).json({ error: 'Conversation not found' });
+  const messages = db.prepare('SELECT id, role, body, created_at FROM session_messages WHERE session_id = ? ORDER BY created_at, rowid').all(req.params.id)
+    .map(m => {
+      const match = m.body.match(/\n?\[\[artwork:(.+?)\]\]\s*$/);
+      return match ? { ...m, body: m.body.replace(match[0], '').trim(), attachment_url: match[1] } : m;
+    });
+  res.json({ session: s, messages });
+});
+
+// Admin fixes a wrong CUSTOMER message; the correction also becomes a training example.
+r.put('/conversations/messages/:msgId', (req, res) => {
+  const body = String(req.body?.body || '').trim();
+  if (!body) return res.status(400).json({ error: 'Empty message' });
+  const m = db.prepare('SELECT * FROM session_messages WHERE id = ?').get(req.params.msgId);
+  if (!m) return res.status(404).json({ error: 'Message not found' });
+  if (m.role !== 'customer') return res.status(400).json({ error: 'Only customer messages can be edited' });
+  const artMatch = m.body.match(/\n?\[\[artwork:.+?\]\]\s*$/);
+  db.prepare('UPDATE session_messages SET body = ? WHERE id = ?').run(body + (artMatch ? artMatch[0] : ''), req.params.msgId);
+  addCustomerExample(body, req.user.id);   // corrected message trains the AI customer
+  res.json({ ok: true });
+});
+
 // ---------- AI agent training: approved replies + corrections ----------
 r.get('/agent-examples', (req, res) => {
   res.json(listAgentExamples());

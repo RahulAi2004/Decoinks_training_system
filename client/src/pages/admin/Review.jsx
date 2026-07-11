@@ -35,7 +35,7 @@ export default function Review() {
       <div className="flex flex-wrap gap-2 items-center">
         <select value={filterIntern} onChange={e => { setFilterIntern(e.target.value); load(e.target.value, maxScore); }}
           className="border border-slate-300 rounded-lg px-3 py-1.5 text-sm bg-white">
-          <option value="">All interns</option>
+          <option value="">All agents</option>
           {interns.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
         </select>
         <select value={maxScore} onChange={e => { setMaxScore(e.target.value); load(filterIntern, e.target.value); }}

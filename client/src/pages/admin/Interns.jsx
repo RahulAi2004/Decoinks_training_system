@@ -28,9 +28,9 @@ export default function Interns() {
   if (!list) return <Spinner />;
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-black text-slate-800">Interns</h1>
+      <h1 className="text-2xl font-black text-slate-800">Decoinks Agents</h1>
 
-      <Card title="Invite an intern">
+      <Card title="Invite a Decoinks agent">
         <form onSubmit={invite} className="flex flex-wrap gap-2 items-center">
           <input required placeholder="Full name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
             className="border border-slate-300 rounded-lg px-3 py-1.5 text-sm" />

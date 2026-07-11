@@ -10,7 +10,7 @@ export default function Evaluation({ e, showContext = false }) {
       {showContext && e.context?.customerText && (
         <div className="text-xs space-y-1">
           <p><span className="font-semibold text-slate-500">Customer:</span> {e.context.customerText}</p>
-          <p><span className="font-semibold text-slate-500">Intern:</span> {e.context.internReply}</p>
+          <p><span className="font-semibold text-slate-500">Agent:</span> {e.context.internReply}</p>
         </div>
       )}
       <div className="flex items-center gap-2">

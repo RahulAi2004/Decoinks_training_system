@@ -129,7 +129,7 @@ export default function InternDetail() {
         </table>
       </Card>
 
-      <p><Link to="/admin/review" className="text-violet-600 text-sm font-medium hover:underline">Review this intern's replies with full rationale →</Link></p>
+      <p><Link to="/admin/review" className="text-violet-600 text-sm font-medium hover:underline">Review this agent's replies with full rationale →</Link></p>
     </div>
   );
 }

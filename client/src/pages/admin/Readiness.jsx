@@ -12,8 +12,8 @@ export default function Readiness() {
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-black text-slate-800">Readiness verdicts</h1>
-      <p className="text-sm text-slate-500">Computed live from each intern's last {rows[0]?.thresholds?.window_n ?? 20} graded replies against the thresholds in Settings.</p>
-      {rows.length === 0 && <p className="text-sm text-slate-400">No active interns.</p>}
+      <p className="text-sm text-slate-500">Computed live from each agent's last {rows[0]?.thresholds?.window_n ?? 20} graded replies against the thresholds in Settings.</p>
+      {rows.length === 0 && <p className="text-sm text-slate-400">No active agents.</p>}
       {rows.map(r => (
         <Card key={r.user.id}>
           <div className="flex flex-wrap items-start justify-between gap-3">

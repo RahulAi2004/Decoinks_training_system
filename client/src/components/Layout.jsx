@@ -12,9 +12,10 @@ const internNav = [
 const adminNav = [
   ['/admin', 'Dashboard', '📊'],
   ['/admin/ai-chat', 'Chat with AI', '💬'],
+  ['/admin/conversations', 'Conversations', '🗂️'],
   ['/admin/prompts', 'AI Prompts', '🧩'],
   ['/admin/content', 'Content', '📂'],
-  ['/admin/interns', 'Interns', '👥'],
+  ['/admin/interns', 'Decoinks Agents', '👥'],
   ['/admin/review', 'Reply Review', '🔍'],
   ['/admin/readiness', 'Readiness', '✅'],
   ['/admin/settings', 'Settings', '⚙️'],
@@ -41,7 +42,7 @@ export default function Layout() {
         </nav>
         <div className="px-4 py-4 border-t border-white/10 text-xs">
           <p className="font-semibold text-white truncate">{user?.name}</p>
-          <p className="text-slate-400 capitalize">{user?.role}</p>
+          <p className="text-slate-400 capitalize">{user?.role === 'intern' ? 'Decoinks Agent' : user?.role}</p>
           <button onClick={logout} className="mt-2 text-violet-300 hover:text-white">Sign out</button>
         </div>
       </aside>
