@@ -30,10 +30,11 @@ export default function Practice() {
   const bottomRef = useRef(null);
   const nextTimerRef = useRef(null);
   const [countdown, setCountdown] = useState(0);
+  const [paused, setPaused] = useState(false);
 
   // Enter sends, Shift+Enter makes a new line.
   const onEnter = (submit) => (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(e); } };
-  const clearNextTimer = () => { if (nextTimerRef.current) { clearInterval(nextTimerRef.current); nextTimerRef.current = null; } setCountdown(0); };
+  const clearNextTimer = () => { if (nextTimerRef.current) { clearInterval(nextTimerRef.current); nextTimerRef.current = null; } setCountdown(0); setPaused(false); };
 
   useEffect(() => {
     Promise.all([
@@ -126,16 +127,19 @@ export default function Practice() {
 
   // After an intern reply, the real customer "replies" (next message block) in 15s.
   // Sending another reply restarts the wait; Stop ends the chat.
-  const startCountdown = () => {
-    clearNextTimer();
-    let n = 15;
-    setCountdown(n);
+  const runCountdown = (fromN) => {
+    if (nextTimerRef.current) clearInterval(nextTimerRef.current);
+    let n = fromN;
+    setCountdown(n); setPaused(false);
     nextTimerRef.current = setInterval(() => {
       n -= 1;
       setCountdown(n);
       if (n <= 0) { clearNextTimer(); continueReal(); }
     }, 1000);
   };
+  const startCountdown = () => runCountdown(15);
+  const pauseCountdown = () => { if (nextTimerRef.current) { clearInterval(nextTimerRef.current); nextTimerRef.current = null; } setPaused(true); };
+  const resumeCountdown = () => { if (countdown > 0) runCountdown(countdown); };
   const stopReal = async () => {
     clearNextTimer();
     const activeSession = session;
@@ -326,7 +330,9 @@ export default function Practice() {
           <div className="flex justify-center">
             <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
               {countdown > 0
-                ? <>Customer will reply in <span className="font-bold tabular-nums">{countdown}s</span>… send more replies to reset, or Stop to end.</>
+                ? (paused
+                    ? <>Paused at <span className="font-bold tabular-nums">{countdown}s</span> — press Resume to continue.</>
+                    : <>Customer will reply in <span className="font-bold tabular-nums">{countdown}s</span>… send more replies to reset, Pause to hold, or Stop to end.</>)
                 : 'Send as many replies as you need.'}
             </div>
           </div>
@@ -350,6 +356,11 @@ export default function Practice() {
           placeholder="Reply like a Decoinks agent…  (Enter to send, Shift+Enter for new line)" autoFocus
           className="flex-1 resize-none border border-slate-300 rounded-lg px-4 py-2.5 text-sm bg-white" />
         <Button disabled={busy || !input.trim()}>Send</Button>
+        {session.mode === 'real_chat' && countdown > 0 && (
+          paused
+            ? <Button type="button" variant="secondary" onClick={resumeCountdown} disabled={busy}>Resume</Button>
+            : <Button type="button" variant="secondary" onClick={pauseCountdown} disabled={busy}>Pause</Button>
+        )}
         {session.mode === 'real_chat' && (
           <Button type="button" variant="danger" onClick={stopReal} disabled={busy}>Stop</Button>
         )}
