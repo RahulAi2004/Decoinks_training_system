@@ -28,6 +28,12 @@ export default function Practice() {
   const [completedScorecard, setCompletedScorecard] = useState(null);
   const [scorecard, setScorecard] = useState(null);
   const bottomRef = useRef(null);
+  const nextTimerRef = useRef(null);
+  const [countdown, setCountdown] = useState(0);
+
+  // Enter sends, Shift+Enter makes a new line.
+  const onEnter = (submit) => (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(e); } };
+  const clearNextTimer = () => { if (nextTimerRef.current) { clearInterval(nextTimerRef.current); nextTimerRef.current = null; } setCountdown(0); };
 
   useEffect(() => {
     Promise.all([
@@ -96,12 +102,14 @@ export default function Practice() {
         }
       } else if (activeSession.mode === 'real_chat') {
         setAwaitingNext(!!r.waiting_for_more);
+        if (r.waiting_for_more) startCountdown();   // customer replies after 15s
       }
     } catch (e2) { alert(e2.message); }
     finally { setBusy(false); }
   };
 
   const continueReal = async () => {
+    clearNextTimer();
     if (!session || session.mode !== 'real_chat' || busy) return;
     const activeSession = session;
     setBusy(true);
@@ -116,7 +124,34 @@ export default function Practice() {
     finally { setBusy(false); }
   };
 
+  // After an intern reply, the real customer "replies" (next message block) in 15s.
+  // Sending another reply restarts the wait; Stop ends the chat.
+  const startCountdown = () => {
+    clearNextTimer();
+    let n = 15;
+    setCountdown(n);
+    nextTimerRef.current = setInterval(() => {
+      n -= 1;
+      setCountdown(n);
+      if (n <= 0) { clearNextTimer(); continueReal(); }
+    }, 1000);
+  };
+  const stopReal = async () => {
+    clearNextTimer();
+    const activeSession = session;
+    if (!activeSession) return;
+    setBusy(true);
+    try {
+      const r = await api(`/practice/sessions/${activeSession.session_id}/end`, { method: 'POST' });
+      setScorecard({ ...r, session_id: activeSession.session_id, real_chat: activeSession.real_chat || null });
+      setAwaitingNext(false); setCompletedScorecard(null); setSession(null);
+    } catch (e) { alert(e.message); }
+    finally { setBusy(false); }
+  };
+  useEffect(() => () => clearNextTimer(), []);
+
   const end = async () => {
+    clearNextTimer();
     const activeSession = session;
     setBusy(true);
     try {
@@ -290,7 +325,9 @@ export default function Practice() {
         {session.mode === 'real_chat' && awaitingNext && !busy && (
           <div className="flex justify-center">
             <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-              Send as many replies as needed. Click Next question when you are ready for the customer to continue.
+              {countdown > 0
+                ? <>Customer will reply in <span className="font-bold tabular-nums">{countdown}s</span>… send more replies to reset, or Stop to end.</>
+                : 'Send as many replies as you need.'}
             </div>
           </div>
         )}
@@ -308,13 +345,13 @@ export default function Practice() {
           {session.mode === 'real_chat' && <Button variant="secondary" onClick={() => downloadTranscript(session.session_id)} disabled={busy}>Download chat</Button>}
           <Button onClick={() => { setScorecard(completedScorecard); setCompletedScorecard(null); setSession(null); }}>Check your results</Button>
         </div>
-      ) : <form onSubmit={send} className="mt-3 flex gap-2">
-        <input value={input} onChange={e => setInput(e.target.value)} disabled={busy}
-          placeholder="Reply like a Decoinks agent..." autoFocus
-          className="flex-1 border border-slate-300 rounded-lg px-4 py-2.5 text-sm bg-white" />
+      ) : <form onSubmit={send} className="mt-3 flex gap-2 items-end">
+        <textarea value={input} onChange={e => setInput(e.target.value)} onKeyDown={onEnter(send)} disabled={busy} rows={1}
+          placeholder="Reply like a Decoinks agent…  (Enter to send, Shift+Enter for new line)" autoFocus
+          className="flex-1 resize-none border border-slate-300 rounded-lg px-4 py-2.5 text-sm bg-white" />
         <Button disabled={busy || !input.trim()}>Send</Button>
-        {session.mode === 'real_chat' && awaitingNext && (
-          <Button type="button" variant="secondary" onClick={continueReal} disabled={busy}>Next question</Button>
+        {session.mode === 'real_chat' && (
+          <Button type="button" variant="danger" onClick={stopReal} disabled={busy}>Stop</Button>
         )}
       </form>}
     </div>

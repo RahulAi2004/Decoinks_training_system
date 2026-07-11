@@ -4,13 +4,10 @@ set -e
 node server/seed.js
 node server/ingest.js
 
-REAL_CHAT_COUNT="$(node --input-type=module -e "import db from './server/db.js'; console.log(db.prepare('SELECT COUNT(*) c FROM real_chats').get().c)")"
-if [ "$REAL_CHAT_COUNT" = "0" ]; then
-  if [ -f "Decoinks-25-Real-Chats.docx" ]; then
-    node server/import-real-chats.js Decoinks-25-Real-Chats.docx
-  elif [ -f "Decoinks-25-Real-Chats-v2.docx" ]; then
-    node server/import-real-chats.js Decoinks-25-Real-Chats-v2.docx
-  fi
+# Real customer chats: the 50 successful (ordered/paid) chats with real images.
+SUCCESS_COUNT="$(node --input-type=module -e "import db from './server/db.js'; console.log(db.prepare(\"SELECT COUNT(*) c FROM real_chats WHERE source_filename='Decoinks-All-Customers'\").get().c)")"
+if [ "$SUCCESS_COUNT" = "0" ] && [ -f "decoinks-successful-chats.json" ]; then
+  node server/import-successful-chats.js
 fi
 
 QA_COUNT="$(node --input-type=module -e "import db from './server/db.js'; console.log(db.prepare('SELECT COUNT(*) c FROM real_chat_qa').get().c)")"
