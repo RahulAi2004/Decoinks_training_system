@@ -20,6 +20,8 @@ export default function Practice() {
   const [personas, setPersonas] = useState([]);
   const [realChats, setRealChats] = useState([]);
   const [supervisedList, setSupervisedList] = useState([]);
+  const [liveManualList, setLiveManualList] = useState([]);
+  const [replyLeft, setReplyLeft] = useState(null);   // trainee's live-manual reply countdown (null = not their turn)
   const [customerTyping, setCustomerTyping] = useState(false);
   const [tab, setTab] = useState('real');
   const [session, setSession] = useState(null);
@@ -53,9 +55,46 @@ export default function Practice() {
     return () => clearInterval(t);
   }, []);
 
+  // Poll for live manual chats a trainer invited this agent to — acts as a notification.
+  useEffect(() => {
+    const load = () => api('/practice/live-manual').then(setLiveManualList).catch(() => {});
+    load();
+    const t = setInterval(load, 5000);
+    return () => clearInterval(t);
+  }, []);
+
+  // While in a live manual chat, poll so the trainer's messages + reply countdown update.
+  useEffect(() => {
+    if (session?.mode !== 'live_manual' || session.status === 'ended') return;
+    let alive = true;
+    const tick = async () => {
+      try {
+        const r = await api(`/practice/live-manual/${session.session_id}`);
+        if (!alive) return;
+        setMessages(r.messages);
+        setReplyLeft(r.turn?.waiting_for_trainee ? r.turn.seconds_left : null);
+        if (r.status === 'ended') { setSession(cur => cur ? { ...cur, status: 'ended' } : cur); setReplyLeft(null); }
+      } catch (e) {
+        if (alive && e.status === 404) {
+          setSession(cur => cur ? { ...cur, status: 'ended', deleted: true } : cur);
+          setReplyLeft(null);
+        }
+      }
+    };
+    const t = setInterval(tick, 2000);
+    return () => { alive = false; clearInterval(t); };
+  }, [session?.mode, session?.session_id, session?.status]);
+
+  // Smooth per-second countdown between the 2s polls.
+  useEffect(() => {
+    if (session?.mode !== 'live_manual' || replyLeft == null) return;
+    const t = setInterval(() => setReplyLeft(v => (v == null ? null : Math.max(0, v - 1))), 1000);
+    return () => clearInterval(t);
+  }, [session?.mode, session?.session_id, replyLeft == null]);
+
   // While in a live session, poll so admin-released customer messages appear.
   useEffect(() => {
-    if (session?.mode !== 'supervised') return;
+    if (session?.mode !== 'supervised' || session.status === 'ended') return;
     let alive = true;
     const tick = async () => {
       try {
@@ -63,12 +102,15 @@ export default function Practice() {
         if (!alive) return;
         setMessages(r.messages);
         setCustomerTyping(!!r.customer_pending);
-        if (r.status === 'ended') setCustomerTyping(false);
+        if (r.status === 'ended') {
+          setSession(cur => cur ? { ...cur, status: 'ended' } : cur);
+          setCustomerTyping(false);
+        }
       } catch { /* ignore */ }
     };
     const t = setInterval(tick, 2000);
     return () => { alive = false; clearInterval(t); };
-  }, [session]);
+  }, [session?.mode, session?.session_id, session?.status]);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
   const startPersona = async (persona_id) => {
@@ -101,6 +143,17 @@ export default function Practice() {
     finally { setBusy(false); }
   };
 
+  const startLiveManual = async (id) => {
+    setBusy(true); setScorecard(null);
+    try {
+      const r = await api(`/practice/live-manual/${id}/claim`, { method: 'POST' });
+      setAwaitingNext(false); setCompletedScorecard(null);
+      setSession({ ...r, mode: 'live_manual' }); setMessages(r.messages);
+      setReplyLeft(r.turn?.waiting_for_trainee ? r.turn.seconds_left : null);
+    } catch (e) { alert(e.message); }
+    finally { setBusy(false); }
+  };
+
   const startTalk = async () => {
     setBusy(true); setScorecard(null);
     try {
@@ -120,6 +173,12 @@ export default function Practice() {
     setMessages(m => [...m, { id: 'tmp', role: 'intern', body }]);
     setBusy(true);
     try {
+      if (activeSession.mode === 'live_manual') {
+        const r = await api(`/practice/live-manual/${activeSession.session_id}/messages`, { method: 'POST', body: { body } });
+        setMessages(r.messages);
+        setReplyLeft(r.turn?.waiting_for_trainee ? r.turn.seconds_left : null);
+        return;
+      }
       const path = activeSession.mode === 'real_chat'
         ? `/practice/real-chat-sessions/${activeSession.session_id}/messages`
         : activeSession.mode === 'talk_customer'
@@ -273,6 +332,11 @@ export default function Practice() {
               🎧 Live session <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-rose-500 text-white">{supervisedList.length}</span>
             </button>
           )}
+          {liveManualList.length > 0 && (
+            <button onClick={() => setTab('trainer')} className={`px-3 py-1.5 rounded-md text-sm font-semibold flex items-center gap-1.5 ${tab === 'trainer' ? 'bg-violet-700 text-white' : 'text-violet-700 hover:bg-violet-50'}`}>
+              💬 Trainer chat <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-rose-500 text-white">{liveManualList.length}</span>
+            </button>
+          )}
           <button onClick={() => setTab('real')} className={`px-3 py-1.5 rounded-md text-sm font-semibold ${tab === 'real' ? 'bg-violet-700 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>Real customer chats</button>
           <button onClick={() => setTab('talk')} className={`px-3 py-1.5 rounded-md text-sm font-semibold ${tab === 'talk' ? 'bg-violet-700 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>Talk to customer</button>
           <button onClick={() => setTab('persona')} className={`px-3 py-1.5 rounded-md text-sm font-semibold ${tab === 'persona' ? 'bg-violet-700 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>AI personas</button>
@@ -287,6 +351,20 @@ export default function Practice() {
                 <p className="font-bold text-violet-800">🎧 {s.customer_name}</p>
                 <p className="text-xs text-slate-500 mt-0.5">{s.intent || 'Live customer'} · {s.customer_shown} messages so far</p>
                 <div className="mt-3 inline-flex rounded-md bg-violet-700 px-3 py-1.5 text-sm font-bold text-white">Join live chat</div>
+              </button>
+            ))}
+          </div>
+        ) : tab === 'trainer' ? (
+          <div className="grid md:grid-cols-2 gap-3">
+            {liveManualList.length === 0 && <p className="text-sm text-slate-400">No trainer chats right now.</p>}
+            {liveManualList.map(s => (
+              <button key={s.id} onClick={() => startLiveManual(s.id)} disabled={busy}
+                className="rounded-lg border border-violet-300 bg-violet-50 hover:bg-violet-100 p-4 text-left transition">
+                <p className="font-bold text-violet-800">💬 {s.name}</p>
+                <p className="text-xs text-slate-500 mt-0.5">Trainer: {s.trainer_name} · {s.message_count} messages so far</p>
+                <div className="mt-3 inline-flex rounded-md bg-violet-700 px-3 py-1.5 text-sm font-bold text-white">
+                  {s.status === 'invited' ? 'Accept & join' : 'Rejoin live chat'}
+                </div>
               </button>
             ))}
           </div>
@@ -344,13 +422,20 @@ export default function Practice() {
     );
   }
 
+  const liveEnded = session.mode === 'live_manual' && session.status === 'ended';
+  const supervisedEnded = session.mode === 'supervised' && session.status === 'ended';
+  const sessionEnded = liveEnded || supervisedEnded;
   const title = (session.mode === 'real_chat' || session.mode === 'supervised')
     ? session.real_chat?.customer_name
+    : session.mode === 'live_manual'
+      ? (session.name || 'Live trainer chat')
     : session.mode === 'talk_customer'
       ? session.style?.name
       : (session.persona?.name || 'Customer');
   const subtitle = session.mode === 'supervised'
-    ? '🎧 Live — supervised by admin'
+    ? (supervisedEnded ? 'Live session ended by your trainer' : '🎧 Live — supervised by admin')
+    : session.mode === 'live_manual'
+      ? (liveEnded ? (session.deleted ? 'Chat deleted by your trainer' : 'Chat ended by your trainer') : `💬 Live — chatting with ${session.trainer_name || 'your trainer'}`)
     : session.mode === 'real_chat'
       ? `${session.real_chat?.intent || 'Real transcript'}`
       : session.mode === 'talk_customer'
@@ -366,9 +451,11 @@ export default function Practice() {
         </div>
         <div className="flex gap-2">
           {session.mode === 'real_chat' && <Button variant="secondary" onClick={() => downloadTranscript(session.session_id)} disabled={busy}>Download chat</Button>}
-          {completedScorecard
-            ? <Button onClick={() => { setScorecard(completedScorecard); setCompletedScorecard(null); setSession(null); }}>Check your results</Button>
-            : <Button variant="danger" onClick={end} disabled={busy}>End & see scorecard</Button>}
+          {session.mode === 'live_manual' || supervisedEnded
+            ? <Button variant="secondary" onClick={() => setSession(null)}>Leave</Button>
+            : completedScorecard
+              ? <Button onClick={() => { setScorecard(completedScorecard); setCompletedScorecard(null); setSession(null); }}>Check your results</Button>
+              : <Button variant="danger" onClick={end} disabled={busy}>End & see scorecard</Button>}
         </div>
       </div>
       <div className="flex-1 overflow-y-auto bg-white rounded-lg border border-slate-200 p-4 space-y-3">
@@ -385,7 +472,21 @@ export default function Practice() {
             </div>
           </div>
         ))}
-        {busy && <p className="text-xs text-slate-400 italic">{session.mode === 'real_chat' ? 'checking your reply...' : 'customer is typing...'}</p>}
+        {busy && <p className="text-xs text-slate-400 italic">{session.mode === 'real_chat' ? 'checking your reply...' : session.mode === 'live_manual' ? 'sending…' : 'customer is typing...'}</p>}
+        {sessionEnded && !busy && (
+          <div className="flex justify-center">
+            <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+              <span className="font-bold">Chat ended.</span> {session.deleted ? 'Your trainer deleted this chat.' : 'Your trainer closed this live chat.'}
+            </div>
+          </div>
+        )}
+        {session.mode === 'live_manual' && !liveEnded && replyLeft != null && (
+          <div className="flex justify-center">
+            <div className={`rounded-lg border px-3 py-2 text-xs font-semibold ${replyLeft <= 0 ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-amber-200 bg-amber-50 text-amber-800'}`}>
+              {replyLeft <= 0 ? "⏰ Time's up — reply now!" : <>⏳ Your turn — reply within <span className="tabular-nums">{replyLeft}s</span></>}
+            </div>
+          </div>
+        )}
         {session.mode === 'supervised' && customerTyping && !busy && <p className="text-xs text-slate-400 italic">customer is typing…</p>}
         {session.mode === 'real_chat' && awaitingNext && !busy && (
           <div className="flex justify-center">
@@ -407,7 +508,11 @@ export default function Practice() {
         )}
         <div ref={bottomRef} />
       </div>
-      {completedScorecard ? (
+      {sessionEnded ? (
+        <div className="mt-3 flex justify-end">
+          <Button variant="secondary" onClick={() => setSession(null)}>Back to Practice</Button>
+        </div>
+      ) : completedScorecard ? (
         <div className="mt-3 flex justify-end gap-2">
           {session.mode === 'real_chat' && <Button variant="secondary" onClick={() => downloadTranscript(session.session_id)} disabled={busy}>Download chat</Button>}
           <Button onClick={() => { setScorecard(completedScorecard); setCompletedScorecard(null); setSession(null); }}>Check your results</Button>

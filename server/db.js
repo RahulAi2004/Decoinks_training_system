@@ -78,6 +78,9 @@ CREATE TABLE IF NOT EXISTS session_messages (
   session_id TEXT NOT NULL REFERENCES practice_sessions(id) ON DELETE CASCADE,
   role TEXT NOT NULL CHECK (role IN ('customer','intern')),
   body TEXT NOT NULL,
+  reply_limit_seconds INTEGER,
+  reply_took_seconds INTEGER,
+  reply_late INTEGER,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
@@ -144,6 +147,15 @@ CREATE TABLE IF NOT EXISTS talk_customer_sessions (
   next_index INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS live_manual_sessions (
+  session_id TEXT PRIMARY KEY REFERENCES practice_sessions(id) ON DELETE CASCADE,
+  admin_id TEXT NOT NULL REFERENCES users(id),
+  agent_id TEXT NOT NULL REFERENCES users(id),
+  name TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'invited',   -- invited | active | ended
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
 CREATE TABLE IF NOT EXISTS customer_examples (
@@ -280,6 +292,7 @@ for (const [column, ddl] of [
 
 for (const [column, ddl] of [
   ['flow_blueprint', 'ALTER TABLE talk_customer_sessions ADD COLUMN flow_blueprint TEXT'],
+  ['manual', 'ALTER TABLE talk_customer_sessions ADD COLUMN manual INTEGER NOT NULL DEFAULT 0'],
 ]) {
   const exists = db.prepare('PRAGMA table_info(talk_customer_sessions)').all().some(c => c.name === column);
   if (!exists) db.prepare(ddl).run();
@@ -288,6 +301,10 @@ for (const [column, ddl] of [
 for (const [table, column, ddl] of [
   ['customer_examples', 'embedding', 'ALTER TABLE customer_examples ADD COLUMN embedding TEXT'],
   ['agent_examples', 'embedding', 'ALTER TABLE agent_examples ADD COLUMN embedding TEXT'],
+  ['live_manual_sessions', 'reply_seconds', 'ALTER TABLE live_manual_sessions ADD COLUMN reply_seconds INTEGER NOT NULL DEFAULT 60'],
+  ['session_messages', 'reply_limit_seconds', 'ALTER TABLE session_messages ADD COLUMN reply_limit_seconds INTEGER'],
+  ['session_messages', 'reply_took_seconds', 'ALTER TABLE session_messages ADD COLUMN reply_took_seconds INTEGER'],
+  ['session_messages', 'reply_late', 'ALTER TABLE session_messages ADD COLUMN reply_late INTEGER'],
 ]) {
   const exists = db.prepare(`PRAGMA table_info(${table})`).all().some(c => c.name === column);
   if (!exists) db.prepare(ddl).run();
