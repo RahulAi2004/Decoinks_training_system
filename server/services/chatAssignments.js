@@ -1,7 +1,7 @@
 // Filter the classified real-chat library and assign a chosen set to a trainee.
-// Assignments show up in the trainee's "Assigned" tab; each one is a real chat
-// they can practise on. Filtering is pure SQL over the pre-stored classification
-// columns — no LLM calls at request time.
+// Assignments are READING material: they appear in the trainee's Study page so
+// they can read how a real conversation went. Filtering is pure SQL over the
+// pre-stored classification columns — no LLM calls at request time.
 import db, { uuid } from '../db.js';
 
 // completed = the customer actually ordered (outcome ORDERED); everything else
@@ -59,8 +59,8 @@ export function assignedChatsForTrainee(traineeId) {
     ORDER BY (ca.status = 'done'), ca.assigned_at DESC`).all(traineeId);
 }
 
-// When a trainee starts practising an assigned chat, mark that assignment done.
-export function markAssignmentDone(traineeId, realChatId) {
+// Assigned chats are reading material in Study — opening one marks it read.
+export function markAssignmentRead(traineeId, realChatId) {
   db.prepare("UPDATE chat_assignments SET status = 'done' WHERE trainee_id = ? AND real_chat_id = ?")
     .run(traineeId, realChatId);
 }

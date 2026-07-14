@@ -1,10 +1,47 @@
-// Study: browse + search the ingested knowledge base & training material.
+// Study: browse + search the ingested knowledge base & training material, and
+// read the real customer chats an admin assigned to you.
 import { Router } from 'express';
 import fs from 'fs';
 import db from '../db.js';
 import { retrieve } from '../rag.js';
+import { assignedChatsForTrainee, markAssignmentRead } from '../services/chatAssignments.js';
+import { realChatMessages } from '../services/realChats.js';
+import { translateRealChatMessage } from '../services/translate.js';
 
 const r = Router();
+
+// ---------- Assigned customer chats — reading material, not a practice test ----------
+r.get('/assigned-chats', (req, res) => {
+  res.json(assignedChatsForTrainee(req.user.id));
+});
+
+function isAssigned(req) {
+  return !!db.prepare('SELECT 1 FROM chat_assignments WHERE trainee_id = ? AND real_chat_id = ?')
+    .get(req.user.id, req.params.chatId);
+}
+
+r.get('/assigned-chats/:chatId', (req, res) => {
+  if (!isAssigned(req)) return res.status(404).json({ error: 'This chat is not assigned to you' });
+  const chat = db.prepare('SELECT * FROM real_chats WHERE id = ?').get(req.params.chatId);
+  if (!chat) return res.status(404).json({ error: 'Chat not found' });
+  const messages = realChatMessages(req.params.chatId).map(m => ({
+    id: m.id, role: m.role, body: m.body, sent_at: m.sent_at,
+    attachment_url: m.attachment_path ? `/real-chat-artwork/${m.attachment_path}` : null,
+  }));
+  markAssignmentRead(req.user.id, req.params.chatId);
+  res.json({ chat, messages });
+});
+
+// Translate a message inside a chat that was assigned to this trainee.
+r.post('/assigned-chats/:chatId/messages/:id/translate', async (req, res) => {
+  if (!isAssigned(req)) return res.status(404).json({ error: 'This chat is not assigned to you' });
+  const belongs = db.prepare('SELECT 1 FROM real_chat_messages WHERE id = ? AND chat_id = ?')
+    .get(req.params.id, req.params.chatId);
+  if (!belongs) return res.status(404).json({ error: 'Message not found' });
+  const result = await translateRealChatMessage(req.params.id);
+  if (!result?.translation) return res.status(503).json({ error: 'Translation needs an AI provider — ask your admin' });
+  res.json(result);
+});
 
 r.get('/documents', (req, res) => {
   // Feature the "how to reply" guidance and the detailed reply bank at the top —
