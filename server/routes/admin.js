@@ -10,11 +10,13 @@ import { ingestAll, CONTENT_DIR } from '../ingest.js';
 import { activeModelLabel } from '../llm.js';
 import { parseEval } from './practice.js';
 import { addCustomerExample, listCustomerExamples, deleteCustomerExample } from '../services/customerExamples.js';
-import { realChatList } from '../services/realChats.js';
+import { realChatList, realChatMessages } from '../services/realChats.js';
 import { createSupervised, getSupervised, pendingInfo, editPending, releasePending, autoReleaseIfDue,
   suggestCustomerMessage, setAutoSend, updateHoldSeconds, visibleMessages as supervisedVisible } from '../services/supervised.js';
 import { addAgentExample, listAgentExamples, deleteAgentExample } from '../services/agentExamples.js';
 import { createLiveManual, getLiveManual, liveManualPayload, addLiveManualMessage, endLiveManual, updateReplySeconds, deleteLiveManual } from '../services/liveManual.js';
+import { classificationStatus, classifyBatch, resetClassification } from '../services/chatClassifier.js';
+import { filterChats, assignChats, assignedChatsForTrainee, unassign } from '../services/chatAssignments.js';
 import { agentReply } from '../services/agentReplies.js';
 import { listPrompts, setPrompt, resetPrompt } from '../services/prompts.js';
 
@@ -103,6 +105,56 @@ r.put('/conversations/messages/:msgId', (req, res) => {
   const artMatch = m.body.match(/\n?\[\[artwork:.+?\]\]\s*$/);
   db.prepare('UPDATE session_messages SET body = ? WHERE id = ?').run(body + (artMatch ? artMatch[0] : ''), req.params.msgId);
   addCustomerExample(body, req.user.id);   // corrected message trains the AI customer
+  res.json({ ok: true });
+});
+
+// ---------- Assign filtered customer chats to trainees ----------
+r.get('/chat-classification', (req, res) => {
+  res.json(classificationStatus());
+});
+
+r.post('/chat-classification/run', async (req, res) => {
+  try { res.json(await classifyBatch({ limit: Number(req.body?.limit) || undefined })); }
+  catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// Clear every tag so the library can be re-classified from scratch.
+r.post('/chat-classification/reset', (req, res) => {
+  res.json(resetClassification());
+});
+
+r.get('/assignable-chats', (req, res) => {
+  res.json(filterChats({
+    product: String(req.query.product || ''),
+    language: String(req.query.language || ''),
+    completed: String(req.query.completed || ''),
+    limit: req.query.limit,
+  }));
+});
+
+r.post('/assign-chats', (req, res) => {
+  try { res.json(assignChats(req.body?.trainee_id, req.body?.real_chat_ids, req.user.id)); }
+  catch (e) { res.status(400).json({ error: e.message }); }
+});
+
+// Full transcript of one real customer chat (read-only preview before assigning).
+r.get('/real-chats/:id/transcript', (req, res) => {
+  const chat = db.prepare('SELECT * FROM real_chats WHERE id = ?').get(req.params.id);
+  if (!chat) return res.status(404).json({ error: 'Chat not found' });
+  const messages = realChatMessages(req.params.id).map(m => ({
+    id: m.id, role: m.role, body: m.body, sent_at: m.sent_at,
+    attachment_url: m.attachment_path ? `/real-chat-artwork/${m.attachment_path}` : null,
+  }));
+  res.json({ chat, messages });
+});
+
+// What a trainee currently has assigned, and removing one.
+r.get('/assignments/:traineeId', (req, res) => {
+  res.json(assignedChatsForTrainee(req.params.traineeId));
+});
+
+r.delete('/assignments/:traineeId/:chatId', (req, res) => {
+  unassign(req.params.traineeId, req.params.chatId);
   res.json({ ok: true });
 });
 

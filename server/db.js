@@ -158,6 +158,17 @@ CREATE TABLE IF NOT EXISTS live_manual_sessions (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+-- Admin assigns a filtered set of real customer chats to a trainee to practise on.
+CREATE TABLE IF NOT EXISTS chat_assignments (
+  id TEXT PRIMARY KEY,
+  trainee_id TEXT NOT NULL REFERENCES users(id),
+  real_chat_id TEXT NOT NULL REFERENCES real_chats(id) ON DELETE CASCADE,
+  assigned_by TEXT REFERENCES users(id),
+  status TEXT NOT NULL DEFAULT 'assigned',   -- assigned | done
+  assigned_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE(trainee_id, real_chat_id)
+);
+
 CREATE TABLE IF NOT EXISTS customer_examples (
   id TEXT PRIMARY KEY,
   body TEXT NOT NULL,
@@ -285,6 +296,8 @@ for (const [column, ddl] of [
 
 for (const [column, ddl] of [
   ['is_available', 'ALTER TABLE real_chats ADD COLUMN is_available INTEGER NOT NULL DEFAULT 1'],
+  ['product_type', 'ALTER TABLE real_chats ADD COLUMN product_type TEXT'],   // dtf | tshirt | other (NULL = unclassified)
+  ['chat_language', 'ALTER TABLE real_chats ADD COLUMN chat_language TEXT'], // en | es | other
 ]) {
   const exists = db.prepare('PRAGMA table_info(real_chats)').all().some(c => c.name === column);
   if (!exists) db.prepare(ddl).run();

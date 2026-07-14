@@ -21,6 +21,7 @@ export default function Practice() {
   const [realChats, setRealChats] = useState([]);
   const [supervisedList, setSupervisedList] = useState([]);
   const [liveManualList, setLiveManualList] = useState([]);
+  const [assignedChats, setAssignedChats] = useState([]);
   const [replyLeft, setReplyLeft] = useState(null);   // trainee's live-manual reply countdown (null = not their turn)
   const [customerTyping, setCustomerTyping] = useState(false);
   const [tab, setTab] = useState('real');
@@ -60,6 +61,14 @@ export default function Practice() {
     const load = () => api('/practice/live-manual').then(setLiveManualList).catch(() => {});
     load();
     const t = setInterval(load, 5000);
+    return () => clearInterval(t);
+  }, []);
+
+  // Poll for chats an admin assigned to this agent.
+  const loadAssigned = () => api('/practice/assigned-chats').then(setAssignedChats).catch(() => {});
+  useEffect(() => {
+    loadAssigned();
+    const t = setInterval(loadAssigned, 6000);
     return () => clearInterval(t);
   }, []);
 
@@ -337,6 +346,11 @@ export default function Practice() {
               💬 Trainer chat <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-rose-500 text-white">{liveManualList.length}</span>
             </button>
           )}
+          {assignedChats.length > 0 && (
+            <button onClick={() => setTab('assigned')} className={`px-3 py-1.5 rounded-md text-sm font-semibold flex items-center gap-1.5 ${tab === 'assigned' ? 'bg-violet-700 text-white' : 'text-violet-700 hover:bg-violet-50'}`}>
+              📌 Assigned <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-rose-500 text-white">{assignedChats.filter(c => c.status !== 'done').length}</span>
+            </button>
+          )}
           <button onClick={() => setTab('real')} className={`px-3 py-1.5 rounded-md text-sm font-semibold ${tab === 'real' ? 'bg-violet-700 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>Real customer chats</button>
           <button onClick={() => setTab('talk')} className={`px-3 py-1.5 rounded-md text-sm font-semibold ${tab === 'talk' ? 'bg-violet-700 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>Talk to customer</button>
           <button onClick={() => setTab('persona')} className={`px-3 py-1.5 rounded-md text-sm font-semibold ${tab === 'persona' ? 'bg-violet-700 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>AI personas</button>
@@ -365,6 +379,26 @@ export default function Practice() {
                 <div className="mt-3 inline-flex rounded-md bg-violet-700 px-3 py-1.5 text-sm font-bold text-white">
                   {s.status === 'invited' ? 'Accept & join' : 'Rejoin live chat'}
                 </div>
+              </button>
+            ))}
+          </div>
+        ) : tab === 'assigned' ? (
+          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-3">
+            {assignedChats.length === 0 && <p className="text-sm text-slate-400">No chats assigned to you right now.</p>}
+            {assignedChats.map(c => (
+              <button key={c.assignment_id} onClick={() => startReal(c.chat_id)} disabled={busy}
+                className={`rounded-lg border p-4 text-left transition ${c.status === 'done' ? 'border-slate-200 bg-slate-50 hover:border-slate-300' : 'border-violet-300 bg-violet-50 hover:bg-violet-100'}`}>
+                <div className="flex items-start justify-between gap-2">
+                  <p className="font-bold text-slate-800">📌 {c.customer_name}</p>
+                  {c.status === 'done' && <span className="shrink-0 text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">Done ✓</span>}
+                </div>
+                <p className="text-xs text-slate-500 mt-0.5">{c.intent || 'Assigned chat'}</p>
+                <div className="mt-2 flex flex-wrap gap-1.5 text-[10px]">
+                  {c.product_type && <span className="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 font-bold">{c.product_type === 'dtf' ? 'DTF' : c.product_type === 'tshirt' ? 'Custom t-shirt' : 'Other'}</span>}
+                  {c.chat_language && <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-bold">{c.chat_language === 'en' ? 'English' : c.chat_language === 'es' ? 'Spanish' : 'Other'}</span>}
+                  <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{c.customer_messages} customer msgs</span>
+                </div>
+                <div className="mt-3 inline-flex rounded-md bg-violet-700 px-3 py-1.5 text-sm font-bold text-white">{c.status === 'done' ? 'Practise again' : 'Start chat'}</div>
               </button>
             ))}
           </div>
