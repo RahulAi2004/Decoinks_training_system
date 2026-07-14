@@ -206,6 +206,36 @@ r.post('/supervised/:id/suggest', async (req, res) => {
   res.json({ suggestion: await suggestCustomerMessage(req.params.id) });
 });
 
+// ---------- Fully manual chat: admin types BOTH sides by hand (no AI, no replay) ----------
+function manualMessages(sessionId) {
+  return db.prepare('SELECT id, role, body, created_at FROM session_messages WHERE session_id = ? ORDER BY created_at, rowid').all(sessionId)
+    .map(m => {
+      const match = m.body.match(/\n?\[\[artwork:(.+?)\]\]\s*$/);
+      return match ? { ...m, body: m.body.replace(match[0], '').trim(), attachment_url: match[1] } : m;
+    });
+}
+
+r.post('/manual-sessions', (req, res) => {
+  const name = String(req.body?.name || '').trim() || 'Manual chat';
+  const id = uuid();
+  db.prepare('INSERT INTO practice_sessions (id, intern_id, persona_id) VALUES (?, ?, NULL)').run(id, req.user.id);
+  db.prepare(`INSERT INTO talk_customer_sessions (session_id, style_name, style_description, agent_tip, questions, next_index, manual)
+    VALUES (?, ?, 'Manual chat (admin-typed)', '', '[]', 0, 1)`).run(id, name);
+  res.json({ session_id: id, name, messages: [] });
+});
+
+r.post('/manual-sessions/:id/messages', (req, res) => {
+  const role = req.body?.role === 'customer' ? 'customer' : 'intern';
+  const body = String(req.body?.body || '').trim();
+  if (!body) return res.status(400).json({ error: 'Empty message' });
+  db.prepare('INSERT INTO session_messages (id, session_id, role, body) VALUES (?, ?, ?, ?)').run(uuid(), req.params.id, role, body);
+  res.json({ messages: manualMessages(req.params.id) });
+});
+
+r.get('/manual-sessions/:id', (req, res) => {
+  res.json({ messages: manualMessages(req.params.id) });
+});
+
 // ---------- AI agent training: approved replies + corrections ----------
 r.get('/agent-examples', (req, res) => {
   res.json(listAgentExamples());

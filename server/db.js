@@ -280,6 +280,7 @@ for (const [column, ddl] of [
 
 for (const [column, ddl] of [
   ['flow_blueprint', 'ALTER TABLE talk_customer_sessions ADD COLUMN flow_blueprint TEXT'],
+  ['manual', 'ALTER TABLE talk_customer_sessions ADD COLUMN manual INTEGER NOT NULL DEFAULT 0'],
 ]) {
   const exists = db.prepare('PRAGMA table_info(talk_customer_sessions)').all().some(c => c.name === column);
   if (!exists) db.prepare(ddl).run();
