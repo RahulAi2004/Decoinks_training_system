@@ -30,6 +30,14 @@ function Guard({ role, children }) {
   return children;
 }
 
+// Settings / AI Prompts / Content belong to the owner admin — a trainer typing
+// the URL lands back on the dashboard.
+function OwnerOnly({ children }) {
+  const { user } = useAuth();
+  if (user?.role === 'admin' && user?.access_level === 'trainer') return <Navigate to="/admin" replace />;
+  return children;
+}
+
 export default function App() {
   return (
     <AuthProvider>
@@ -47,16 +55,16 @@ export default function App() {
           <Route element={<Guard role="admin"><Layout /></Guard>}>
             <Route path="/admin" element={<Dashboard />} />
             <Route path="/admin/ai-chat" element={<AiChat />} />
-            <Route path="/admin/prompts" element={<Prompts />} />
+            <Route path="/admin/prompts" element={<OwnerOnly><Prompts /></OwnerOnly>} />
             <Route path="/admin/conversations" element={<Conversations />} />
             <Route path="/admin/live" element={<LiveTraining />} />
             <Route path="/admin/manual" element={<ManualChat />} />
-            <Route path="/admin/content" element={<Content />} />
+            <Route path="/admin/content" element={<OwnerOnly><Content /></OwnerOnly>} />
             <Route path="/admin/interns" element={<Interns />} />
             <Route path="/admin/interns/:id" element={<InternDetail />} />
             <Route path="/admin/review" element={<Review />} />
             <Route path="/admin/readiness" element={<Readiness />} />
-            <Route path="/admin/settings" element={<Settings />} />
+            <Route path="/admin/settings" element={<OwnerOnly><Settings /></OwnerOnly>} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

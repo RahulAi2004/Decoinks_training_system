@@ -5,7 +5,8 @@ import path from 'path';
 import fs from 'fs';
 import mammoth from 'mammoth';
 import db, { uuid, getSetting, setSetting, DEFAULT_SETTINGS } from '../db.js';
-import { createUser } from '../auth.js';
+import { createUser, fullAdminOnly, isTrainer } from '../auth.js';
+import { translateText, translateSessionMessage, translateRealChatMessage } from '../services/translate.js';
 import { ingestAll, CONTENT_DIR } from '../ingest.js';
 import { activeModelLabel } from '../llm.js';
 import { parseEval } from './practice.js';
@@ -40,6 +41,33 @@ const upload = multer({
   }),
   fileFilter: (req, file, cb) => cb(null, ALLOWED_EXT.has(path.extname(file.originalname).toLowerCase())),
   limits: { fileSize: 25 * 1024 * 1024 },
+});
+
+// Who am I + what may I do (drives the nav on the client).
+r.get('/me', (req, res) => {
+  res.json({ ...req.user, is_trainer: isTrainer(req.user) });
+});
+
+// ---------- Translation (admin/trainer side) ----------
+r.post('/messages/:id/translate', async (req, res) => {
+  const result = await translateSessionMessage(req.params.id);
+  if (!result) return res.status(404).json({ error: 'Message not found' });
+  if (!result.translation) return res.status(503).json({ error: 'Translation needs an AI provider — set one in Settings' });
+  res.json(result);
+});
+
+r.post('/real-chat-messages/:id/translate', async (req, res) => {
+  const result = await translateRealChatMessage(req.params.id);
+  if (!result) return res.status(404).json({ error: 'Message not found' });
+  if (!result.translation) return res.status(503).json({ error: 'Translation needs an AI provider — set one in Settings' });
+  res.json(result);
+});
+
+r.post('/translate', async (req, res) => {
+  const to = req.body?.to === 'es' ? 'es' : 'en';
+  const translation = await translateText(req.body?.text, to);
+  if (!translation) return res.status(503).json({ error: 'Translation needs an AI provider — set one in Settings' });
+  res.json({ translation });
 });
 
 r.get('/documents', (req, res) => {
@@ -381,17 +409,17 @@ r.delete('/agent-examples/:id', (req, res) => {
 });
 
 // ---------- Editable AI prompts ----------
-r.get('/prompts', (req, res) => {
+r.get('/prompts', fullAdminOnly, (req, res) => {
   res.json(listPrompts());
 });
 
-r.put('/prompts/:key', (req, res) => {
+r.put('/prompts/:key', fullAdminOnly, (req, res) => {
   const ok = setPrompt(req.params.key, req.body?.text);
   if (!ok) return res.status(404).json({ error: 'Unknown prompt' });
   res.json(listPrompts().find(p => p.key === req.params.key));
 });
 
-r.post('/prompts/:key/reset', (req, res) => {
+r.post('/prompts/:key/reset', fullAdminOnly, (req, res) => {
   const ok = resetPrompt(req.params.key);
   if (!ok) return res.status(404).json({ error: 'Unknown prompt' });
   res.json(listPrompts().find(p => p.key === req.params.key));
@@ -406,7 +434,7 @@ r.post('/agent-chat', async (req, res) => {
   res.json({ reply });
 });
 
-r.post('/documents/:kind', upload.array('files', 10), async (req, res) => {
+r.post('/documents/:kind', fullAdminOnly, upload.array('files', 10), async (req, res) => {
   if (!req.files?.length) return res.status(400).json({ error: 'No accepted files (pdf/docx/xlsx/txt/md/json).' });
   try {
     const summary = await ingestAll();
@@ -424,7 +452,7 @@ r.delete('/documents/:id', (req, res) => {
   res.json({ ok: true });
 });
 
-r.post('/ingest', async (req, res) => {
+r.post('/ingest', fullAdminOnly, async (req, res) => {
   try { res.json({ ingest: await ingestAll() }); }
   catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -462,7 +490,7 @@ r.get('/company-products', (req, res) => {
   `).all());
 });
 
-r.post('/company-products', productUpload.single('document'), async (req, res) => {
+r.post('/company-products', fullAdminOnly, productUpload.single('document'), async (req, res) => {
   const topic = String(req.body?.topic || '').trim();
   const youtubeUrl = String(req.body?.youtube_url || '').trim();
   if (!topic) return res.status(400).json({ error: 'Topic name required' });
@@ -481,7 +509,7 @@ r.post('/company-products', productUpload.single('document'), async (req, res) =
   }
 });
 
-r.delete('/company-products/:id', (req, res) => {
+r.delete('/company-products/:id', fullAdminOnly, (req, res) => {
   const row = db.prepare('SELECT * FROM company_products WHERE id = ?').get(req.params.id);
   if (!row) return res.status(404).json({ error: 'Not found' });
   if (row.document_path && fs.existsSync(row.document_path)) {
@@ -512,6 +540,30 @@ r.patch('/interns/:id', (req, res) => {
   res.json(db.prepare('SELECT id, name, email, is_active FROM users WHERE id = ?').get(u.id));
 });
 
+// ---------- Trainers (sub-admins) — only the owner admin may manage these ----------
+r.get('/trainers', fullAdminOnly, (req, res) => {
+  res.json(db.prepare(`SELECT id, name, email, access_level, is_active, last_login, created_at
+    FROM users WHERE role = 'admin' ORDER BY created_at`).all());
+});
+
+r.post('/trainers', fullAdminOnly, (req, res) => {
+  const { name, email, password } = req.body || {};
+  if (!name || !email || !password) return res.status(400).json({ error: 'name, email, password required' });
+  if (db.prepare('SELECT 1 FROM users WHERE email = ?').get(String(email).toLowerCase().trim()))
+    return res.status(409).json({ error: 'Email already exists' });
+  res.json(createUser({ name, email, password, role: 'admin', access_level: 'trainer' }));
+});
+
+r.patch('/trainers/:id', fullAdminOnly, (req, res) => {
+  const u = db.prepare(`SELECT * FROM users WHERE id = ? AND role = 'admin'`).get(req.params.id);
+  if (!u) return res.status(404).json({ error: 'Not found' });
+  if (u.access_level !== 'trainer') return res.status(400).json({ error: 'Only trainer accounts can be changed here' });
+  if (u.id === req.user.id) return res.status(400).json({ error: 'You cannot change your own account' });
+  if (typeof req.body?.is_active === 'boolean')
+    db.prepare(`UPDATE users SET is_active = ?, updated_at = datetime('now') WHERE id = ?`).run(req.body.is_active ? 1 : 0, u.id);
+  res.json(db.prepare('SELECT id, name, email, access_level, is_active FROM users WHERE id = ?').get(u.id));
+});
+
 // ---------- Reply review feed ----------
 r.get('/review', (req, res) => {
   const { intern_id, min_overall, max_overall } = req.query;
@@ -538,7 +590,7 @@ r.post('/review/:evalId/verdict', (req, res) => {
 });
 
 // ---------- Settings ----------
-r.get('/settings', (req, res) => {
+r.get('/settings', fullAdminOnly, (req, res) => {
   res.json({
     weights: { ...DEFAULT_SETTINGS.weights, ...(getSetting('weights') || {}) },
     thresholds: { ...DEFAULT_SETTINGS.thresholds, ...(getSetting('thresholds') || {}) },
@@ -549,7 +601,7 @@ r.get('/settings', (req, res) => {
   });
 });
 
-r.put('/settings', (req, res) => {
+r.put('/settings', fullAdminOnly, (req, res) => {
   for (const key of ['weights', 'thresholds', 'llm', 'quiz']) {
     if (req.body?.[key] && typeof req.body[key] === 'object') setSetting(key, req.body[key]);
   }

@@ -12,6 +12,7 @@ import { relevantRealCustomerMsgs } from '../services/realChatQa.js';
 import { visibleMessages as supervisedVisible, autoReleaseIfDue, getSupervised, afterAgentReply } from '../services/supervised.js';
 import { getLiveManual, liveManualPayload, addLiveManualMessage, claimLiveManual } from '../services/liveManual.js';
 import { assignedChatsForTrainee, markAssignmentDone } from '../services/chatAssignments.js';
+import { translateText, translateSessionMessage } from '../services/translate.js';
 
 const r = Router();
 
@@ -46,6 +47,24 @@ r.get('/real-chats', (req, res) => {
 // Chats an admin assigned to this trainee (their "Assigned" tab).
 r.get('/assigned-chats', (req, res) => {
   res.json(assignedChatsForTrainee(req.user.id));
+});
+
+// ---- Translation: read a Spanish customer message, or translate your reply ----
+r.post('/messages/:id/translate', async (req, res) => {
+  const owns = db.prepare(`SELECT 1 FROM session_messages m JOIN practice_sessions ps ON ps.id = m.session_id
+    WHERE m.id = ? AND ps.intern_id = ?`).get(req.params.id, req.user.id);
+  if (!owns) return res.status(404).json({ error: 'Message not found' });
+  const result = await translateSessionMessage(req.params.id);
+  if (!result) return res.status(404).json({ error: 'Message not found' });
+  if (!result.translation) return res.status(503).json({ error: 'Translation needs an AI provider — set one in Settings' });
+  res.json(result);
+});
+
+r.post('/translate', async (req, res) => {
+  const to = req.body?.to === 'es' ? 'es' : 'en';
+  const translation = await translateText(req.body?.text, to);
+  if (!translation) return res.status(503).json({ error: 'Translation needs an AI provider — set one in Settings' });
+  res.json({ translation });
 });
 
 r.get('/talk-styles', async (req, res) => {

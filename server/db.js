@@ -318,6 +318,12 @@ for (const [table, column, ddl] of [
   ['session_messages', 'reply_limit_seconds', 'ALTER TABLE session_messages ADD COLUMN reply_limit_seconds INTEGER'],
   ['session_messages', 'reply_took_seconds', 'ALTER TABLE session_messages ADD COLUMN reply_took_seconds INTEGER'],
   ['session_messages', 'reply_late', 'ALTER TABLE session_messages ADD COLUMN reply_late INTEGER'],
+  // A "trainer" is an admin-role account limited to the training screens:
+  // full = owner/admin, trainer = sub-admin (no Settings / AI Prompts / Content).
+  ['users', 'access_level', "ALTER TABLE users ADD COLUMN access_level TEXT NOT NULL DEFAULT 'full'"],
+  // Cached English translation, so a message is only ever sent to the LLM once.
+  ['session_messages', 'translation_en', 'ALTER TABLE session_messages ADD COLUMN translation_en TEXT'],
+  ['real_chat_messages', 'translation_en', 'ALTER TABLE real_chat_messages ADD COLUMN translation_en TEXT'],
 ]) {
   const exists = db.prepare(`PRAGMA table_info(${table})`).all().some(c => c.name === column);
   if (!exists) db.prepare(ddl).run();

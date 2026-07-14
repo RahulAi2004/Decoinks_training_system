@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { api } from '../../api';
 import { Card, Spinner, Button, ScoreBadge } from '../../components/ui';
 import Evaluation from '../../components/Evaluation';
+import { TranslateMessage, TranslateReply } from '../../components/Translate';
 
 function downloadText(filename, text) {
   const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
@@ -495,14 +496,19 @@ export default function Practice() {
       <div className="flex-1 overflow-y-auto bg-white rounded-lg border border-slate-200 p-4 space-y-3">
         {messages.map((m, i) => (
           <div key={m.id || i} className={`flex ${m.role === 'intern' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[78%] rounded-2xl px-3.5 py-2 text-sm whitespace-pre-wrap ${m.role === 'intern' ? 'bg-violet-700 text-white rounded-br-sm' : 'bg-slate-100 text-slate-800 rounded-bl-sm'}`}>
-              {m.body}
-              {m.attachment_url && (
-                <a href={m.attachment_url} target="_blank" rel="noreferrer" className="mt-2 block overflow-hidden rounded-lg border border-slate-200 bg-white">
-                  <img src={m.attachment_url} alt="Customer artwork" className="max-h-52 w-full object-contain bg-slate-50" />
-                </a>
+            <div className="max-w-[78%]">
+              <div className={`rounded-2xl px-3.5 py-2 text-sm whitespace-pre-wrap ${m.role === 'intern' ? 'bg-violet-700 text-white rounded-br-sm' : 'bg-slate-100 text-slate-800 rounded-bl-sm'}`}>
+                {m.body}
+                {m.attachment_url && (
+                  <a href={m.attachment_url} target="_blank" rel="noreferrer" className="mt-2 block overflow-hidden rounded-lg border border-slate-200 bg-white">
+                    <img src={m.attachment_url} alt="Customer artwork" className="max-h-52 w-full object-contain bg-slate-50" />
+                  </a>
+                )}
+                {m.is_artwork && !m.attachment_url && <p className="mt-2 text-xs font-semibold text-slate-500">Artwork attachment shared</p>}
+              </div>
+              {m.role === 'customer' && m.id && m.id !== 'tmp' && (
+                <TranslateMessage path={`/practice/messages/${m.id}/translate`} className="mt-0.5 block text-[10px]" />
               )}
-              {m.is_artwork && !m.attachment_url && <p className="mt-2 text-xs font-semibold text-slate-500">Artwork attachment shared</p>}
             </div>
           </div>
         ))}
@@ -555,6 +561,7 @@ export default function Practice() {
         <textarea value={input} onChange={e => setInput(e.target.value)} onKeyDown={onEnter(send)} disabled={busy} rows={1}
           placeholder="Reply like a Decoinks agent…  (Enter to send, Shift+Enter for new line)" autoFocus
           className="flex-1 resize-none border border-slate-300 rounded-lg px-4 py-2.5 text-sm bg-white" />
+        <TranslateReply text={input} onResult={setInput} disabled={busy} />
         <Button disabled={busy || !input.trim()}>Send</Button>
         {session.mode === 'real_chat' && countdown > 0 && (
           paused
