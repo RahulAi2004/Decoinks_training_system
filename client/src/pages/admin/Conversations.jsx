@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../../api';
 import { Card, Spinner, Button, ScoreBadge } from '../../components/ui';
 
-const MODE_LABEL = { real_chat: 'Real customer', talk_customer: 'AI customer', persona: 'AI persona' };
+const MODE_LABEL = { real_chat: 'Real customer', talk_customer: 'AI customer', live_manual: 'Trainer chat', persona: 'AI persona' };
 
 export default function Conversations() {
   const [list, setList] = useState(null);
@@ -60,6 +60,7 @@ export default function Conversations() {
           <option value="">All types</option>
           <option value="real_chat">Real customer</option>
           <option value="talk_customer">AI customer</option>
+          <option value="live_manual">Trainer chat</option>
           <option value="persona">AI persona</option>
         </select>
         <span className="text-xs text-slate-400">{filtered.length} of {list.length}</span>
@@ -79,6 +80,7 @@ export default function Conversations() {
                     {s.agent_name} <span className="text-slate-400 font-normal">·</span> <span className="text-violet-600">{MODE_LABEL[s.mode] || s.mode}</span>
                     {s.real_name && <span className="text-slate-400 font-normal"> · {s.real_name}</span>}
                     {s.style_name && <span className="text-slate-400 font-normal"> · {s.style_name}</span>}
+                    {s.live_manual_name && <span className="text-slate-400 font-normal"> · {s.live_manual_name}</span>}
                   </p>
                   <p className="text-xs text-slate-400">{s.started_at?.slice(0, 16).replace('T', ' ')} · {s.msg_count} messages · {s.status}</p>
                 </div>

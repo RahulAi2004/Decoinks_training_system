@@ -10,6 +10,7 @@ import { randomOrderFlowBlueprint } from '../services/orderFlows.js';
 import { relevantExampleTexts } from '../services/customerExamples.js';
 import { relevantRealCustomerMsgs } from '../services/realChatQa.js';
 import { visibleMessages as supervisedVisible, autoReleaseIfDue, getSupervised, afterAgentReply } from '../services/supervised.js';
+import { getLiveManual, liveManualPayload, addLiveManualMessage, claimLiveManual } from '../services/liveManual.js';
 
 const r = Router();
 
@@ -368,6 +369,40 @@ r.post('/supervised/:id/messages', async (req, res) => {
     return res.json({ messages: supervisedVisible(req.params.id), complete: true, scorecard });
   }
   res.json({ messages: supervisedVisible(req.params.id), complete: false, customer_pending: true });
+});
+
+// ---- Live manual chat (trainee side; a trainer messages you live, fully manual) ----
+r.get('/live-manual', (req, res) => {
+  const rows = db.prepare(`
+    SELECT lms.session_id AS id, lms.name, lms.status, u.name AS trainer_name,
+      (SELECT COUNT(*) FROM session_messages m WHERE m.session_id = lms.session_id) AS message_count
+    FROM live_manual_sessions lms JOIN users u ON u.id = lms.admin_id
+    WHERE lms.agent_id = ? AND lms.status != 'ended'
+    ORDER BY lms.created_at DESC`).all(req.user.id);
+  res.json(rows);
+});
+
+r.get('/live-manual/:id', (req, res) => {
+  const st = getLiveManual(req.params.id);
+  if (!st || st.agent_id !== req.user.id) return res.status(404).json({ error: 'Session not found' });
+  const trainer = db.prepare('SELECT name FROM users WHERE id = ?').get(st.admin_id);
+  res.json(liveManualPayload(st, { mode: 'live_manual', trainer_name: trainer?.name || 'Trainer' }));
+});
+
+r.post('/live-manual/:id/claim', (req, res) => {
+  const st = claimLiveManual(req.params.id, req.user.id);
+  if (!st) return res.status(404).json({ error: 'Session not found' });
+  const trainer = db.prepare('SELECT name FROM users WHERE id = ?').get(st.admin_id);
+  res.json(liveManualPayload(st, { mode: 'live_manual', trainer_name: trainer?.name || 'Trainer' }));
+});
+
+r.post('/live-manual/:id/messages', (req, res) => {
+  const st = getLiveManual(req.params.id);
+  if (!st || st.agent_id !== req.user.id) return res.status(404).json({ error: 'Session not found' });
+  if (st.status === 'ended') return res.status(400).json({ error: 'Chat has ended' });
+  if (st.status === 'invited') claimLiveManual(req.params.id, req.user.id);
+  if (!addLiveManualMessage(req.params.id, 'intern', req.body?.body)) return res.status(400).json({ error: 'Empty message' });
+  res.json(liveManualPayload(getLiveManual(req.params.id), { mode: 'live_manual' }));
 });
 
 r.post('/real-chat-sessions/:id/messages', async (req, res) => {

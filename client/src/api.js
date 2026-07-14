@@ -18,6 +18,10 @@ export async function api(path, { method = 'GET', body, formData } = {}) {
   let data = null;
   try { data = await res.json(); } catch { /* empty body */ }
   if (res.status === 401) { setToken(null); window.dispatchEvent(new Event('auth-expired')); }
-  if (!res.ok) throw new Error(data?.error || `Request failed (${res.status})`);
+  if (!res.ok) {
+    const error = new Error(data?.error || `Request failed (${res.status})`);
+    error.status = res.status;
+    throw error;
+  }
   return data;
 }

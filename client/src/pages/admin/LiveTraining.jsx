@@ -96,6 +96,16 @@ export default function LiveTraining() {
     finally { setLibraryBusy(false); }
   };
 
+  const deleteSession = async (id, e) => {
+    e?.stopPropagation?.();
+    if (!window.confirm('Delete this live session? It will be removed from the active list.')) return;
+    try {
+      await api(`/admin/supervised/${id}`, { method: 'DELETE' });
+      if (openId === id) { setOpenId(null); setMonitor(null); }
+      loadSessions();
+    } catch (err) { alert(err.message); }
+  };
+
   const suggest = async () => {
     setBusy(true);
     try { const r = await api(`/admin/supervised/${openId}/suggest`, { method: 'POST' }); if (r.suggestion) setEditText(r.suggestion); }
@@ -231,11 +241,16 @@ export default function LiveTraining() {
             <div className="space-y-1.5">
               {sessions.length === 0 && <p className="text-xs text-slate-400">No live sessions.</p>}
               {sessions.map(s => (
-                <button key={s.id} onClick={() => { lastOriginal.current = '__none__'; lastTimerSession.current = null; setOpenId(s.id); }}
-                  className={`w-full flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-left text-sm ${openId === s.id ? 'border-violet-400 bg-violet-50' : 'border-slate-200 hover:bg-slate-50'}`}>
-                  <span className="min-w-0 truncate"><b>{s.agent_name}</b> <span className="text-slate-400">·</span> {s.customer_name}</span>
-                  {s.has_pending ? <span className="shrink-0 text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 animate-pulse">Review</span> : <span className="shrink-0 text-[10px] text-slate-400">live</span>}
-                </button>
+                <div key={s.id}
+                  className={`flex items-center gap-1 rounded-lg border ${openId === s.id ? 'border-violet-400 bg-violet-50' : 'border-slate-200'}`}>
+                  <button onClick={() => { lastOriginal.current = '__none__'; lastTimerSession.current = null; setOpenId(s.id); }}
+                    className="min-w-0 flex-1 flex items-center justify-between gap-2 rounded-l-lg px-3 py-2 text-left text-sm hover:bg-slate-50">
+                    <span className="min-w-0 truncate"><b>{s.agent_name}</b> <span className="text-slate-400">·</span> {s.customer_name}</span>
+                    {s.has_pending ? <span className="shrink-0 text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 animate-pulse">Review</span> : <span className="shrink-0 text-[10px] text-slate-400">live</span>}
+                  </button>
+                  <button onClick={(e) => deleteSession(s.id, e)} title="Delete session" aria-label="Delete session"
+                    className="shrink-0 px-2.5 py-2 text-slate-400 hover:text-rose-600">✕</button>
+                </div>
               ))}
             </div>
           </Card>

@@ -1,6 +1,10 @@
 node_modules/
 data/*.db
 data/*.db-journal
+data/*.db-shm
+data/*.db-wal
 .env
 dist/
 *.log
+
+Decoinks-All-Customers.docx

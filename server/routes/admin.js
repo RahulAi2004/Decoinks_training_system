@@ -14,6 +14,7 @@ import { realChatList } from '../services/realChats.js';
 import { createSupervised, getSupervised, pendingInfo, editPending, releasePending, autoReleaseIfDue,
   suggestCustomerMessage, setAutoSend, updateHoldSeconds, visibleMessages as supervisedVisible } from '../services/supervised.js';
 import { addAgentExample, listAgentExamples, deleteAgentExample } from '../services/agentExamples.js';
+import { createLiveManual, getLiveManual, liveManualPayload, addLiveManualMessage, endLiveManual, updateReplySeconds, deleteLiveManual } from '../services/liveManual.js';
 import { agentReply } from '../services/agentReplies.js';
 import { listPrompts, setPrompt, resetPrompt } from '../services/prompts.js';
 
@@ -67,13 +68,15 @@ r.get('/conversations', (req, res) => {
       (SELECT COUNT(*) FROM session_messages m WHERE m.session_id = ps.id) AS msg_count,
       CASE WHEN rcs.session_id IS NOT NULL THEN 'real_chat'
            WHEN tcs.session_id IS NOT NULL THEN 'talk_customer'
+           WHEN lms.session_id IS NOT NULL THEN 'live_manual'
            ELSE 'persona' END AS mode,
-      rc.customer_name AS real_name, tcs.style_name AS style_name
+      rc.customer_name AS real_name, tcs.style_name AS style_name, lms.name AS live_manual_name
     FROM practice_sessions ps
     JOIN users u ON u.id = ps.intern_id
     LEFT JOIN real_chat_sessions rcs ON rcs.session_id = ps.id
     LEFT JOIN real_chats rc ON rc.id = rcs.real_chat_id
     LEFT JOIN talk_customer_sessions tcs ON tcs.session_id = ps.id
+    LEFT JOIN live_manual_sessions lms ON lms.session_id = ps.id
     WHERE (SELECT COUNT(*) FROM session_messages m WHERE m.session_id = ps.id) > 0
     ORDER BY ps.started_at DESC LIMIT 300`).all();
   res.json(rows);
@@ -206,6 +209,14 @@ r.post('/supervised/:id/suggest', async (req, res) => {
   res.json({ suggestion: await suggestCustomerMessage(req.params.id) });
 });
 
+// Delete (end) a live session so it drops off the active list.
+r.delete('/supervised/:id', (req, res) => {
+  const st = getSupervised(req.params.id);
+  if (!st) return res.status(404).json({ error: 'Session not found' });
+  db.prepare("UPDATE practice_sessions SET status = 'ended', ended_at = datetime('now') WHERE id = ?").run(req.params.id);
+  res.json({ ok: true });
+});
+
 // ---------- Fully manual chat: admin types BOTH sides by hand (no AI, no replay) ----------
 function manualMessages(sessionId) {
   return db.prepare('SELECT id, role, body, created_at FROM session_messages WHERE session_id = ? ORDER BY created_at, rowid').all(sessionId)
@@ -234,6 +245,66 @@ r.post('/manual-sessions/:id/messages', (req, res) => {
 
 r.get('/manual-sessions/:id', (req, res) => {
   res.json({ messages: manualMessages(req.params.id) });
+});
+
+// ---------- Live manual chat: trainer (admin) ↔ real trainee, both typing live ----------
+r.get('/live-manual/agents', (req, res) => {
+  res.json(db.prepare("SELECT id, name, email FROM users WHERE role = 'intern' AND is_active = 1 ORDER BY name").all());
+});
+
+r.get('/live-manual', (req, res) => {
+  const rows = db.prepare(`
+    SELECT lms.session_id AS id, lms.name, lms.status, u.name AS agent_name, lms.created_at,
+      (SELECT COUNT(*) FROM session_messages m WHERE m.session_id = lms.session_id) AS message_count
+    FROM live_manual_sessions lms JOIN users u ON u.id = lms.agent_id
+    WHERE lms.admin_id = ?
+    ORDER BY lms.created_at DESC`).all(req.user.id);
+  res.json(rows);
+});
+
+r.post('/live-manual', (req, res) => {
+  try {
+    const st = createLiveManual(req.user.id, req.body?.agent_id, req.body?.name, req.body?.reply_seconds);
+    res.json(liveManualPayload(st));
+  } catch (e) { res.status(400).json({ error: e.message }); }
+});
+
+r.get('/live-manual/:id', (req, res) => {
+  const st = getLiveManual(req.params.id);
+  if (!st || st.admin_id !== req.user.id) return res.status(404).json({ error: 'Session not found' });
+  const agent = db.prepare('SELECT name FROM users WHERE id = ?').get(st.agent_id);
+  res.json(liveManualPayload(st, { agent_name: agent?.name || 'Trainee' }));
+});
+
+r.post('/live-manual/:id/messages', (req, res) => {
+  const st = getLiveManual(req.params.id);
+  if (!st || st.admin_id !== req.user.id) return res.status(404).json({ error: 'Session not found' });
+  if (st.status === 'ended') return res.status(400).json({ error: 'Chat has ended' });
+  if (st.status === 'invited') return res.status(409).json({ error: 'Wait for the trainee to accept the invite' });
+  if (!addLiveManualMessage(req.params.id, 'customer', req.body?.body)) return res.status(400).json({ error: 'Empty message' });
+  res.json(liveManualPayload(getLiveManual(req.params.id)));
+});
+
+r.put('/live-manual/:id/timer', (req, res) => {
+  const st = getLiveManual(req.params.id);
+  if (!st || st.admin_id !== req.user.id) return res.status(404).json({ error: 'Session not found' });
+  const updated = updateReplySeconds(req.params.id, req.body?.reply_seconds);
+  res.json(liveManualPayload(updated));
+});
+
+r.post('/live-manual/:id/end', (req, res) => {
+  const st = getLiveManual(req.params.id);
+  if (!st || st.admin_id !== req.user.id) return res.status(404).json({ error: 'Session not found' });
+  endLiveManual(req.params.id);
+  res.json({ ok: true });
+});
+
+r.delete('/live-manual/:id', (req, res) => {
+  const st = getLiveManual(req.params.id);
+  if (!st || st.admin_id !== req.user.id) return res.status(404).json({ error: 'Session not found' });
+  if (st.status === 'active') return res.status(409).json({ error: 'End the live chat before deleting it' });
+  deleteLiveManual(req.params.id);
+  res.json({ ok: true });
 });
 
 // ---------- AI agent training: approved replies + corrections ----------
