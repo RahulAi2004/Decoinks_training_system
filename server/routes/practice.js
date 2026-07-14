@@ -11,7 +11,6 @@ import { relevantExampleTexts } from '../services/customerExamples.js';
 import { relevantRealCustomerMsgs } from '../services/realChatQa.js';
 import { visibleMessages as supervisedVisible, autoReleaseIfDue, getSupervised, afterAgentReply } from '../services/supervised.js';
 import { getLiveManual, liveManualPayload, addLiveManualMessage, claimLiveManual } from '../services/liveManual.js';
-import { assignedChatsForTrainee, markAssignmentDone } from '../services/chatAssignments.js';
 import { translateText, translateSessionMessage } from '../services/translate.js';
 
 const r = Router();
@@ -42,11 +41,6 @@ r.get('/personas', (req, res) => {
 
 r.get('/real-chats', (req, res) => {
   res.json(realChatList());
-});
-
-// Chats an admin assigned to this trainee (their "Assigned" tab).
-r.get('/assigned-chats', (req, res) => {
-  res.json(assignedChatsForTrainee(req.user.id));
 });
 
 // ---- Translation: read a Spanish customer message, or translate your reply ----
@@ -230,7 +224,6 @@ r.post('/real-chats/:chatId/sessions', (req, res) => {
   db.prepare('INSERT INTO practice_sessions (id, intern_id, persona_id) VALUES (?, ?, NULL)').run(id, req.user.id);
   db.prepare('INSERT INTO real_chat_sessions (session_id, real_chat_id, next_index) VALUES (?, ?, 0)').run(id, chat.id);
   revealNextRealCustomerBlock(id, chat.id, 0);
-  markAssignmentDone(req.user.id, chat.id);   // if this was an assigned chat, mark it done
 
   res.json({ session_id: id, mode: 'real_chat', real_chat: chat, messages: visibleMessages(id) });
 });

@@ -408,7 +408,7 @@ function AssignTab() {
       {/* What the trainee currently has */}
       {traineeId && (
         <Card title={`Assigned to ${trainees.find(t => t.id === traineeId)?.name || 'trainee'} (${assigned.length})`}>
-          {assigned.length === 0 ? <p className="text-sm text-slate-400">Nothing assigned yet. Tick chats above and press “Assign selected”.</p> : (
+          {assigned.length === 0 ? <p className="text-sm text-slate-400">Nothing assigned yet. Tick chats above and press “Assign selected” — they appear in the trainee’s Study page to read.</p> : (
             <div className="divide-y divide-slate-100">
               {assigned.map(a => (
                 <div key={a.assignment_id} className="flex items-center gap-3 py-2 text-sm">
@@ -418,7 +418,7 @@ function AssignTab() {
                   </button>
                   <div className="flex items-center gap-1.5 shrink-0">
                     <ChatTags chat={a} />
-                    {a.status === 'done' && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">Done ✓</span>}
+                    {a.status === 'done' && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">Read ✓</span>}
                     <button onClick={() => removeAssigned(a.chat_id)} title="Remove from trainee" aria-label="Remove from trainee"
                       className="px-2 text-slate-400 hover:text-rose-600">✕</button>
                   </div>
