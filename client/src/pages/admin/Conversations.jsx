@@ -7,6 +7,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../api';
 import { Card, Spinner, Button, ScoreBadge } from '../../components/ui';
+import { TranslateMessage } from '../../components/Translate';
 
 const MODE_LABEL = { real_chat: 'Real customer', talk_customer: 'AI customer', live_manual: 'Trainer chat', persona: 'AI persona' };
 const PRODUCT_LABEL = { dtf: 'DTF', tshirt: 'Custom t-shirt', other: 'Other' };
@@ -130,7 +131,10 @@ function ReviewTab() {
                             <p className="mt-0.5 text-[10px] uppercase tracking-wide text-slate-400">
                               {m.role === 'intern' ? 'Agent' : 'Customer'}
                               {m.role === 'customer' && editing?.id !== m.id && (
-                                <button onClick={() => setEditing({ id: m.id, text: m.body })} className="ml-2 text-amber-600 hover:text-amber-800 normal-case font-semibold">✎ Fix</button>
+                                <>
+                                  <button onClick={() => setEditing({ id: m.id, text: m.body })} className="ml-2 text-amber-600 hover:text-amber-800 normal-case font-semibold">✎ Fix</button>
+                                  <TranslateMessage path={`/admin/messages/${m.id}/translate`} className="ml-2" />
+                                </>
                               )}
                             </p>
                           </div>
@@ -284,7 +288,10 @@ function AssignTab() {
                       </a>
                     )}
                   </div>
-                  <p className={`mt-0.5 text-[10px] uppercase tracking-wide text-slate-400 ${m.role === 'agent' ? 'text-right' : ''}`}>{m.role === 'agent' ? 'Agent' : 'Customer'}{m.sent_at ? ` · ${m.sent_at}` : ''}</p>
+                  <p className={`mt-0.5 text-[10px] uppercase tracking-wide text-slate-400 ${m.role === 'agent' ? 'text-right' : ''}`}>
+                    {m.role === 'agent' ? 'Agent' : 'Customer'}{m.sent_at ? ` · ${m.sent_at}` : ''}
+                    {m.role === 'customer' && <TranslateMessage path={`/admin/real-chat-messages/${m.id}/translate`} className="ml-2" />}
+                  </p>
                 </div>
               </div>
             ))}

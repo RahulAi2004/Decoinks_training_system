@@ -23,9 +23,16 @@ const adminNav = [
   ['/admin/settings', 'Settings', '⚙️'],
 ];
 
+// A trainer (sub-admin) runs the training screens but not the app's config.
+export const OWNER_ONLY_PATHS = ['/admin/prompts', '/admin/content', '/admin/settings'];
+
 export default function Layout() {
   const { user, logout } = useAuth();
-  const nav = user?.role === 'admin' ? adminNav : internNav;
+  const isTrainer = user?.role === 'admin' && user?.access_level === 'trainer';
+  const nav = user?.role !== 'admin'
+    ? internNav
+    : isTrainer ? adminNav.filter(([to]) => !OWNER_ONLY_PATHS.includes(to)) : adminNav;
+  const roleLabel = user?.role === 'intern' ? 'Decoinks Agent' : isTrainer ? 'Trainer' : user?.role;
   return (
     <div className="min-h-screen flex">
       <aside className="w-56 shrink-0 bg-[#10151c] text-slate-300 flex flex-col">
@@ -44,7 +51,7 @@ export default function Layout() {
         </nav>
         <div className="px-4 py-4 border-t border-white/10 text-xs">
           <p className="font-semibold text-white truncate">{user?.name}</p>
-          <p className="text-slate-400 capitalize">{user?.role === 'intern' ? 'Decoinks Agent' : user?.role}</p>
+          <p className="text-slate-400 capitalize">{roleLabel}</p>
           <button onClick={logout} className="mt-2 text-violet-300 hover:text-white">Sign out</button>
         </div>
       </aside>

@@ -5,6 +5,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { api } from '../../api';
 import { Card, Spinner, Button } from '../../components/ui';
+import { TranslateMessage } from '../../components/Translate';
 
 export default function LiveTraining() {
   const [options, setOptions] = useState({ agents: [], customers: [] });
@@ -280,7 +281,10 @@ export default function LiveTraining() {
                     <div className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-sm whitespace-pre-wrap ${m.role === 'intern' ? 'bg-violet-700 text-white rounded-br-sm' : 'bg-slate-100 text-slate-800 rounded-bl-sm'}`}>
                       {m.body}
                       {m.attachment_url && <a href={m.attachment_url} target="_blank" rel="noreferrer" className="mt-2 block overflow-hidden rounded-lg border border-slate-200 bg-white"><img src={m.attachment_url} alt="artwork" className="max-h-40 w-full object-contain bg-slate-50" /></a>}
-                      <span className="block mt-0.5 text-[10px] uppercase opacity-60">{m.role === 'intern' ? 'Agent' : 'Customer'}</span>
+                      <span className="block mt-0.5 text-[10px] uppercase opacity-60">
+                        {m.role === 'intern' ? 'Agent' : 'Customer'}
+                        {m.role === 'customer' && <TranslateMessage path={`/admin/messages/${m.id}/translate`} className="ml-2" />}
+                      </span>
                     </div>
                   </div>
                 ))}

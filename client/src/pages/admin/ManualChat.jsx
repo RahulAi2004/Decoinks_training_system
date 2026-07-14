@@ -7,6 +7,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { api } from '../../api';
 import { Card, Button } from '../../components/ui';
+import { TranslateMessage, TranslateReply } from '../../components/Translate';
 
 export default function ManualChat() {
   const [agents, setAgents] = useState([]);
@@ -168,6 +169,9 @@ export default function ManualChat() {
                     {m.role === 'intern' && m.reply_took != null && (
                       <span className={m.late ? 'text-rose-600 font-bold' : 'text-emerald-600 font-bold'}> · {m.late ? `⏰ late (${m.reply_took}s)` : `replied in ${m.reply_took}s`}</span>
                     )}
+                    {m.role === 'intern' && m.id && m.id !== 'tmp' && (
+                      <TranslateMessage path={`/admin/messages/${m.id}/translate`} className="ml-2" />
+                    )}
                   </p>
                 </div>
               </div>
@@ -188,6 +192,7 @@ export default function ManualChat() {
               <textarea value={input} onChange={e => setInput(e.target.value)} onKeyDown={onKey} disabled={busy} autoFocus rows={1}
                 placeholder="Type the customer message…  (Enter to send, Shift+Enter for new line)"
                 className="flex-1 resize-none border border-slate-300 rounded-lg px-4 py-2.5 text-sm bg-white" />
+              <TranslateReply path="/admin/translate" text={input} onResult={setInput} disabled={busy} />
               <Button disabled={busy || !input.trim()}>Send</Button>
             </form>
           )}
