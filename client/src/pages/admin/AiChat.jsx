@@ -169,14 +169,14 @@ export default function AiChat() {
         </p>
       </div>
 
-      <div className="inline-flex rounded-lg border border-slate-200 bg-white p-1">
-        <button onClick={() => setMode('customer')} className={`px-3 py-1.5 rounded-md text-sm font-semibold ${mode === 'customer' ? 'bg-violet-700 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>AI is customer (you = agent)</button>
-        <button onClick={() => setMode('agent')} className={`px-3 py-1.5 rounded-md text-sm font-semibold ${mode === 'agent' ? 'bg-violet-700 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>AI is agent (you = customer)</button>
+      <div className="inline-flex max-w-full overflow-x-auto rounded-lg border border-slate-200 bg-white p-1">
+        <button onClick={() => setMode('customer')} className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-md text-sm font-semibold ${mode === 'customer' ? 'bg-violet-700 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>AI is customer (you = agent)</button>
+        <button onClick={() => setMode('agent')} className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-md text-sm font-semibold ${mode === 'agent' ? 'bg-violet-700 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>AI is agent (you = customer)</button>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-4">
         {/* Chat column */}
-        <div className="lg:col-span-2 flex flex-col h-[calc(100vh-13rem)]">
+        <div className="lg:col-span-2 flex flex-col h-[70vh] lg:h-[calc(100vh-13rem)]">
           {mode === 'customer' ? (
             !session ? (
               <Card>
@@ -285,7 +285,7 @@ export default function AiChat() {
         </div>
 
         {/* Examples column */}
-        <div className="flex flex-col h-[calc(100vh-13rem)]">
+        <div className="flex flex-col h-[70vh] lg:h-[calc(100vh-13rem)]">
           <Card title={`${mode === 'customer' ? 'Customer' : 'Agent'} examples (${examples.length})`}>
             <form onSubmit={addCustom} className="flex gap-2 mb-3">
               <input value={newExample} onChange={e => setNewExample(e.target.value)}
@@ -293,7 +293,7 @@ export default function AiChat() {
                 className="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" />
               <Button disabled={!newExample.trim()}>Add</Button>
             </form>
-            <div className="space-y-2 overflow-y-auto max-h-[calc(100vh-22rem)] pr-1">
+            <div className="space-y-2 overflow-y-auto max-h-[50vh] lg:max-h-[calc(100vh-22rem)] pr-1">
               {examples.length === 0 && <p className="text-xs text-slate-400">No examples yet.</p>}
               {examples.map(ex => (
                 <div key={ex.id} className="flex items-start justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">

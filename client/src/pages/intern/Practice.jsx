@@ -328,20 +328,20 @@ export default function Practice() {
           <p className="text-sm text-slate-500">Handle real Decoinks conversations or train with AI personas. Every reply is silently scored.</p>
         </div>
 
-        <div className="inline-flex rounded-lg border border-slate-200 bg-white p-1">
+        <div className="inline-flex max-w-full overflow-x-auto rounded-lg border border-slate-200 bg-white p-1">
           {supervisedList.length > 0 && (
-            <button onClick={() => setTab('live')} className={`px-3 py-1.5 rounded-md text-sm font-semibold flex items-center gap-1.5 ${tab === 'live' ? 'bg-violet-700 text-white' : 'text-violet-700 hover:bg-violet-50'}`}>
+            <button onClick={() => setTab('live')} className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-md text-sm font-semibold flex items-center gap-1.5 ${tab === 'live' ? 'bg-violet-700 text-white' : 'text-violet-700 hover:bg-violet-50'}`}>
               🎧 Live session <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-rose-500 text-white">{supervisedList.length}</span>
             </button>
           )}
           {liveManualList.length > 0 && (
-            <button onClick={() => setTab('trainer')} className={`px-3 py-1.5 rounded-md text-sm font-semibold flex items-center gap-1.5 ${tab === 'trainer' ? 'bg-violet-700 text-white' : 'text-violet-700 hover:bg-violet-50'}`}>
+            <button onClick={() => setTab('trainer')} className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-md text-sm font-semibold flex items-center gap-1.5 ${tab === 'trainer' ? 'bg-violet-700 text-white' : 'text-violet-700 hover:bg-violet-50'}`}>
               💬 Trainer chat <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-rose-500 text-white">{liveManualList.length}</span>
             </button>
           )}
-          <button onClick={() => setTab('real')} className={`px-3 py-1.5 rounded-md text-sm font-semibold ${tab === 'real' ? 'bg-violet-700 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>Real customer chats</button>
-          <button onClick={() => setTab('talk')} className={`px-3 py-1.5 rounded-md text-sm font-semibold ${tab === 'talk' ? 'bg-violet-700 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>Talk to customer</button>
-          <button onClick={() => setTab('persona')} className={`px-3 py-1.5 rounded-md text-sm font-semibold ${tab === 'persona' ? 'bg-violet-700 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>AI personas</button>
+          <button onClick={() => setTab('real')} className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-md text-sm font-semibold ${tab === 'real' ? 'bg-violet-700 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>Real customer chats</button>
+          <button onClick={() => setTab('talk')} className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-md text-sm font-semibold ${tab === 'talk' ? 'bg-violet-700 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>Talk to customer</button>
+          <button onClick={() => setTab('persona')} className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-md text-sm font-semibold ${tab === 'persona' ? 'bg-violet-700 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>AI personas</button>
         </div>
 
         {tab === 'live' ? (
@@ -445,7 +445,7 @@ export default function Practice() {
         : session.persona?.description;
 
   return (
-    <div className="flex flex-col h-[calc(100vh-3rem)]">
+    <div className="flex flex-col h-[calc(100vh-9rem)] lg:h-[calc(100vh-3rem)]">
       <div className="flex items-center justify-between mb-3 gap-3">
         <div>
           <h1 className="text-xl font-black text-slate-800">{title}</h1>

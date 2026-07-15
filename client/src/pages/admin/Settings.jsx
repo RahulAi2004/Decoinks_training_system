@@ -51,7 +51,7 @@ export default function Settings() {
       {msg && <p className="text-sm text-emerald-700">{msg}</p>}
 
       <Card title="Scoring weights (re-normalised automatically — take effect immediately)">
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {DIMS.map(d => (
             <label key={d} className="text-sm capitalize text-slate-600 flex items-center justify-between gap-2">
               {d}<input {...num('weights', d)} />
@@ -75,7 +75,7 @@ export default function Settings() {
       <Card title="LLM provider">
         <div className="flex flex-wrap gap-3 items-center text-sm">
           <select value={s.llm.provider} onChange={e => setS({ ...s, llm: { ...s.llm, provider: e.target.value } })}
-            className="border border-slate-300 rounded-lg px-3 py-1.5 bg-white">
+            className="w-full min-w-0 border border-slate-300 rounded-lg px-3 py-1.5 bg-white sm:w-auto">
             <option value="auto">auto (prefer Anthropic → Groq → OpenAI → mock)</option>
             <option value="anthropic">Anthropic {s.keys.anthropic ? '✓ key set' : '(no key!)'}</option>
             <option value="groq">Groq {s.keys.groq ? '✓ key set' : '(no key!)'}</option>
@@ -84,7 +84,7 @@ export default function Settings() {
           </select>
           <input placeholder="model override (optional)" value={s.llm.model}
             onChange={e => setS({ ...s, llm: { ...s.llm, model: e.target.value } })}
-            className="border border-slate-300 rounded-lg px-3 py-1.5 text-sm w-64" />
+            className="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-sm sm:w-64" />
           <span className="text-xs text-slate-400">Currently active: {s.active_model}</span>
         </div>
         {!s.keys.anthropic && !s.keys.groq && !s.keys.openai && (

@@ -175,11 +175,11 @@ export default function LiveTraining() {
         <div className="space-y-4">
           <Card title="Assign a customer">
             <div className="space-y-2">
-              <select value={agentId} onChange={e => setAgentId(e.target.value)} className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
+              <select value={agentId} onChange={e => setAgentId(e.target.value)} className="w-full min-w-0 border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
                 <option value="">Choose agent…</option>
                 {options.agents.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
               </select>
-              <select value={custId} onChange={e => setCustId(e.target.value)} className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
+              <select value={custId} onChange={e => setCustId(e.target.value)} className="w-full min-w-0 border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
                 <option value="">Choose real customer…</option>
                 {options.customers.map(c => <option key={c.id} value={c.id}>{c.name} — {c.intent}</option>)}
               </select>
@@ -262,7 +262,7 @@ export default function LiveTraining() {
           {!openId ? (
             <Card><p className="text-sm text-slate-500">Start or pick a live session to monitor it here.</p></Card>
           ) : !monitor ? <Spinner /> : (
-            <div className="flex flex-col h-[calc(100vh-13rem)]">
+            <div className="flex flex-col h-[70vh] lg:h-[calc(100vh-13rem)]">
               <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-slate-500">
                 <span>Monitoring: <span className="text-violet-600">{monitor.session?.agent_name}</span> ↔ {monitor.session?.customer_name} · {monitor.session?.status}</span>
                 <span className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2 py-1">

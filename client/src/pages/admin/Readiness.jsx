@@ -17,7 +17,7 @@ export default function Readiness() {
       {rows.map(r => (
         <Card key={r.user.id}>
           <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="min-w-64">
+            <div className="min-w-0 flex-1 sm:min-w-64">
               <p className="font-bold text-slate-800">{r.user.name} <ScoreBadge value={r.readiness_score} label="readiness" /></p>
               <p className="text-xs text-slate-400">{r.user.email} · {r.graded_turns} graded turns · {r.violation_count} violations in window</p>
               <ul className="text-xs text-slate-600 list-disc pl-4 mt-2 space-y-0.5">
@@ -25,9 +25,9 @@ export default function Readiness() {
               </ul>
               <Link to={`/admin/interns/${r.user.id}`} className="text-violet-600 text-xs font-medium hover:underline">Full detail →</Link>
             </div>
-            <div className="flex flex-col items-end gap-2">
+            <div className="flex w-full flex-col items-start gap-2 sm:w-auto sm:items-end">
               <ReadyPill ready={r.is_ready} />
-              <div className="w-64 space-y-1">{DIMS.map(d => <ScoreBar key={d} label={d} value={r.dimension_scores[d]} />)}</div>
+              <div className="w-full space-y-1 sm:w-64">{DIMS.map(d => <ScoreBar key={d} label={d} value={r.dimension_scores[d]} />)}</div>
             </div>
           </div>
         </Card>

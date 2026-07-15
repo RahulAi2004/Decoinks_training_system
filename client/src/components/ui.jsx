@@ -1,7 +1,10 @@
 // Small shared UI primitives
+// min-w-0: as a grid/flex item a Card defaults to min-width:auto, so one long
+// unbreakable line inside (a truncated name, a wide select) would push the whole
+// page sideways on a phone instead of the text simply truncating.
 export function Card({ title, action, children, className = '' }) {
   return (
-    <div className={`bg-white rounded-xl shadow-sm border border-slate-200 ${className}`}>
+    <div className={`min-w-0 bg-white rounded-xl shadow-sm border border-slate-200 ${className}`}>
       {(title || action) && (
         <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-slate-100">
           <h3 className="font-semibold text-slate-700 text-sm">{title}</h3>

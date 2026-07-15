@@ -131,7 +131,7 @@ export default function ManualChat() {
     return (
       <div className="space-y-4">
         {header}
-        <div className="flex flex-col h-[calc(100vh-11rem)] max-w-3xl">
+        <div className="flex flex-col h-[70vh] lg:h-[calc(100vh-11rem)] max-w-3xl">
           <div className="flex flex-wrap items-center justify-between mb-2 gap-2">
             <div className="min-w-0">
               <p className="truncate text-sm font-bold text-slate-700">{live.name || `Live chat with ${live.agent_name}`}</p>
@@ -209,7 +209,7 @@ export default function ManualChat() {
         <Card title="Invite a trainee to a live chat">
           <div className="max-w-md space-y-3">
             <p className="text-sm text-slate-500">Pick a Decoinks agent and start a live chat. They get an invite on their Practice page under “Trainer chat”. Once they accept, you message each other in real time. Fully manual — no AI.</p>
-            <select value={agentId} onChange={e => setAgentId(e.target.value)} className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
+            <select value={agentId} onChange={e => setAgentId(e.target.value)} className="w-full min-w-0 border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
               <option value="">Choose a trainee…</option>
               {agents.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
             </select>

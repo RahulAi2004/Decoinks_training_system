@@ -64,7 +64,8 @@ export default function InternDetail() {
       )}
 
       <Card title="Practice sessions">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[34rem]">
           <thead><tr className="text-left text-xs text-slate-400 uppercase"><th className="py-1">Started</th><th>Persona</th><th>Status</th><th>Score</th><th></th></tr></thead>
           <tbody>
             {data.sessions.map(s => (
@@ -77,7 +78,8 @@ export default function InternDetail() {
               </tr>
             ))}
           </tbody>
-        </table>
+          </table>
+        </div>
       </Card>
 
       {transcript && (
@@ -100,7 +102,8 @@ export default function InternDetail() {
       )}
 
       <Card title="Scenario attempts">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[34rem]">
           <tbody>
             {data.scenario_attempts.map(a => (
               <tr key={a.id} className="border-t border-slate-100">
@@ -111,11 +114,13 @@ export default function InternDetail() {
             ))}
             {data.scenario_attempts.length === 0 && <tr><td className="text-sm text-slate-400 py-2">None yet.</td></tr>}
           </tbody>
-        </table>
+          </table>
+        </div>
       </Card>
 
       <Card title="Quiz attempts">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[34rem]">
           <tbody>
             {data.quiz_attempts.map(a => (
               <tr key={a.id} className="border-t border-slate-100">
@@ -126,7 +131,8 @@ export default function InternDetail() {
             ))}
             {data.quiz_attempts.length === 0 && <tr><td className="text-sm text-slate-400 py-2">None yet.</td></tr>}
           </tbody>
-        </table>
+          </table>
+        </div>
       </Card>
 
       <p><Link to="/admin/review" className="text-violet-600 text-sm font-medium hover:underline">Review this agent's replies with full rationale →</Link></p>

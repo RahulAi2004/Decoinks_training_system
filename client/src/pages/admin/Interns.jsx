@@ -45,7 +45,8 @@ export default function Interns() {
       </Card>
 
       <Card title={`All interns (${list.length})`}>
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[34rem]">
           <thead><tr className="text-left text-xs text-slate-400 uppercase"><th className="py-1">Intern</th><th>Last active</th><th>Status</th><th></th><th></th></tr></thead>
           <tbody>
             {list.map(u => (
@@ -58,7 +59,8 @@ export default function Interns() {
               </tr>
             ))}
           </tbody>
-        </table>
+          </table>
+        </div>
       </Card>
 
       <Trainers />
@@ -110,7 +112,8 @@ function Trainers() {
       </form>
 
       {!list ? <Spinner /> : (
-        <table className="w-full text-sm mt-4">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm mt-4 min-w-[34rem]">
           <thead><tr className="text-left text-xs text-slate-400 uppercase"><th className="py-1">Person</th><th>Access</th><th>Last active</th><th>Status</th><th></th></tr></thead>
           <tbody>
             {list.map(u => (
@@ -127,7 +130,8 @@ function Trainers() {
               </tr>
             ))}
           </tbody>
-        </table>
+          </table>
+        </div>
       )}
     </Card>
   );
