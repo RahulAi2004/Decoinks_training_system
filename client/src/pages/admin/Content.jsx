@@ -121,7 +121,8 @@ export default function Content() {
         </form>
         <div className="mt-4 border-t border-slate-100">
           {products.length === 0 ? <p className="text-sm text-slate-400 pt-3">No company product topics yet.</p> : (
-            <table className="w-full text-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[34rem]">
               <tbody>
                 {products.map(p => (
                   <tr key={p.id} className="border-b border-slate-100">
@@ -136,7 +137,8 @@ export default function Content() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+              </table>
+            </div>
           )}
         </div>
       </Card>
@@ -154,7 +156,8 @@ export default function Content() {
             }>
             <p className="text-xs text-slate-400 mb-2">{desc}</p>
             {files.length === 0 ? <p className="text-sm text-slate-400">No files yet.</p> : (
-              <table className="w-full text-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm min-w-[34rem]">
                 <tbody>
                   {files.map(d => (
                     <tr key={d.id} className="border-t border-slate-100">
@@ -172,7 +175,8 @@ export default function Content() {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+                </table>
+              </div>
             )}
           </Card>
         );

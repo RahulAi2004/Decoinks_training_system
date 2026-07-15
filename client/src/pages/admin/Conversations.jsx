@@ -21,9 +21,9 @@ export default function Conversations() {
         <h1 className="text-2xl font-black text-slate-800">Conversations</h1>
         <p className="text-sm text-slate-500">Review agent chats and fix customer messages, or filter the customer library and assign chats to a trainee.</p>
       </div>
-      <div className="inline-flex rounded-lg border border-slate-200 bg-white p-1">
-        <button onClick={() => setTab('review')} className={`px-3 py-1.5 rounded-md text-sm font-semibold ${tab === 'review' ? 'bg-violet-700 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>Agent conversations</button>
-        <button onClick={() => setTab('assign')} className={`px-3 py-1.5 rounded-md text-sm font-semibold ${tab === 'assign' ? 'bg-violet-700 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>Assign chats</button>
+      <div className="inline-flex max-w-full overflow-x-auto rounded-lg border border-slate-200 bg-white p-1">
+        <button onClick={() => setTab('review')} className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-md text-sm font-semibold ${tab === 'review' ? 'bg-violet-700 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>Agent conversations</button>
+        <button onClick={() => setTab('assign')} className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-md text-sm font-semibold ${tab === 'assign' ? 'bg-violet-700 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>Assign chats</button>
       </div>
       {tab === 'review' ? <ReviewTab /> : <AssignTab />}
     </div>
@@ -276,7 +276,7 @@ function AssignTab() {
           <Button variant="secondary" onClick={() => setView(null)}>← Back to list</Button>
         </div>
         <Card>
-          <div className="space-y-3 max-h-[calc(100vh-18rem)] overflow-y-auto">
+          <div className="space-y-3 max-h-[60vh] lg:max-h-[calc(100vh-18rem)] overflow-y-auto">
             {view.messages.map(m => (
               <div key={m.id} className={`flex ${m.role === 'agent' ? 'justify-end' : 'justify-start'}`}>
                 <div className="max-w-[80%]">
@@ -335,7 +335,7 @@ function AssignTab() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <label className="block">
             <span className="text-xs font-semibold text-slate-500">Product</span>
-            <select value={product} onChange={e => setProduct(e.target.value)} className="mt-1 w-full border border-slate-300 rounded-lg px-2.5 py-2 text-sm bg-white">
+            <select value={product} onChange={e => setProduct(e.target.value)} className="mt-1 w-full min-w-0 border border-slate-300 rounded-lg px-2.5 py-2 text-sm bg-white">
               <option value="">All products</option>
               <option value="dtf">DTF transfers</option>
               <option value="tshirt">Custom t-shirts</option>
@@ -344,7 +344,7 @@ function AssignTab() {
           </label>
           <label className="block">
             <span className="text-xs font-semibold text-slate-500">Language</span>
-            <select value={language} onChange={e => setLanguage(e.target.value)} className="mt-1 w-full border border-slate-300 rounded-lg px-2.5 py-2 text-sm bg-white">
+            <select value={language} onChange={e => setLanguage(e.target.value)} className="mt-1 w-full min-w-0 border border-slate-300 rounded-lg px-2.5 py-2 text-sm bg-white">
               <option value="">All languages</option>
               <option value="en">English</option>
               <option value="es">Spanish</option>
@@ -353,7 +353,7 @@ function AssignTab() {
           </label>
           <label className="block">
             <span className="text-xs font-semibold text-slate-500">Status</span>
-            <select value={completed} onChange={e => setCompleted(e.target.value)} className="mt-1 w-full border border-slate-300 rounded-lg px-2.5 py-2 text-sm bg-white">
+            <select value={completed} onChange={e => setCompleted(e.target.value)} className="mt-1 w-full min-w-0 border border-slate-300 rounded-lg px-2.5 py-2 text-sm bg-white">
               <option value="">All</option>
               <option value="yes">Completed (ordered)</option>
               <option value="no">Not completed</option>
@@ -362,14 +362,14 @@ function AssignTab() {
           <label className="block">
             <span className="text-xs font-semibold text-slate-500">Chats to show</span>
             <input type="number" min="1" max="200" value={limit} onChange={e => setLimit(e.target.value)}
-              className="mt-1 w-full border border-slate-300 rounded-lg px-2.5 py-2 text-sm bg-white" />
+              className="mt-1 w-full min-w-0 border border-slate-300 rounded-lg px-2.5 py-2 text-sm bg-white" />
           </label>
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-3">
           <span className="text-sm text-slate-600">{loading ? 'Counting…' : <><b>{result?.total ?? 0}</b> chats match · <b>{selected.length}</b> ticked</>}</span>
           <div className="flex-1" />
-          <select value={traineeId} onChange={e => setTraineeId(e.target.value)} className="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
+          <select value={traineeId} onChange={e => setTraineeId(e.target.value)} className="w-full min-w-0 border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white sm:w-auto">
             <option value="">Choose trainee…</option>
             {trainees.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
           </select>

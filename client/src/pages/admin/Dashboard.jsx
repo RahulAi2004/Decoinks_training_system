@@ -201,7 +201,8 @@ export default function Dashboard() {
 
       <Card title="Leaderboard">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm min-w-[34rem]">
             <thead>
               <tr className="text-left text-xs text-slate-400 uppercase">
                 <th className="py-2">Rank</th>
@@ -238,7 +239,8 @@ export default function Dashboard() {
                 <tr><td colSpan="8" className="py-6 text-center text-sm text-slate-400">No agents yet.</td></tr>
               )}
             </tbody>
-          </table>
+            </table>
+          </div>
         </div>
       </Card>
     </div>
