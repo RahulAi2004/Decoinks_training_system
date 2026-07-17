@@ -3,7 +3,8 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
-import { login, authRequired, adminOnly } from './auth.js';
+import { login, signToken, createUser, authRequired, adminOnly } from './auth.js';
+import db from './db.js';
 import practiceRoutes from './routes/practice.js';
 import scenarioRoutes from './routes/scenarios.js';
 import quizRoutes from './routes/quizzes.js';
@@ -26,6 +27,32 @@ app.post('/api/auth/login', (req, res) => {
   if (!result) return res.status(401).json({ error: 'Invalid email or password' });
   if (result.error) return res.status(403).json({ error: result.error });
   res.json(result);
+});
+
+app.post('/api/auth/sso', async (req, res) => {
+  const expected = String(process.env.SSO_SHARED_SECRET || '');
+  if (!expected || req.get('x-decoinks-sso-secret') !== expected) {
+    return res.status(403).json({ error: 'SSO unavailable' });
+  }
+  const username = String(req.get('x-authentik-username') || '').trim().toLowerCase();
+  if (!username) return res.status(401).json({ error: 'Missing SSO identity' });
+  const rawEmail = String(req.get('x-authentik-email') || '').trim().toLowerCase();
+  const email = rawEmail.includes('@') ? rawEmail : `${username}@decoinkssuite.com`;
+  const name = String(req.get('x-authentik-name') || '').trim() || username;
+  const groups = String(req.get('x-authentik-groups') || '').toLowerCase();
+  let user = db.prepare('SELECT id, name, email, role, access_level, is_active FROM users WHERE email = ?').get(email);
+  if (!user) {
+    user = createUser({
+      name,
+      email,
+      password: (await import('node:crypto')).randomBytes(48).toString('base64url'),
+      role: groups.includes('admin') ? 'admin' : 'intern',
+      access_level: 'full',
+    });
+  }
+  if (!user.is_active) return res.status(403).json({ error: 'Account is deactivated' });
+  db.prepare(`UPDATE users SET last_login = datetime('now') WHERE id = ?`).run(user.id);
+  return res.json({ token: signToken(user), user });
 });
 
 app.get('/api/auth/me', authRequired, (req, res) => res.json(req.user));
