@@ -171,10 +171,9 @@ export default function Practice() {
   const send = async (e) => {
     e.preventDefault();
     const body = input.trim();
-    const canAttach = session?.mode === 'live_manual' || session?.mode === 'supervised';
-    if ((!body && !(canAttach && file)) || busy) return;
+    if ((!body && !file) || busy) return;
     const activeSession = session;
-    const sending = canAttach ? file : null;
+    const sending = file;
     setInput(''); setFile(null);
     setMessages(m => [...m, { id: 'tmp', role: 'intern', body, attachment_url: sending?.url, attachment_name: sending?.name, attachment_mime: sending?.mime }]);
     setBusy(true);
@@ -525,16 +524,12 @@ export default function Practice() {
           <Button onClick={() => { setScorecard(completedScorecard); setCompletedScorecard(null); setSession(null); }}>Check your results</Button>
         </div>
       ) : <div className="mt-3">
-        {(session.mode === 'live_manual' || session.mode === 'supervised') && (
-          <StagedAttachment file={file} onClear={() => setFile(null)} />
-        )}
+        <StagedAttachment file={file} onClear={() => setFile(null)} />
         <form onSubmit={send} className="flex gap-2 items-end">
         <textarea value={input} onChange={e => setInput(e.target.value)} onKeyDown={onEnter(send)} disabled={busy} rows={1}
           placeholder="Reply like a Decoinks agent…  (Enter to send, Shift+Enter for new line)" autoFocus
           className="flex-1 resize-none border border-slate-300 rounded-lg px-4 py-2.5 text-sm bg-white" />
-        {(session.mode === 'live_manual' || session.mode === 'supervised') && (
-          <AttachButton onPick={setFile} disabled={busy} />
-        )}
+        <AttachButton onPick={setFile} disabled={busy} />
         <TranslateReply text={input} onResult={setInput} disabled={busy} />
         <Button disabled={busy || (!input.trim() && !file)}>Send</Button>
         {session.mode === 'real_chat' && countdown > 0 && (

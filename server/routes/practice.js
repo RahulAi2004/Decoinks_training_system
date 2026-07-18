@@ -29,6 +29,17 @@ function visibleMessages(sessionId) {
   });
 }
 
+// Store an agent reply, keeping any file the trainee attached. Every chat mode
+// writes its reply through here so attachments work the same everywhere.
+function insertAgentReply(sessionId, body, attachment) {
+  const msgId = uuid();
+  db.prepare(`INSERT INTO session_messages
+    (id, session_id, role, body, attachment_url, attachment_name, attachment_mime)
+    VALUES (?, ?, 'intern', ?, ?, ?, ?)`)
+    .run(msgId, sessionId, body, attachment?.url || null, attachment?.name || null, attachment?.mime || null);
+  return msgId;
+}
+
 function ownSession(req, res) {
   const s = db.prepare('SELECT * FROM practice_sessions WHERE id = ?').get(req.params.id);
   if (!s) { res.status(404).json({ error: 'Session not found' }); return null; }
@@ -106,12 +117,12 @@ r.post('/sessions/:id/messages', async (req, res) => {
   const s = ownSession(req, res); if (!s) return;
   if (s.status !== 'active') return res.status(400).json({ error: 'Session has ended' });
   const body = String(req.body?.body || '').trim();
-  if (!body) return res.status(400).json({ error: 'Empty message' });
+  const attachment = attachmentFrom(req.body);
+  if (!body && !attachment) return res.status(400).json({ error: 'Empty message' });
 
   const before = sessionMessages(s.id);
   const lastCustomer = [...before].reverse().find(m => m.role === 'customer');
-  const msgId = uuid();
-  db.prepare('INSERT INTO session_messages (id, session_id, role, body) VALUES (?, ?, ?, ?)').run(msgId, s.id, 'intern', body);
+  const msgId = insertAgentReply(s.id, body, attachment);
 
   const persona = s.persona_id ? getPersona(s.persona_id) : null;
   const conversation = [...before, { role: 'intern', body }];
@@ -271,12 +282,12 @@ r.post('/talk-sessions/:id/messages', async (req, res) => {
   const state = db.prepare('SELECT * FROM talk_customer_sessions WHERE session_id = ?').get(s.id);
   if (!state) return res.status(404).json({ error: 'Talk-to-customer session not found' });
   const body = String(req.body?.body || '').trim();
-  if (!body) return res.status(400).json({ error: 'Empty message' });
+  const attachment = attachmentFrom(req.body);
+  if (!body && !attachment) return res.status(400).json({ error: 'Empty message' });
 
   const before = visibleMessages(s.id);
   const lastCustomer = [...before].reverse().find(m => m.role === 'customer');
-  const msgId = uuid();
-  db.prepare('INSERT INTO session_messages (id, session_id, role, body) VALUES (?, ?, ?, ?)').run(msgId, s.id, 'intern', body);
+  const msgId = insertAgentReply(s.id, body, attachment);
 
   const questions = safeParse(state.questions, []);
   const style = {
@@ -437,12 +448,12 @@ r.post('/real-chat-sessions/:id/messages', async (req, res) => {
   if (!state) return res.status(404).json({ error: 'Real chat session not found' });
 
   const body = String(req.body?.body || '').trim();
-  if (!body) return res.status(400).json({ error: 'Empty message' });
+  const attachment = attachmentFrom(req.body);
+  if (!body && !attachment) return res.status(400).json({ error: 'Empty message' });
 
   const before = visibleMessages(s.id);
   const lastCustomer = [...before].reverse().find(m => m.role === 'customer');
-  const msgId = uuid();
-  db.prepare('INSERT INTO session_messages (id, session_id, role, body) VALUES (?, ?, ?, ?)').run(msgId, s.id, 'intern', body);
+  const msgId = insertAgentReply(s.id, body, attachment);
 
   const conversation = [...before, { role: 'intern', body }];
   const evalResult = await evaluateReply({
