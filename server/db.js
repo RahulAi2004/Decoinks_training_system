@@ -323,6 +323,14 @@ for (const [table, column, ddl] of [
   ['users', 'access_level', "ALTER TABLE users ADD COLUMN access_level TEXT NOT NULL DEFAULT 'full'"],
   // Cached English translation, so a message is only ever sent to the LLM once.
   ['session_messages', 'translation_en', 'ALTER TABLE session_messages ADD COLUMN translation_en TEXT'],
+  // A file (image / PDF / doc) either side attached to a chat message.
+  ['session_messages', 'attachment_url', 'ALTER TABLE session_messages ADD COLUMN attachment_url TEXT'],
+  ['session_messages', 'attachment_name', 'ALTER TABLE session_messages ADD COLUMN attachment_name TEXT'],
+  ['session_messages', 'attachment_mime', 'ALTER TABLE session_messages ADD COLUMN attachment_mime TEXT'],
+  // A file the admin attached to the pending customer message in Live Training.
+  ['real_chat_sessions', 'pending_upload_url', 'ALTER TABLE real_chat_sessions ADD COLUMN pending_upload_url TEXT'],
+  ['real_chat_sessions', 'pending_upload_name', 'ALTER TABLE real_chat_sessions ADD COLUMN pending_upload_name TEXT'],
+  ['real_chat_sessions', 'pending_upload_mime', 'ALTER TABLE real_chat_sessions ADD COLUMN pending_upload_mime TEXT'],
   ['real_chat_messages', 'translation_en', 'ALTER TABLE real_chat_messages ADD COLUMN translation_en TEXT'],
 ]) {
   const exists = db.prepare(`PRAGMA table_info(${table})`).all().some(c => c.name === column);

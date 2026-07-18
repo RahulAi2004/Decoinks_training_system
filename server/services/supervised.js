@@ -20,7 +20,8 @@ function get(sessionId) {
 }
 
 export function visibleMessages(sessionId) {
-  return db.prepare('SELECT id, role, body, created_at FROM session_messages WHERE session_id = ? ORDER BY created_at, rowid').all(sessionId)
+  return db.prepare(`SELECT id, role, body, created_at, attachment_url, attachment_name, attachment_mime
+    FROM session_messages WHERE session_id = ? ORDER BY created_at, rowid`).all(sessionId)
     .map(m => {
       const match = m.body.match(/\n?\[\[artwork:(.+?)\]\]\s*$/);
       return match ? { ...m, body: m.body.replace(match[0], '').trim(), attachment_url: match[1] } : m;
@@ -44,13 +45,17 @@ function setPending(sessionId, { skipAgent }) {
     const pausedLeft = st.auto_send_enabled ? null : clampHoldSeconds(st.hold_seconds);
     db.prepare(`UPDATE real_chat_sessions
       SET pending_body = ?, pending_original = ?, pending_attachment = ?, pending_since = ?,
-          paused_seconds_left = ?, next_index = ? WHERE session_id = ?`)
+          paused_seconds_left = ?, next_index = ?,
+          pending_upload_url = NULL, pending_upload_name = NULL, pending_upload_mime = NULL
+      WHERE session_id = ?`)
       .run(cleanBody(m.body), cleanBody(m.body), m.attachment_path || null, pendingSince,
         pausedLeft, i + 1, sessionId);
     return 'pending';
   }
   db.prepare(`UPDATE real_chat_sessions SET pending_body = NULL, pending_original = NULL,
-    pending_attachment = NULL, pending_since = NULL, paused_seconds_left = NULL WHERE session_id = ?`).run(sessionId);
+    pending_attachment = NULL, pending_since = NULL, paused_seconds_left = NULL,
+    pending_upload_url = NULL, pending_upload_name = NULL, pending_upload_mime = NULL
+    WHERE session_id = ?`).run(sessionId);
   return 'done';
 }
 
@@ -67,7 +72,7 @@ export function createSupervised(agentId, realChatId, holdSeconds = DEFAULT_HOLD
 }
 
 export function pendingInfo(st) {
-  if (!st?.pending_body && !st?.pending_attachment) return null;
+  if (!st?.pending_body && !st?.pending_attachment && !st?.pending_upload_url) return null;
   const holdSeconds = clampHoldSeconds(st.hold_seconds);
   const elapsed = st.pending_since ? (Date.now() - new Date(st.pending_since + 'Z').getTime()) : 0;
   const secondsLeft = st.auto_send_enabled
@@ -77,6 +82,8 @@ export function pendingInfo(st) {
     body: st.pending_body || '',
     original: st.pending_original || '',
     attachment_url: st.pending_attachment ? `/real-chat-artwork/${st.pending_attachment}` : null,
+    upload: st.pending_upload_url
+      ? { url: st.pending_upload_url, name: st.pending_upload_name, mime: st.pending_upload_mime } : null,
     edited: (st.pending_body || '') !== (st.pending_original || ''),
     seconds_left: secondsLeft,
     hold_seconds: holdSeconds,
@@ -128,18 +135,30 @@ export function updateHoldSeconds(sessionId, value) {
 // next one if the customer's burst continues, else hand the turn to the agent.
 export function releasePending(sessionId, byAdminEdit = false) {
   const st = get(sessionId);
-  if (!st?.pending_body && !st?.pending_attachment) return false;
+  if (!st?.pending_body && !st?.pending_attachment && !st?.pending_upload_url) return false;
   const body = (st.pending_body || 'Customer shared their design.') + (st.pending_attachment ? `\n[[artwork:/real-chat-artwork/${st.pending_attachment}]]` : '');
-  db.prepare('INSERT INTO session_messages (id, session_id, role, body) VALUES (?, ?, ?, ?)').run(uuid(), sessionId, 'customer', body);
+  db.prepare(`INSERT INTO session_messages
+    (id, session_id, role, body, attachment_url, attachment_name, attachment_mime)
+    VALUES (?, ?, 'customer', ?, ?, ?, ?)`)
+    .run(uuid(), sessionId, body, st.pending_upload_url || null, st.pending_upload_name || null, st.pending_upload_mime || null);
   if (byAdminEdit && st.pending_body && st.pending_body !== st.pending_original) addCustomerExample(st.pending_body, null);
   setPending(sessionId, { skipAgent: false });   // continue burst, or wait for agent
   return true;
 }
 
-export function editPending(sessionId, body) {
+// attachment: { url, name, mime } to attach, null to leave as-is, false to clear.
+export function editPending(sessionId, body, attachment = null) {
   const st = get(sessionId);
   if (!st) return false;
   db.prepare('UPDATE real_chat_sessions SET pending_body = ? WHERE session_id = ?').run(String(body || '').trim(), sessionId);
+  if (attachment === false) {
+    db.prepare(`UPDATE real_chat_sessions SET pending_upload_url = NULL, pending_upload_name = NULL,
+      pending_upload_mime = NULL WHERE session_id = ?`).run(sessionId);
+  } else if (attachment) {
+    db.prepare(`UPDATE real_chat_sessions SET pending_upload_url = ?, pending_upload_name = ?,
+      pending_upload_mime = ? WHERE session_id = ?`)
+      .run(attachment.url, attachment.name, attachment.mime, sessionId);
+  }
   return true;
 }
 

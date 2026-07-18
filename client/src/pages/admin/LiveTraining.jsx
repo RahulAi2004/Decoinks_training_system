@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { api } from '../../api';
 import { Card, Spinner, Button } from '../../components/ui';
 import { TranslateMessage } from '../../components/Translate';
+import { Attachment, AttachButton, StagedAttachment } from '../../components/Attachment';
 
 export default function LiveTraining() {
   const [options, setOptions] = useState({ agents: [], customers: [] });
@@ -15,6 +16,7 @@ export default function LiveTraining() {
   const [openId, setOpenId] = useState(null);
   const [monitor, setMonitor] = useState(null);
   const [editText, setEditText] = useState('');
+  const [file, setFile] = useState(null);   // file the admin attaches to the pending customer message
   const [holdSeconds, setHoldSeconds] = useState(15);
   const [sessionTimer, setSessionTimer] = useState(15);
   const [libraryOpen, setLibraryOpen] = useState(false);
@@ -60,7 +62,7 @@ export default function LiveTraining() {
           setSessionTimer(Number(m.session?.hold_seconds || 15));
         }
         const orig = m.pending?.original ?? null;
-        if (orig !== lastOriginal.current) { lastOriginal.current = orig; setEditText(m.pending?.body || ''); }
+        if (orig !== lastOriginal.current) { lastOriginal.current = orig; setEditText(m.pending?.body || ''); setFile(m.pending?.upload || null); }
       } catch { /* session may have ended */ }
     };
     tick();
@@ -116,9 +118,10 @@ export default function LiveTraining() {
   const sendNow = async () => {
     setBusy(true);
     try {
-      await api(`/admin/supervised/${openId}/pending`, { method: 'PUT', body: { body: editText } });
+      await api(`/admin/supervised/${openId}/pending`, { method: 'PUT', body: { body: editText, attachment: file } });
       await api(`/admin/supervised/${openId}/release`, { method: 'POST' });
       lastOriginal.current = '__none__';
+      setFile(null);
     } catch (e) { alert(e.message); }
     finally { setBusy(false); }
   };
@@ -128,7 +131,7 @@ export default function LiveTraining() {
     setBusy(true);
     try {
       if (enabled && monitor?.pending) {
-        await api(`/admin/supervised/${openId}/pending`, { method: 'PUT', body: { body: editText } });
+        await api(`/admin/supervised/${openId}/pending`, { method: 'PUT', body: { body: editText, attachment: file } });
       }
       const result = await api(`/admin/supervised/${openId}/auto-send`, { method: 'PUT', body: { enabled } });
       setMonitor(current => current ? {
@@ -280,7 +283,7 @@ export default function LiveTraining() {
                   <div key={m.id} className={`flex ${m.role === 'intern' ? 'justify-end' : 'justify-start'}`}>
                     <div className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-sm whitespace-pre-wrap ${m.role === 'intern' ? 'bg-violet-700 text-white rounded-br-sm' : 'bg-slate-100 text-slate-800 rounded-bl-sm'}`}>
                       {m.body}
-                      {m.attachment_url && <a href={m.attachment_url} target="_blank" rel="noreferrer" className="mt-2 block overflow-hidden rounded-lg border border-slate-200 bg-white"><img src={m.attachment_url} alt="artwork" className="max-h-40 w-full object-contain bg-slate-50" /></a>}
+                      <Attachment url={m.attachment_url} name={m.attachment_name} mime={m.attachment_mime} />
                       <span className="block mt-0.5 text-[10px] uppercase opacity-60">
                         {m.role === 'intern' ? 'Agent' : 'Customer'}
                         {m.role === 'customer' && <TranslateMessage path={`/admin/messages/${m.id}/translate`} className="ml-2" />}
@@ -305,7 +308,10 @@ export default function LiveTraining() {
                   {pending.original && <p className="text-[11px] text-slate-500 mb-1">Original: “{pending.original}”</p>}
                   <textarea value={editText} onFocus={pauseForEdit} onChange={e => setEditText(e.target.value)} rows={2}
                     className="w-full border border-amber-300 rounded-lg px-3 py-2 text-sm bg-white" />
-                  <div className="mt-2 flex flex-wrap gap-2">
+                  <StagedAttachment file={file} onClear={() => setFile(null)} />
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <AttachButton onPick={f => { pauseForEdit(); setFile(f); }} disabled={busy}
+                      title="Attach an image, PDF or document to this customer message" />
                     <Button onClick={sendNow} disabled={busy}>Send to agent now</Button>
                     <Button variant="secondary" onClick={suggest} disabled={busy}>✨ AI suggestion</Button>
                     <span className="self-center text-[11px] text-slate-500">

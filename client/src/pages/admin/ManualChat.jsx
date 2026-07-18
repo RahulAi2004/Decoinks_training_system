@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import { api } from '../../api';
 import { Card, Button } from '../../components/ui';
 import { TranslateMessage, TranslateReply } from '../../components/Translate';
+import { Attachment, AttachButton, StagedAttachment } from '../../components/Attachment';
 
 export default function ManualChat() {
   const [agents, setAgents] = useState([]);
@@ -17,6 +18,7 @@ export default function ManualChat() {
   const [sessions, setSessions] = useState([]);           // this admin's open live chats
   const [live, setLive] = useState(null);                 // active live session detail
   const [input, setInput] = useState('');
+  const [file, setFile] = useState(null);        // staged attachment
   const [timerInput, setTimerInput] = useState(60);       // editable timer in the live view
   const [busy, setBusy] = useState(false);
   const bottomRef = useRef(null);
@@ -75,12 +77,13 @@ export default function ManualChat() {
   const send = async (e) => {
     e?.preventDefault?.();
     const body = input.trim();
-    if (!body || busy || !live) return;
-    setInput('');
-    setLive(cur => cur ? { ...cur, messages: [...(cur.messages || []), { id: 'tmp', role: 'customer', body }] } : cur);
+    if ((!body && !file) || busy || !live) return;
+    const sending = file;
+    setInput(''); setFile(null);
+    setLive(cur => cur ? { ...cur, messages: [...(cur.messages || []), { id: 'tmp', role: 'customer', body, attachment_url: sending?.url, attachment_name: sending?.name, attachment_mime: sending?.mime }] } : cur);
     setBusy(true);
     try {
-      const r = await api(`/admin/live-manual/${live.session_id}/messages`, { method: 'POST', body: { body } });
+      const r = await api(`/admin/live-manual/${live.session_id}/messages`, { method: 'POST', body: { body, attachment: sending } });
       setLive(cur => cur ? { ...cur, ...r } : cur);
     } catch (e2) { alert(e2.message); }
     finally { setBusy(false); }
@@ -163,7 +166,10 @@ export default function ManualChat() {
             {(live.messages || []).map((m, i) => (
               <div key={m.id || i} className={`flex ${m.role === 'customer' ? 'justify-end' : 'justify-start'}`}>
                 <div className="max-w-[80%]">
-                  <div className={`rounded-2xl px-3.5 py-2 text-sm whitespace-pre-wrap ${m.role === 'customer' ? 'bg-violet-700 text-white rounded-br-sm' : 'bg-slate-100 text-slate-800 rounded-bl-sm'}`}>{m.body}</div>
+                  <div className={`rounded-2xl px-3.5 py-2 text-sm whitespace-pre-wrap ${m.role === 'customer' ? 'bg-violet-700 text-white rounded-br-sm' : 'bg-slate-100 text-slate-800 rounded-bl-sm'}`}>
+                    {m.body}
+                    <Attachment url={m.attachment_url} name={m.attachment_name} mime={m.attachment_mime} />
+                  </div>
                   <p className={`mt-0.5 text-[10px] uppercase tracking-wide ${m.role === 'customer' ? 'text-right text-slate-400' : 'text-slate-400'}`}>
                     {m.role === 'customer' ? 'You (customer)' : live.agent_name || 'Trainee'}
                     {m.role === 'intern' && m.reply_took != null && (
@@ -188,13 +194,17 @@ export default function ManualChat() {
           )}
 
           {!ended && !waiting && (
-            <form onSubmit={send} className="mt-3 flex gap-2 items-end">
+            <div className="mt-3">
+              <StagedAttachment file={file} onClear={() => setFile(null)} />
+            <form onSubmit={send} className="flex gap-2 items-end">
               <textarea value={input} onChange={e => setInput(e.target.value)} onKeyDown={onKey} disabled={busy} autoFocus rows={1}
                 placeholder="Type the customer message…  (Enter to send, Shift+Enter for new line)"
                 className="flex-1 resize-none border border-slate-300 rounded-lg px-4 py-2.5 text-sm bg-white" />
+              <AttachButton onPick={setFile} disabled={busy} />
               <TranslateReply path="/admin/translate" text={input} onResult={setInput} disabled={busy} />
-              <Button disabled={busy || !input.trim()}>Send</Button>
+              <Button disabled={busy || (!input.trim() && !file)}>Send</Button>
             </form>
+            </div>
           )}
         </div>
       </div>

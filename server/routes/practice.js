@@ -12,6 +12,7 @@ import { relevantRealCustomerMsgs } from '../services/realChatQa.js';
 import { visibleMessages as supervisedVisible, autoReleaseIfDue, getSupervised, afterAgentReply } from '../services/supervised.js';
 import { getLiveManual, liveManualPayload, addLiveManualMessage, claimLiveManual } from '../services/liveManual.js';
 import { translateText, translateSessionMessage } from '../services/translate.js';
+import { attachmentFrom } from './uploads.js';
 
 const r = Router();
 
@@ -371,12 +372,16 @@ r.post('/supervised/:id/messages', async (req, res) => {
   if (!s) return res.status(404).json({ error: 'Session not found' });
   if (s.status !== 'active') return res.status(400).json({ error: 'Session has ended' });
   const body = String(req.body?.body || '').trim();
-  if (!body) return res.status(400).json({ error: 'Empty message' });
+  const attachment = attachmentFrom(req.body);
+  if (!body && !attachment) return res.status(400).json({ error: 'Empty message' });
 
   const before = supervisedVisible(req.params.id);
   const lastCustomer = [...before].reverse().find(m => m.role === 'customer');
   const msgId = uuid();
-  db.prepare('INSERT INTO session_messages (id, session_id, role, body) VALUES (?, ?, ?, ?)').run(msgId, req.params.id, 'intern', body);
+  db.prepare(`INSERT INTO session_messages
+    (id, session_id, role, body, attachment_url, attachment_name, attachment_mime)
+    VALUES (?, ?, 'intern', ?, ?, ?, ?)`)
+    .run(msgId, req.params.id, body, attachment?.url || null, attachment?.name || null, attachment?.mime || null);
   await evaluateReply({
     internId: s.intern_id, sessionMessageId: msgId, conversation: [...before, { role: 'intern', body }],
     customerText: lastCustomer?.body || '', internReply: body, modelReply: null,
@@ -420,7 +425,8 @@ r.post('/live-manual/:id/messages', (req, res) => {
   if (!st || st.agent_id !== req.user.id) return res.status(404).json({ error: 'Session not found' });
   if (st.status === 'ended') return res.status(400).json({ error: 'Chat has ended' });
   if (st.status === 'invited') claimLiveManual(req.params.id, req.user.id);
-  if (!addLiveManualMessage(req.params.id, 'intern', req.body?.body)) return res.status(400).json({ error: 'Empty message' });
+  if (!addLiveManualMessage(req.params.id, 'intern', req.body?.body, attachmentFrom(req.body)))
+    return res.status(400).json({ error: 'Empty message' });
   res.json(liveManualPayload(getLiveManual(req.params.id), { mode: 'live_manual' }));
 });
 

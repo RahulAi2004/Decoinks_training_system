@@ -6,6 +6,7 @@ import fs from 'fs';
 import mammoth from 'mammoth';
 import db, { uuid, getSetting, setSetting, DEFAULT_SETTINGS } from '../db.js';
 import { createUser, fullAdminOnly, isTrainer } from '../auth.js';
+import { attachmentFrom } from './uploads.js';
 import { translateText, translateSessionMessage, translateRealChatMessage } from '../services/translate.js';
 import { ingestAll, CONTENT_DIR } from '../ingest.js';
 import { activeModelLabel } from '../llm.js';
@@ -276,7 +277,11 @@ r.put('/supervised/:id/timer', (req, res) => {
 });
 
 r.put('/supervised/:id/pending', (req, res) => {
-  editPending(req.params.id, req.body?.body);
+  // attachment absent = leave alone, null = clear it, object = attach it
+  const attachment = 'attachment' in (req.body || {})
+    ? (req.body.attachment ? attachmentFrom(req.body) : false)
+    : null;
+  editPending(req.params.id, req.body?.body, attachment);
   res.json({ ok: true });
 });
 
@@ -361,7 +366,8 @@ r.post('/live-manual/:id/messages', (req, res) => {
   if (!st || st.admin_id !== req.user.id) return res.status(404).json({ error: 'Session not found' });
   if (st.status === 'ended') return res.status(400).json({ error: 'Chat has ended' });
   if (st.status === 'invited') return res.status(409).json({ error: 'Wait for the trainee to accept the invite' });
-  if (!addLiveManualMessage(req.params.id, 'customer', req.body?.body)) return res.status(400).json({ error: 'Empty message' });
+  if (!addLiveManualMessage(req.params.id, 'customer', req.body?.body, attachmentFrom(req.body)))
+    return res.status(400).json({ error: 'Empty message' });
   res.json(liveManualPayload(getLiveManual(req.params.id)));
 });
 

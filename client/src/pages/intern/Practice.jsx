@@ -4,6 +4,7 @@ import { api } from '../../api';
 import { Card, Spinner, Button, ScoreBadge } from '../../components/ui';
 import Evaluation from '../../components/Evaluation';
 import { TranslateMessage, TranslateReply } from '../../components/Translate';
+import { Attachment, AttachButton, StagedAttachment } from '../../components/Attachment';
 
 function downloadText(filename, text) {
   const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
@@ -28,6 +29,7 @@ export default function Practice() {
   const [session, setSession] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
+  const [file, setFile] = useState(null);        // staged attachment
   const [busy, setBusy] = useState(false);
   const [awaitingNext, setAwaitingNext] = useState(false);
   const [completedScorecard, setCompletedScorecard] = useState(null);
@@ -169,14 +171,16 @@ export default function Practice() {
   const send = async (e) => {
     e.preventDefault();
     const body = input.trim();
-    if (!body || busy) return;
+    const canAttach = session?.mode === 'live_manual' || session?.mode === 'supervised';
+    if ((!body && !(canAttach && file)) || busy) return;
     const activeSession = session;
-    setInput('');
-    setMessages(m => [...m, { id: 'tmp', role: 'intern', body }]);
+    const sending = canAttach ? file : null;
+    setInput(''); setFile(null);
+    setMessages(m => [...m, { id: 'tmp', role: 'intern', body, attachment_url: sending?.url, attachment_name: sending?.name, attachment_mime: sending?.mime }]);
     setBusy(true);
     try {
       if (activeSession.mode === 'live_manual') {
-        const r = await api(`/practice/live-manual/${activeSession.session_id}/messages`, { method: 'POST', body: { body } });
+        const r = await api(`/practice/live-manual/${activeSession.session_id}/messages`, { method: 'POST', body: { body, attachment: sending } });
         setMessages(r.messages);
         setReplyLeft(r.turn?.waiting_for_trainee ? r.turn.seconds_left : null);
         return;
@@ -189,7 +193,7 @@ export default function Practice() {
           ? `/practice/supervised/${activeSession.session_id}/messages`
         : `/practice/sessions/${activeSession.session_id}/messages`;
       if (activeSession.mode === 'talk_customer') await new Promise(resolve => setTimeout(resolve, 15000));
-      const r = await api(path, { method: 'POST', body: { body } });
+      const r = await api(path, { method: 'POST', body: { body, attachment: sending } });
       setMessages(r.messages);
       if (r.complete) {
         const doneScorecard = { ...r.scorecard, session_id: activeSession.session_id, real_chat: activeSession.real_chat || null };
@@ -466,11 +470,7 @@ export default function Practice() {
             <div className="max-w-[78%]">
               <div className={`rounded-2xl px-3.5 py-2 text-sm whitespace-pre-wrap ${m.role === 'intern' ? 'bg-violet-700 text-white rounded-br-sm' : 'bg-slate-100 text-slate-800 rounded-bl-sm'}`}>
                 {m.body}
-                {m.attachment_url && (
-                  <a href={m.attachment_url} target="_blank" rel="noreferrer" className="mt-2 block overflow-hidden rounded-lg border border-slate-200 bg-white">
-                    <img src={m.attachment_url} alt="Customer artwork" className="max-h-52 w-full object-contain bg-slate-50" />
-                  </a>
-                )}
+                <Attachment url={m.attachment_url} name={m.attachment_name} mime={m.attachment_mime} />
                 {m.is_artwork && !m.attachment_url && <p className="mt-2 text-xs font-semibold text-slate-500">Artwork attachment shared</p>}
               </div>
               {m.role === 'customer' && m.id && m.id !== 'tmp' && (
@@ -524,12 +524,19 @@ export default function Practice() {
           {session.mode === 'real_chat' && <Button variant="secondary" onClick={() => downloadTranscript(session.session_id)} disabled={busy}>Download chat</Button>}
           <Button onClick={() => { setScorecard(completedScorecard); setCompletedScorecard(null); setSession(null); }}>Check your results</Button>
         </div>
-      ) : <form onSubmit={send} className="mt-3 flex gap-2 items-end">
+      ) : <div className="mt-3">
+        {(session.mode === 'live_manual' || session.mode === 'supervised') && (
+          <StagedAttachment file={file} onClear={() => setFile(null)} />
+        )}
+        <form onSubmit={send} className="flex gap-2 items-end">
         <textarea value={input} onChange={e => setInput(e.target.value)} onKeyDown={onEnter(send)} disabled={busy} rows={1}
           placeholder="Reply like a Decoinks agent…  (Enter to send, Shift+Enter for new line)" autoFocus
           className="flex-1 resize-none border border-slate-300 rounded-lg px-4 py-2.5 text-sm bg-white" />
+        {(session.mode === 'live_manual' || session.mode === 'supervised') && (
+          <AttachButton onPick={setFile} disabled={busy} />
+        )}
         <TranslateReply text={input} onResult={setInput} disabled={busy} />
-        <Button disabled={busy || !input.trim()}>Send</Button>
+        <Button disabled={busy || (!input.trim() && !file)}>Send</Button>
         {session.mode === 'real_chat' && countdown > 0 && (
           paused
             ? <Button type="button" variant="secondary" onClick={resumeCountdown} disabled={busy}>Resume</Button>
@@ -538,7 +545,8 @@ export default function Practice() {
         {session.mode === 'real_chat' && (
           <Button type="button" variant="danger" onClick={stopReal} disabled={busy}>Stop</Button>
         )}
-      </form>}
+        </form>
+      </div>}
     </div>
   );
 }

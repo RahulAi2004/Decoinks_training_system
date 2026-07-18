@@ -55,7 +55,8 @@ function snapshotLegacyMetrics(sessionId, fallbackReplySeconds) {
 export function liveManualMessages(sessionId, replySeconds = DEFAULT_REPLY_SECONDS) {
   snapshotLegacyMetrics(sessionId, replySeconds);
   const rows = db.prepare(`SELECT id, role, body, created_at, reply_limit_seconds,
-    reply_took_seconds, reply_late FROM session_messages
+    reply_took_seconds, reply_late, attachment_url, attachment_name, attachment_mime
+    FROM session_messages
     WHERE session_id = ? ORDER BY created_at, rowid`).all(sessionId);
   let lastCustomerAt = null;
   return rows.map(m => {
@@ -120,25 +121,31 @@ export function updateReplySeconds(sessionId, value) {
   return getLiveManual(sessionId);
 }
 
-export function addLiveManualMessage(sessionId, role, body) {
+// attachment: optional { url, name, mime } — a message may be a file on its own.
+export function addLiveManualMessage(sessionId, role, body, attachment = null) {
   const clean = String(body || '').trim();
-  if (!clean) return false;
+  if (!clean && !attachment) return false;
   const st = getLiveManual(sessionId);
   if (!st) return false;
   const normalizedRole = role === 'customer' ? 'customer' : 'intern';
   const messageId = uuid();
+  const [aUrl, aName, aMime] = attachment
+    ? [attachment.url, attachment.name, attachment.mime] : [null, null, null];
   db.transaction(() => {
     if (normalizedRole === 'customer') {
       db.prepare(`INSERT INTO session_messages
-        (id, session_id, role, body, reply_limit_seconds) VALUES (?, ?, 'customer', ?, ?)`)
-        .run(messageId, sessionId, clean, st.reply_seconds || DEFAULT_REPLY_SECONDS);
+        (id, session_id, role, body, reply_limit_seconds, attachment_url, attachment_name, attachment_mime)
+        VALUES (?, ?, 'customer', ?, ?, ?, ?, ?)`)
+        .run(messageId, sessionId, clean, st.reply_seconds || DEFAULT_REPLY_SECONDS, aUrl, aName, aMime);
       return;
     }
 
     const last = db.prepare(`SELECT role, created_at, reply_limit_seconds FROM session_messages
       WHERE session_id = ? ORDER BY created_at DESC, rowid DESC LIMIT 1`).get(sessionId);
-    db.prepare("INSERT INTO session_messages (id, session_id, role, body) VALUES (?, ?, 'intern', ?)")
-      .run(messageId, sessionId, clean);
+    db.prepare(`INSERT INTO session_messages
+      (id, session_id, role, body, attachment_url, attachment_name, attachment_mime)
+      VALUES (?, ?, 'intern', ?, ?, ?, ?)`)
+      .run(messageId, sessionId, clean, aUrl, aName, aMime);
     if (last?.role === 'customer') {
       const inserted = db.prepare('SELECT created_at FROM session_messages WHERE id = ?').get(messageId);
       const gap = Math.max(0, Math.round((new Date(inserted.created_at + 'Z').getTime() - new Date(last.created_at + 'Z').getTime()) / 1000));

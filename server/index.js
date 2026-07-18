@@ -10,6 +10,7 @@ import quizRoutes from './routes/quizzes.js';
 import metricsRoutes from './routes/metrics.js';
 import adminRoutes from './routes/admin.js';
 import studyRoutes from './routes/study.js';
+import uploadRoutes, { UPLOAD_DIR } from './routes/uploads.js';
 import { activeModelLabel } from './llm.js';
 import { DATA_DIR } from './db.js';
 
@@ -17,6 +18,11 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '2mb' }));
 app.use('/real-chat-artwork', express.static(path.join(DATA_DIR, 'real-chat-artwork')));
+// Chat attachments. nosniff stops the browser second-guessing the type, and the
+// upload filter already rejects anything script-bearing.
+app.use('/uploads', express.static(UPLOAD_DIR, {
+  setHeaders: (res) => res.setHeader('X-Content-Type-Options', 'nosniff'),
+}));
 
 app.get('/api/health', (req, res) => res.json({ ok: true, model: activeModelLabel() }));
 
@@ -35,6 +41,7 @@ app.use('/api/scenarios', authRequired, scenarioRoutes);
 app.use('/api/quizzes', authRequired, quizRoutes);
 app.use('/api/metrics', authRequired, metricsRoutes);
 app.use('/api/study', authRequired, studyRoutes);
+app.use('/api/uploads', authRequired, uploadRoutes);   // both trainees and trainers
 app.use('/api/admin', authRequired, adminOnly, adminRoutes);
 
 const DIST_DIR = path.join(process.cwd(), 'dist');
